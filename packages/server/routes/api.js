@@ -14,6 +14,7 @@ const { Socket } = require("net");
 const Busboy = require("busboy");
 const Path = require("path");
 const fetch = require("node-fetch");
+const { sanatizer } = require("../utils");
 
 /**
  * Get the ip address or hostname of the TeamSpeak server by decoding the cookie
@@ -31,7 +32,7 @@ router.use(async (req, res, next) => {
 
     whitelist.check(decoded.host);
 
-    res.locals.host = decoded.host;
+    res.locals.host = sanatizer.sanatizeHostname(decoded.host);
 
     next();
   } catch (err) {
@@ -43,11 +44,13 @@ router.use(async (req, res, next) => {
  * Download file from the server.
  */
 router.get("/download", async (req, res, next) => {
-  let { ftkey, port, size, name } = req.query;
-  let { log, host } = res.locals;
-  let socket = new Socket();
-
   try {
+    let { ftkey, size, name } = req.query;
+
+    let port = sanatizer.sanatizePort(req.query.port);
+    let { log, host } = res.locals;
+    let socket = new Socket();
+
     socket.connect(port, host);
 
     socket.on("connect", () => {
@@ -76,7 +79,7 @@ router.get("/download", async (req, res, next) => {
  */
 router.post("/upload", async (req, res, next) => {
   let ftkey = req.headers["x-file-transfer-key"];
-  let port = req.headers["x-file-transfer-port"];
+  let port = sanatizer.sanatizePort(req.headers["x-file-transfer-port"]);
   let { log, host } = res.locals;
   let busboy = new Busboy({ headers: req.headers });
   let socket = new Socket();

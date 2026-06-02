@@ -84,4 +84,6 @@ const sanatizeOptions = function (options) {
 
 module.exports = {
   sanatizeOptions,
+  sanatizePort,
+  sanatizeHostname,
 };

@@ -18,6 +18,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+app.use((req, res, next) => {
+  // Defense against XSS. Exclude googleapis for Service Worker script.
+  res.setHeader(
+    "Content-Security-Policy",
+    "script-src 'self' https://storage.googleapis.com",
+  );
+
+  return next();
+});
+
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, "../ui/dist/")));
