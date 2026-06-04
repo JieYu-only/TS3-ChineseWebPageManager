@@ -183,7 +183,7 @@ export default {
           )
         ) {
           this.createNotification({
-            link: `https://files.teamspeak-services.com/releases/server/${this.latestTeamSpeakVersion}/index.html`,
+            link: `https://teamspeak.com`,
             title: `New TeamSpeak Server Version <b>${(() =>
               this.latestTeamSpeakVersion)()}</b> Available`,
             icon: "mdi-update",
