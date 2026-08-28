@@ -1,5 +1,9 @@
 <template>
-  <v-container fluid class="console-page">
+  <v-container
+    fluid
+    class="console-page"
+    :class="{ 'console-page--dark': $vuetify.theme.dark }"
+  >
     <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>服务器列表</strong></div>
     <div class="page-title-row">
       <div><div class="title-with-count"><h1>服务器列表</h1><v-chip small color="indigo lighten-5" text-color="indigo">{{ servers.length }} 台</v-chip></div><p>管理 TeamSpeak 虚拟服务器及运行状态</p></div>
@@ -376,5 +380,12 @@ export default {
 .status-text.online { color: #23a26d; }.status-text.offline { color: #9aa4b2; }
 ::v-deep .selected-server-row { background: #f7f8ff !important; }
 ::v-deep .selected-server-row td:first-child { box-shadow: inset 3px 0 #6268df; }
+.console-page--dark .page-breadcrumb { color: #aeb3c3; }
+.console-page--dark .page-breadcrumb strong { color: #d7dae3; }
+.console-page--dark .page-title-row h1 { color: #f3f4f8; }
+.console-page--dark .page-title-row p { color: #aeb3c3; }
+.console-page--dark ::v-deep .selected-server-row { background: #414457 !important; }
+.console-page--dark ::v-deep .selected-server-row td { color: #f3f4f8 !important; }
+.console-page--dark ::v-deep .selected-server-row td:first-child { box-shadow: inset 3px 0 #bd93f9; }
 @media (max-width: 600px) { .console-page { padding: 16px; }.page-title-row p { display: none; }.page-title-row > .v-btn { display: none; }.mobile-create { display: flex; margin: 18px auto; }.page-breadcrumb { margin-bottom: 18px; } }
 </style>

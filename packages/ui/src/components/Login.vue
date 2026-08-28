@@ -1,5 +1,8 @@
 <template>
-  <div class="login-page">
+  <div
+    class="login-page"
+    :class="{ 'login-page--dark': $vuetify.theme.dark }"
+  >
     <div class="login-brand">
       <img src="@/assets/ts3_manager_logo.svg" alt="TS3 Manager" />
       <div><strong>teamspeak</strong><span>SERVER CONSOLE</span></div>
@@ -80,5 +83,15 @@ label { display: block; margin: 18px 0 7px; color: #394255; font-size: 13px; }
 .connect-btn { height: 46px !important; color: white !important; background: #17243a !important; border-radius: 6px !important; text-transform: none; font-weight: 600; letter-spacing: .5px; }
 .login-footer { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 23px; padding-top: 21px; border-top: 1px solid #edf0f4; color: #a0a8b5; font-size: 11px; }
 .page-footer { margin: 22px 0 0; color: #a4acb8; font-size: 11px; }
+.login-page--dark { background: #282a36; }
+.login-page--dark .login-brand { color: #f3f4f8; }
+.login-page--dark .login-brand span,
+.login-page--dark .login-heading p,
+.login-page--dark .login-footer,
+.login-page--dark .page-footer { color: #aeb3c3; }
+.login-page--dark .login-card { border-color: #3b3e50; background: #343746; }
+.login-page--dark .login-heading h1,
+.login-page--dark label { color: #f3f4f8; }
+.login-page--dark .login-footer { border-top-color: #454858; }
 @media (max-width: 520px) { .login-card { padding: 30px 22px 24px; }.field-row { gap: 10px; }.port-field { width: 92px; } }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar app flat class="console-header" color="white">
+    <v-app-bar app flat class="console-header">
       <v-app-bar-nav-icon
         @click="drawer = !drawer"
         v-if="connected"
@@ -166,4 +166,12 @@ export default {
 .console-drawer .v-list-item--active { color: #555cda !important; background: linear-gradient(90deg,#eeefff,#f6f6ff) !important; box-shadow: inset 3px 0 #6268df; }
 .console-drawer .v-list-item__icon { margin-right: 14px; }
 .console-drawer .v-icon { font-size: 21px; }
+.console-header.theme--dark { border-bottom-color: #3b3e50 !important; background: #343746 !important; }
+.console-header.theme--dark .page-caption strong { color: #f3f4f8; }
+.console-header.theme--dark .caption-kicker { color: #aeb3c3; }
+.console-drawer.theme--dark { border-right-color: #3b3e50 !important; background: linear-gradient(180deg,#343746 0%,#2e303e 100%) !important; }
+.console-drawer.theme--dark .drawer-label { color: #969caf; }
+.console-drawer.theme--dark .v-list-item { color: #c7cad5; }
+.console-drawer.theme--dark .v-list-item:hover { color: #fff; background: #414457; }
+.console-drawer.theme--dark .v-list-item--active { color: #e1d2ff !important; background: linear-gradient(90deg,#49405d,#3d3f52) !important; box-shadow: inset 3px 0 #bd93f9; }
 </style>

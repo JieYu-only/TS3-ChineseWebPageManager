@@ -1,7 +1,9 @@
 const state = {
   rememberLogin: true,
   notifications: true,
-  darkMode: true,
+  darkMode:
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches,
 };
 
 const mutations = {
