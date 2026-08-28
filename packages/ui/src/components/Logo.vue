@@ -1,7 +1,7 @@
 <template lang="html">
   <v-list-item two-line>
     <v-list-item-avatar class="rounded-0" width="40" height="40">
-      <img src="@/assets/ts3_manager_logo.svg" />
+      <img :src="logo" />
     </v-list-item-avatar>
     <v-list-item-content>
       <v-list-item-title>TS3 Manager</v-list-item-title>
@@ -12,6 +12,7 @@
 
 <script>
 import packageInfo from "../../../../package.json";
+import logo from "@/assets/ts3_manager_logo.svg";
 
 export default {
   data() {

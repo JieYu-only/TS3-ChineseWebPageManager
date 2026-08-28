@@ -4,7 +4,7 @@
     :class="{ 'login-page--dark': $vuetify.theme.dark }"
   >
     <div class="login-brand">
-      <img src="@/assets/ts3_manager_logo.svg" alt="TS3 Manager" />
+      <img :src="logo" alt="TS3 Manager" />
       <div><strong>teamspeak</strong><span>SERVER CONSOLE</span></div>
     </div>
     <v-card class="login-card" elevation="0">
@@ -36,6 +36,8 @@
 
 <script>
 import packageInfo from "../../../../package.json";
+import logo from "@/assets/ts3_manager_logo.svg";
+
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
