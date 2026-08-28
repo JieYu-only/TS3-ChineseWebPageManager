@@ -26,18 +26,58 @@
       </v-flex>
     </v-layout>
 
-    <v-speed-dial right bottom fixed>
+    <v-speed-dial right bottom fixed v-model="speedDial">
       <template #activator>
-        <v-btn fab color="primary" dark>
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+        <v-tooltip left>
+          <template #activator="{ on, attrs }">
+            <v-btn
+              fab
+              color="primary"
+              dark
+              v-bind="attrs"
+              v-on="on"
+              :aria-label="speedDial ? '收起创建菜单' : '添加频道或分隔符'"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ speedDial ? '收起创建菜单' : '添加频道或分隔符' }}</span>
+        </v-tooltip>
       </template>
-      <v-btn fab color="primary" dark small :to="{ name: 'channel-add' }">
-        <v-icon>mdi-hexagon-slice-4</v-icon>
-      </v-btn>
-      <v-btn fab color="primary" dark small :to="{ name: 'spacer-add' }">
-        <v-icon>mdi-keyboard-space</v-icon>
-      </v-btn>
+      <v-tooltip left>
+        <template #activator="{ on, attrs }">
+          <v-btn
+            fab
+            color="primary"
+            dark
+            small
+            v-bind="attrs"
+            v-on="on"
+            :to="{ name: 'channel-add' }"
+            aria-label="创建频道"
+          >
+            <v-icon>mdi-hexagon-slice-4</v-icon>
+          </v-btn>
+        </template>
+        <span>创建频道</span>
+      </v-tooltip>
+      <v-tooltip left>
+        <template #activator="{ on, attrs }">
+          <v-btn
+            fab
+            color="primary"
+            dark
+            small
+            v-bind="attrs"
+            v-on="on"
+            :to="{ name: 'spacer-add' }"
+            aria-label="创建频道分隔符"
+          >
+            <v-icon>mdi-keyboard-space</v-icon>
+          </v-btn>
+        </template>
+        <span>创建频道分隔符</span>
+      </v-tooltip>
     </v-speed-dial>
   </v-container>
 </template>
@@ -56,6 +96,7 @@ export default {
       channelTree: [],
       currentChannel: {},
       textPrivates: [],
+      speedDial: false,
     };
   },
   computed: {
