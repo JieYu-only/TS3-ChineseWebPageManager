@@ -1,12 +1,10 @@
-import Cookies from "js-cookie";
-
 const state = {
-  serverId: Cookies.get("serverId"),
-  token: Cookies.get("token"),
+  serverId: null,
   loading: false,
   connected: false,
   loggedOut: true,
   queryUser: {},
+  sessionExpiresAt: null,
 };
 
 const mutations = {
@@ -15,9 +13,6 @@ const mutations = {
   },
   saveUserInfo(state, userData) {
     state.queryUser = userData;
-  },
-  setToken(state, token) {
-    state.token = token;
   },
   isConnected(state, status) {
     state.connected = status;
@@ -28,50 +23,35 @@ const mutations = {
   isLoggedOut(state, status) {
     state.loggedOut = status;
   },
+  setSessionExpiresAt(state, timestamp) {
+    state.sessionExpiresAt = timestamp;
+  },
 };
 
 const actions = {
-  saveToken({ commit, rootState }, token) {
-    Cookies.set("token", token, {
-      expires: rootState.settings.rememberLogin
-        ? new Date(2147483647 * 1000)
-        : "",
-    });
-
-    commit("setToken", token);
-  },
-  removeToken({ commit }) {
-    Cookies.remove("token");
-
-    commit("setToken", null);
-  },
-  saveServerId({ commit, rootState }, sid) {
-    Cookies.set("serverId", sid, {
-      expires: rootState.settings.rememberLogin
-        ? new Date(2147483647 * 1000)
-        : "",
-    });
-
-    commit("setServerId", sid);
-  },
-  removeServerId({ commit }) {
-    Cookies.remove("serverId");
-
-    commit("setServerId", null);
-  },
-  clearConnection({ commit, rootState, dispatch }) {
+  /**
+   * Clear all authentication / server state. Used on logout and when a session
+   * is detected as invalid.
+   */
+  clearConnection({ commit }) {
     commit("isConnected", false);
-    dispatch("removeServerId");
+    commit("setServerId", null);
     commit("saveUserInfo", {});
-
-    if (!rootState.settings.rememberLogin) dispatch("removeToken");
+    commit("isLoggedOut", true);
+    commit("setSessionExpiresAt", null);
   },
-  saveConnection({ commit, dispatch }, { serverId, queryUser, token }) {
+  /**
+   * Persist a successful connection from a server-side session.
+   */
+  saveConnection({ commit }, { serverId, queryUser, sessionExpiresAt } = {}) {
     commit("isConnected", true);
-
-    if (serverId) dispatch("saveServerId", serverId);
+    commit("isLoggedOut", false);
+    if (serverId) commit("setServerId", serverId);
     if (queryUser) commit("saveUserInfo", queryUser);
-    if (token) dispatch("saveToken", token);
+    if (sessionExpiresAt) commit("setSessionExpiresAt", sessionExpiresAt);
+  },
+  setServerIdAction({ commit }, sid) {
+    commit("setServerId", sid);
   },
 };
 

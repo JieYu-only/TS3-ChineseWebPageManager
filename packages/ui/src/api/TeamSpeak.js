@@ -2,7 +2,6 @@ import socket from "../socket";
 import store from "../store";
 import router from "../router";
 import NProgress from "nprogress";
-import Vue from "vue";
 
 // Polyfill for EventTarget because Safari has no constructor for it
 import EventTarget from "@ungap/event-target";
@@ -90,18 +89,6 @@ const setLoadingState = (methods) => {
         throw error;
       }
     };
-  });
-};
-
-TeamSpeak.connect = (params) => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-connect", params, (response) => {
-      if (response.token) {
-        resolve(response);
-      } else {
-        reject(response);
-      }
-    });
   });
 };
 
@@ -234,35 +221,6 @@ TeamSpeak.downloadFile = (path, cid, cpw = "") => {
     socket.emit("teamspeak-downloadfile", { path, cid, cpw }, (response) => {
       handleResponse(response, resolve, reject);
     });
-  });
-};
-
-TeamSpeak.reconnect = () => {
-  return new Promise((resolve, reject) => {
-    socket.emit(
-      "teamspeak-reconnect",
-      {
-        token: store.state.query.token,
-        serverId: store.state.query.serverId,
-      },
-      async (res) => {
-        if (res.reconnected) {
-          try {
-            let queryUser = await TeamSpeak.execute("whoami").then(
-              (list) => list[0]
-            );
-
-            store.dispatch("saveConnection", { queryUser, connected: true });
-          } catch (err) {
-            reject(err);
-          }
-
-          resolve();
-        } else {
-          reject(res);
-        }
-      }
-    );
   });
 };
 

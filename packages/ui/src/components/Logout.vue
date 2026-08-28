@@ -1,20 +1,25 @@
 <template></template>
 
 <script>
+import { logout as sessionLogout } from "@/api/session";
+
 export default {
-  methods: {
-    quit() {
-      return this.$TeamSpeak.execute("quit");
-    },
-  },
   async created() {
     try {
-      await this.quit();
-
-      // Logout is handled by the "teamspeak-disconnect" event.
+      await sessionLogout();
     } catch (err) {
-      this.$toast.error(err.message);
+      // Even if the server request fails, clear local state below.
     }
+
+    this.$store.dispatch("clearConnection");
+
+    try {
+      this.$socket.disconnect();
+    } catch (err) {
+      // Ignore socket teardown errors.
+    }
+
+    this.$router.replace({ name: "login" });
   },
 };
 </script>

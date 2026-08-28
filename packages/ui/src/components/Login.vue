@@ -23,12 +23,15 @@
         <label>密码</label>
         <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" name="password" autocomplete="current-password" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-lock-outline" :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" @click:append="showPassword = !showPassword" />
         <div class="login-options">
-          <v-checkbox v-model="rememberLogin" label="记住连接信息" dense hide-details />
+          <div class="login-remember">
+            <v-checkbox v-model="rememberLogin" label="在此设备保持登录 30 天" dense hide-details />
+            <p class="login-hint">凭据将加密保存在管理服务所在设备中，请勿在公共管理服务上启用。</p>
+          </div>
           <v-switch v-model="form.ssh" label="SSH 加密" dense hide-details inset />
         </div>
         <v-btn class="connect-btn" type="submit" :disabled="!valid" :loading="loading" block elevation="0">连接控制台<v-icon right small>mdi-arrow-right</v-icon><template #loader><span>正在连接...</span></template></v-btn>
       </v-form>
-      <div class="login-footer"><v-icon size="15">mdi-shield-check-outline</v-icon>凭据将加密保存在当前浏览器 · v{{ appVersion }}</div>
+      <div class="login-footer"><v-icon size="15">mdi-shield-check-outline</v-icon>登录凭据仅保存在管理服务端 · v{{ appVersion }}</div>
     </v-card>
     <p class="page-footer">TS3 Manager · TeamSpeak 服务器管理控制台</p>
   </div>
@@ -37,34 +40,67 @@
 <script>
 import packageInfo from "../../../../package.json";
 import logo from "@/assets/ts3_manager_logo.svg";
+import { login as sessionLogin } from "@/api/session";
 
 export default {
-  beforeRouteEnter(to, from, next) {
-    next(async (vm) => {
-      let token = vm.$store.state.query.token;
-      vm.$store.commit("isLoggedOut", true);
-      if (!token) return;
-      vm.$socket.emit("autofillform", token, (response) => {
-        if (response.host) {
-          vm.form.host = response.host; vm.form.queryport = response.queryport;
-          vm.form.ssh = response.protocol === "ssh"; vm.form.username = response.username; vm.form.password = response.password;
-        } else { vm.$store.dispatch("removeToken"); vm.$toast.error(response); }
-      });
-    });
+  data() {
+    return {
+      logo,
+      valid: false,
+      loading: false,
+      showPassword: false,
+      rules: { required: (value) => !!value || "此项为必填项" },
+      form: { host: "", queryport: 10022, ssh: true, username: "", password: "" },
+      appVersion: packageInfo.version,
+    };
   },
-  data() { return { logo, valid: false, loading: false, showPassword: false, rules: { required: (value) => !!value || "此项为必填项" }, form: { host: "", queryport: 10022, ssh: true, username: "", password: "" }, appVersion: packageInfo.version }; },
-  computed: { rememberLogin: { set(value) { this.$store.commit("setRememberLogin", value); }, get() { return this.$store.state.settings.rememberLogin; } } },
+  computed: {
+    rememberLogin: {
+      set(value) {
+        this.$store.commit("setRememberLogin", value);
+      },
+      get() {
+        return this.$store.state.settings.rememberLogin;
+      },
+    },
+  },
   methods: {
     async connect() {
       this.loading = true;
+
       try {
-        let { token } = await this.$TeamSpeak.connect({ host: this.form.host, queryport: this.form.queryport, protocol: this.form.ssh ? "ssh" : "raw", username: this.form.username, password: this.form.password });
-        this.$store.dispatch("saveToken", token); this.$store.commit("isConnected", true); this.$store.commit("isLoggedOut", false); this.$router.push({ name: "servers" });
-      } catch (err) { this.$toast.error(err.message); }
+        const response = await sessionLogin({
+          host: this.form.host,
+          queryport: this.form.queryport,
+          protocol: this.form.ssh ? "ssh" : "raw",
+          username: this.form.username,
+          password: this.form.password,
+          remember: this.rememberLogin,
+        });
+
+        this.$store.dispatch("saveConnection", {
+          serverId: null,
+          sessionExpiresAt: response.expiresAt,
+        });
+
+        if (!this.$socket.connected) this.$socket.open();
+
+        this.$router.push({ name: "servers" });
+      } catch (err) {
+        const message =
+          (err.response && err.response.data && err.response.data.message) ||
+          "登录失败，请检查服务器地址与 ServerQuery 凭据";
+        this.$toast.error(message);
+      }
+
       this.loading = false;
     },
   },
-  watch: { "form.ssh"(ssh) { this.form.queryport = ssh ? 10022 : 10011; } },
+  watch: {
+    "form.ssh"(ssh) {
+      this.form.queryport = ssh ? 10022 : 10011;
+    },
+  },
 };
 </script>
 
@@ -81,7 +117,10 @@ export default {
 .login-heading p { margin: 0; color: #8992a3; font-size: 13px; }
 label { display: block; margin: 18px 0 7px; color: #394255; font-size: 13px; }
 .field-row { display: flex; gap: 14px; }.field-grow { flex: 1; }.port-field { width: 105px; }
-.login-options { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 24px; }
+.login-options { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin: 14px 0 24px; }
+.login-remember { flex: 1; min-width: 0; }
+.login-hint { margin: -2px 0 0; color: #a0a8b5; font-size: 11px; line-height: 1.5; }
+.login-page--dark .login-hint { color: #aeb3c3; }
 .connect-btn { height: 46px !important; color: white !important; background: #17243a !important; border-radius: 6px !important; text-transform: none; font-weight: 600; letter-spacing: .5px; }
 .login-footer { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 23px; padding-top: 21px; border-top: 1px solid #edf0f4; color: #a0a8b5; font-size: 11px; }
 .page-footer { margin: 22px 0 0; color: #a4acb8; font-size: 11px; }

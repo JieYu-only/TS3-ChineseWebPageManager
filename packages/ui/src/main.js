@@ -16,6 +16,7 @@ import NProgress from "nprogress";
 import Clipboard from "v-clipboard";
 
 import TeamSpeak from "./api/TeamSpeak";
+import { status as sessionStatus } from "./api/session";
 import "./registerServiceWorker";
 
 import store from "./store";
@@ -85,15 +86,24 @@ import socket from "./socket";
 
   Vue.config.productionTip = false;
 
-  // Connect to websocket server
-  socket.open();
+  // Restore a server-side session (if any) before mounting so the router guard
+  // and components see the correct connection state immediately. Credentials
+  // are never present on the browser; the socket is connected and the server
+  // re-establishes the TeamSpeak connection from the stored session.
+  try {
+    const sessionStatusResp = await sessionStatus();
 
-  if (!store.state.query.loggedOut) {
-    try {
-      await TeamSpeak.reconnect();
-    } catch (err) {
-      console.log(err);
+    if (sessionStatusResp.connected) {
+      store.dispatch("saveConnection", {
+        sessionExpiresAt: sessionStatusResp.expiresAt,
+        serverId: sessionStatusResp.serverId,
+      });
+      socket.open();
+    } else {
+      store.dispatch("clearConnection");
     }
+  } catch (err) {
+    store.dispatch("clearConnection");
   }
 
   // Adding instance properties which are often used in components
