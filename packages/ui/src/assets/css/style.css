@@ -8,6 +8,11 @@
 }
 
 html, body { background: #f3f5f9; }
+
+/* 统一页面容器布局（各页面共享） */
+.console-page { max-width: 1440px; padding: 22px 30px 50px; }
+@media (max-width: 600px) { .console-page { padding: 16px; } }
+
 .v-application { font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif !important; }
 .v-application .v-card, .v-application .v-data-table { border-radius: 10px; }
 .v-application .v-btn { text-transform: none; letter-spacing: .2px; }

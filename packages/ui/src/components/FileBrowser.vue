@@ -1,5 +1,6 @@
 <template lang="html">
-  <v-container>
+  <v-container fluid class="console-page">
+    <page-header title="文件管理" description="浏览、上传、下载和管理服务器文件" :breadcrumbs="['控制台', '文件管理']" />
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
         <v-card>

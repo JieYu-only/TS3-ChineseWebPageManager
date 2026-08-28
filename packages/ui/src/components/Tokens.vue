@@ -1,7 +1,10 @@
 <template>
   <v-container fluid class="console-page">
-    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>密钥</strong></div>
-    <div class="page-title-row"><div><h1>密钥列表</h1><p>创建和管理服务器组、频道组权限密钥</p></div><v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon left small>mdi-plus</v-icon>创建密钥</v-btn></div>
+    <page-header title="密钥列表" description="创建和管理服务器组、频道组权限密钥" :breadcrumbs="['控制台', '密钥']">
+      <template #actions>
+        <v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon left small>mdi-plus</v-icon>创建密钥</v-btn>
+      </template>
+    </page-header>
     <v-layout>
       <v-flex xs12>
         <v-card class="content-card" elevation="0">
@@ -71,14 +74,6 @@
         </v-card>
       </v-dialog>
 
-      <v-btn
-        class="mobile-create"
-        color="primary"
-        dark
-        :to="{ name: 'token-add' }"
-      >
-        <v-icon left>mdi-plus</v-icon>创建密钥
-      </v-btn>
     </v-layout>
   </v-container>
 </template>
@@ -150,5 +145,5 @@ export default {
 </script>
 
 <style scoped>
-.console-page { max-width: 1440px; padding: 22px 30px 50px; }.page-breadcrumb { display:flex;align-items:center;gap:7px;margin-bottom:18px;color:#9099a8;font-size:12px;}.page-breadcrumb strong{color:#4b5668;font-weight:500}.page-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.page-title-row h1{margin:0;color:#19253b;font-size:23px}.page-title-row p{margin:4px 0 0;color:#929cab;font-size:12px}.content-card{overflow:hidden}.token-value{display:inline-block;max-width:290px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}.mobile-create{display:none}@media(max-width:600px){.console-page{padding:16px}.page-title-row>.v-btn{display:none}.mobile-create{display:flex;margin:18px auto}}
+.content-card{overflow:hidden}.token-value{display:inline-block;max-width:290px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}
 </style>

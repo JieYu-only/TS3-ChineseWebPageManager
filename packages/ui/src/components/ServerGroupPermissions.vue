@@ -1,5 +1,6 @@
 <template>
-  <v-container fluid class="permission-page">
+  <v-container fluid class="console-page">
+    <page-header title="服务器组权限" description="查看和配置服务器组的跨频道权限" :breadcrumbs="['控制台', '权限管理', '服务器组权限']" />
     <v-layout>
       <v-flex xs12>
         <permission-table
@@ -165,4 +166,4 @@ export default {
 };
 </script>
 
-<style scoped>.permission-page{max-width:1440px;padding:22px 30px 50px}@media(max-width:600px){.permission-page{padding:16px}}</style>
+<style scoped></style>

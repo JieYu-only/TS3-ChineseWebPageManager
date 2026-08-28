@@ -1,12 +1,6 @@
 <template>
   <v-container fluid class="console-page">
-    <div class="page-breadcrumb">
-      <v-icon small>mdi-home</v-icon><span>控制台</span>
-      <v-icon x-small>mdi-chevron-right</v-icon><strong>投诉记录</strong>
-    </div>
-    <div class="page-title-row">
-      <div><h1>投诉记录</h1><p>查看并处理服务器用户投诉记录</p></div>
-    </div>
+    <page-header title="投诉记录" description="查看并处理服务器用户投诉记录" :breadcrumbs="['控制台', '投诉记录']" />
     <v-layout>
       <v-flex xs12>
         <v-card class="content-card" elevation="0">
@@ -157,34 +151,6 @@ export default {
 .console-page {
   max-width: 1440px;
   padding: 22px 30px 50px;
-}
-.page-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 18px;
-  color: #9099a8;
-  font-size: 12px;
-}
-.page-breadcrumb strong {
-  color: #4b5668;
-  font-weight: 500;
-}
-.page-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-.page-title-row h1 {
-  margin: 0;
-  color: #19253b;
-  font-size: 23px;
-}
-.page-title-row p {
-  margin: 4px 0 0;
-  color: #929cab;
-  font-size: 12px;
 }
 .content-card {
   overflow: hidden;

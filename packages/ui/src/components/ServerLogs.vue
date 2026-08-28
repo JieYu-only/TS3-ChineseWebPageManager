@@ -1,5 +1,6 @@
 <template lang="html">
-  <v-container>
+  <v-container fluid class="console-page">
+    <page-header title="服务器日志" description="查询和查看 TeamSpeak 服务器运行日志" :breadcrumbs="['控制台', '服务器日志']" />
     <v-layout>
       <v-flex xs12>
         <v-card>

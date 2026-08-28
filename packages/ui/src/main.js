@@ -7,6 +7,7 @@ import "./assets/css/style.css";
 
 import Vue from "vue";
 import App from "./App.vue";
+import PageHeader from "@/components/PageHeader";
 import vuetify from "./plugins/vuetify";
 import VueToast from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
@@ -27,6 +28,7 @@ import socket from "./socket";
   });
 
   Vue.use(Clipboard);
+  Vue.component("PageHeader", PageHeader);
 
   Vue.use(VueToast, {
     position: "top",

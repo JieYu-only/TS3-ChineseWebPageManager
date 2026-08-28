@@ -1,6 +1,6 @@
 <template>
   <v-container fluid class="console-page">
-    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>实时在线</strong></div>
+    <page-header title="实时在线" description="实时查看频道树与服务器在线用户" :breadcrumbs="['控制台', '实时在线']" />
     <div class="viewer-tabs">
       <div class="viewer-tab active"><v-icon small>mdi-view-dashboard-outline</v-icon>服务器频道</div>
       <div class="viewer-stat"><span>服务器</span><strong>{{ serverInfo.virtualserverName || 'TeamSpeak 3' }}</strong></div>
@@ -234,7 +234,7 @@ export default {
 </script>
 
 <style scoped>
-.console-page { max-width: 1440px; padding: 22px 30px 50px; }.page-breadcrumb { display: flex; align-items: center; gap: 7px; margin-bottom: 22px; color: #9099a8; font-size: 12px; }.page-breadcrumb strong { color: #4b5668; font-weight: 500; }
+.console-page { max-width: 1440px; padding: 22px 30px 50px; }
 .viewer-tabs { display: flex; align-items: stretch; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid #e8ebf0; }.viewer-tab { display: flex; align-items: center; gap: 7px; padding: 13px 18px; color: #687386; font-size: 13px; }.viewer-tab.active { color: #6268df; border-bottom: 2px solid #6268df; }.viewer-stat { display: flex; flex-direction: column; justify-content: center; padding: 0 18px; border-left: 1px solid #edf0f4; }.viewer-stat span { color: #9ca5b2; font-size: 10px; }.viewer-stat strong { color: #243047; font-size: 13px; }
 .viewer-card { min-height: 420px; }.viewer-title { display: flex; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid #edf0f4; color: #1f2a3e; font-size: 17px; }
 @media (max-width: 600px) { .console-page { padding: 16px; }.viewer-tabs { overflow-x: auto; }.viewer-stat { min-width: 115px; } }

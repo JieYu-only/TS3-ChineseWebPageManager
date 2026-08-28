@@ -1,5 +1,6 @@
 <template>
-  <v-container>
+  <v-container fluid class="console-page">
+    <page-header title="消息中心" description="查看并发送服务器、频道及私聊消息" :breadcrumbs="['控制台', '消息中心']" />
     <v-layout>
       <v-flex xl10 lg12 md12 sm12 xs12 offset-xl1>
         <v-sheet elevation="2" rounded class="textmessages__wrapper">

@@ -1,5 +1,6 @@
 <template lang="html">
-  <v-container>
+  <v-container fluid class="console-page">
+    <page-header title="查询终端" description="直接执行 ServerQuery 命令并查看返回结果" :breadcrumbs="['控制台', '查询终端']" />
     <v-layout justify-center>
       <v-flex lg8 md10 sm10 xs12>
         <v-card>
