@@ -35,6 +35,11 @@ dist
 # Password store for local testing
 .pw
 
+# Persisted encrypted sessions and the session encryption key
+data/
+*.enc
+*.key
+
 # Test files
 test.js
 

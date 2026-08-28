@@ -203,10 +203,23 @@ docker compose logs -f ts3-manager
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
 | `PORT` | Web 服务监听端口 | Docker 中为 `8080` |
-| `JWT_SECRET` | 加密和解密登录令牌的密钥 | 每次启动随机生成 |
+| `JWT_SECRET` | 兼容用旧密钥（新登录改用服务端会话） | 每次启动随机生成 |
+| `SESSION_ENCRYPTION_KEY` | 加密“记住登录”长会话凭据的 32 字节 Base64 密钥 | 首次启动自动生成并保存到 `data/session.key` |
 | `WHITELIST` | 允许连接的 TS3 地址，多个地址以英文逗号分隔 | 允许任意地址 |
 
-生产环境必须固定 `JWT_SECRET`。如果使用随机值，容器重启后，浏览器中保存的连接信息可能无法继续解密。
+## 凭据安全
+
+管理面板不再把 ServerQuery 密码保存到浏览器，也不再依赖 JWT 携带凭据。
+
+- 登录成功后，服务端生成**随机会话 ID**，并通过 **HttpOnly Cookie**（`ts3_session`）发送给浏览器；浏览器 JavaScript 无法读取。
+- **ServerQuery 凭据只保存在服务端**。
+- 普通登录的会话保存在服务端**内存**，有效期约 **8 小时**。
+- 勾选“在此设备保持登录 30 天”后，凭据用 **AES-256-GCM 加密**写入 `data/sessions.enc`（经 `SESSION_ENCRYPTION_KEY` 加密），有效期约 **30 天**。
+- 会话具有**绝对过期**（普通 8 小时 / 记住 30 天）与**空闲过期**（连续 8 小时未使用）双重限制。
+- 退出登录会**立即撤销**会话，并关闭对应的 Socket.IO 与 ServerQuery 连接。
+- `data/` 目录、`*.enc`、`*.key` 已在 `.gitignore` 中忽略，不进入 Git 与日志。
+
+> 安全迁移提示：旧版浏览器令牌（`token` Cookie）会在访问时自动清除，需要重新输入一次 ServerQuery 凭据登录。
 
 建议设置 `WHITELIST`，防止管理面板连接未经授权的公网或内网地址。
 
