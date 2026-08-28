@@ -8,7 +8,7 @@ call :check_docker || goto :failed
 call :prepare_env || goto :failed
 
 echo [1/3] 正在构建并启动 TS3 Manager...
-docker compose up -d --build
+%COMPOSE_COMMAND% up -d --build
 if errorlevel 1 goto :failed
 
 echo [2/3] 正在等待管理页面启动...
@@ -28,11 +28,17 @@ if errorlevel 1 (
   exit /b 1
 )
 docker compose version >nul 2>&1
-if errorlevel 1 (
-  echo [错误] 当前 Docker 未提供 Compose 插件。
-  exit /b 1
+if not errorlevel 1 (
+  set "COMPOSE_COMMAND=docker compose"
+  exit /b 0
 )
-exit /b 0
+docker-compose version >nul 2>&1
+if not errorlevel 1 (
+  set "COMPOSE_COMMAND=docker-compose"
+  exit /b 0
+)
+echo [错误] 未找到 Docker Compose。请安装 Compose 插件或 docker-compose。
+exit /b 1
 
 :prepare_env
 if not exist ".env" copy /y ".env.example" ".env" >nul

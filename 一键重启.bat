@@ -8,12 +8,18 @@ docker version >nul 2>&1
 if errorlevel 1 goto :docker_error
 
 echo 正在重启 TS3 Manager...
-docker compose restart ts3-manager
+docker inspect ts3-manager >nul 2>&1
 if errorlevel 1 (
   echo 未找到已创建的容器，改为执行首次启动...
   call "%~dp0一键启动.bat"
   if errorlevel 1 exit /b 1
   exit /b 0
+)
+docker restart ts3-manager
+if errorlevel 1 (
+  echo [错误] 容器重启失败。
+  pause
+  exit /b 1
 )
 echo TS3 Manager 已重启。
 timeout /t 3 /nobreak >nul

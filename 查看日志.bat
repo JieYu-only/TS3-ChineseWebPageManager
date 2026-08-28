@@ -13,9 +13,17 @@ if errorlevel 1 (
 
 echo 正在显示 TS3 Manager 日志，按 Ctrl+C 退出日志查看。
 echo.
-docker compose logs --tail 200 -f ts3-manager
+docker inspect ts3-manager >nul 2>&1
+if errorlevel 1 (
+  echo [提示] 尚未创建名为 ts3-manager 的容器，请先运行“一键启动.bat”。
+  pause
+  exit /b 1
+)
+
+docker logs --tail 200 -f ts3-manager
 if errorlevel 1 (
   echo.
-  echo [提示] 尚未创建容器，请先运行“一键启动.bat”。
+  echo [错误] 无法读取容器日志，请确认 Docker Desktop 和容器状态正常。
   pause
+  exit /b 1
 )
