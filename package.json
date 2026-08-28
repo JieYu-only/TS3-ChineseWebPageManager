@@ -14,8 +14,10 @@
     "server:start": "npm run start --workspace=@ts3-manager/server",
     "server:dev": "npm run dev --workspace=@ts3-manager/server",
     "server:build": "npm run build --workspace=@ts3-manager/server",
+    "server:test": "npm run test --workspace=@ts3-manager/server",
     "ui:build": "npm run build --workspace=@ts3-manager/ui",
-    "ui:serve": "npm run serve --workspace=@ts3-manager/ui"
+    "ui:serve": "npm run serve --workspace=@ts3-manager/ui",
+    "test": "npm run test --workspace=@ts3-manager/server"
   },
   "postcss": {
     "plugins": {

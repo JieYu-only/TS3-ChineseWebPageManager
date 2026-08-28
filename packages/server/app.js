@@ -39,8 +39,15 @@ app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "../ui/dist/index.html"));
 });
 
-const server = app.listen(config.port, () => {
-  console.log(`Server listening on http://127.0.0.1:${config.port}`);
-});
+// Only start listening when this module is run directly (e.g. `node app.js`).
+// When it is required by a test the app is exported instead so the test can
+// bind it to an ephemeral port without side effects.
+if (require.main === module) {
+  const server = app.listen(config.port, () => {
+    console.log(`Server listening on http://127.0.0.1:${config.port}`);
+  });
 
-socket.init(server, corsOptions);
+  socket.init(server, corsOptions);
+}
+
+module.exports = app;

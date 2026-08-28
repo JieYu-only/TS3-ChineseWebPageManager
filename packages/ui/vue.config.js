@@ -71,10 +71,22 @@ module.exports = {
       theme_color: '#1c2537',
       icons: [
         {
-          src: 'img/icons/ts3_manager.png',
-          sizes: '380x380',
+          src: 'img/icons/icon-192.png',
+          sizes: '192x192',
           type: 'image/png',
           purpose: 'any'
+        },
+        {
+          src: 'img/icons/icon-512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: 'img/icons/icon-maskable-512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
         }
       ]
     },
@@ -99,9 +111,9 @@ module.exports = {
     },
     iconPaths: {
       favicon32: 'img/icons/favicon.png',
-      appleTouchIcon: 'img/icons/ts3_manager.png',
+      appleTouchIcon: 'img/icons/icon-192.png',
       maskIcon: 'img/icons/ts3_manager.svg',
-      msTileImage: 'img/icons/ts3_manager.png'
+      msTileImage: 'img/icons/icon-512.png'
     }
   }
 }

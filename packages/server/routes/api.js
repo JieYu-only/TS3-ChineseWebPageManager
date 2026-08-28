@@ -17,6 +17,18 @@ const fetch = require("node-fetch");
 const { sanatizer } = require("../utils");
 
 /**
+ * Health check for monitoring and CI. It is intentionally registered before the
+ * JWT middleware below so it can be probed without authentication.
+ */
+router.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+  });
+});
+
+/**
  * Get the ip address or hostname of the TeamSpeak server by decoding the cookie
  * on every request.
  */
