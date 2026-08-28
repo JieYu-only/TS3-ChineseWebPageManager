@@ -1,24 +1,44 @@
 /**
- * API routes are only used for download and upload streams.
- * The main communication between the client (frontend) and the ServerQuery is
- * still handled by socket.io.
+ * API routes.
+ *
+ * Session routes (login / logout / status) handle authentication and set the
+ * HttpOnly session cookie. The download / upload streams are protected by the
+ * same server-side session. ServerQuery credentials never leave the server.
  */
 
-const config = require("../config");
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 const { TeamSpeak } = require("ts3-nodejs-library");
-const { logger, whitelist } = require("../utils");
+const { logger, whitelist, sanatizer } = require("../utils");
 const { Socket } = require("net");
 const Busboy = require("busboy");
-const Path = require("path");
 const fetch = require("node-fetch");
-const { sanatizer } = require("../utils");
+const { sessionManager } = require("../session");
+const socket = require("../socket");
+
+const SESSION_COOKIE = "ts3_session";
+const REMEMBER_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
- * Health check for monitoring and CI. It is intentionally registered before the
- * JWT middleware below so it can be probed without authentication.
+ * Cookie options for the session id. HttpOnly keeps the id out of JavaScript;
+ * Secure is enabled in production behind HTTPS unless explicitly disabled for
+ * plain-HTTP deployments via SESSION_COOKIE_SECURE=false.
+ */
+function sessionCookieOptions(remember) {
+  return {
+    httpOnly: true,
+    secure:
+      process.env.NODE_ENV === "production" &&
+      process.env.SESSION_COOKIE_SECURE !== "false",
+    sameSite: "lax",
+    path: "/",
+    maxAge: remember ? REMEMBER_MS : undefined,
+  };
+}
+
+/**
+ * Health check for monitoring and CI. Registered before auth so it can be
+ * probed without logging in.
  */
 router.get("/health", (req, res) => {
   res.json({
@@ -29,26 +49,107 @@ router.get("/health", (req, res) => {
 });
 
 /**
- * Get the ip address or hostname of the TeamSpeak server by decoding the cookie
- * on every request.
+ * POST /session/login
+ * Validate ServerQuery credentials, create a server-side session and set the
+ * HttpOnly session cookie. Credentials are stored on the server only.
+ */
+router.post("/session/login", async (req, res, next) => {
+  try {
+    const options = req.body || {};
+    const validOptions = sanatizer.sanatizeOptions(options);
+
+    whitelist.check(validOptions.host);
+
+    // Validate the credentials by attempting a real connection, then release it.
+    // The persistent ServerQuery connection is later established by the socket.
+    const probe = await TeamSpeak.connect(validOptions);
+    try {
+      await probe.quit();
+    } catch (_) {
+      // Ignore shutdown errors from the probe connection.
+    }
+
+    const remember = Boolean(options.remember);
+    const session = sessionManager.create({
+      credentials: validOptions,
+      remember,
+      serverId: options.serverId || null,
+    });
+
+    res.cookie(SESSION_COOKIE, session.id, sessionCookieOptions(remember));
+    res.json({
+      connected: true,
+      expiresAt: session.expiresAt,
+      remembered: remember,
+    });
+  } catch (error) {
+    // Use a uniform, non-revealing authentication error message.
+    res.status(401).json({
+      connected: false,
+      message: "用户名或密码错误，或者无法连接到目标服务器",
+    });
+  }
+});
+
+/**
+ * POST /session/logout
+ * Invalidate the session, close its sockets and clear the cookie.
+ */
+router.post("/session/logout", async (req, res) => {
+  const sessionId = req.cookies && req.cookies[SESSION_COOKIE];
+
+  if (sessionId) {
+    sessionManager.delete(sessionId);
+    socket.closeSession(sessionId);
+  }
+
+  res.clearCookie(SESSION_COOKIE, sessionCookieOptions(false));
+  res.json({ connected: false });
+});
+
+/**
+ * GET /session/status
+ * Report whether the current session cookie maps to a valid session.
+ */
+router.get("/session/status", async (req, res) => {
+  const sessionId = req.cookies && req.cookies[SESSION_COOKIE];
+  const session = sessionManager.get(sessionId);
+
+  if (!session) {
+    res.json({ connected: false });
+    return;
+  }
+
+  res.json({
+    connected: true,
+    expiresAt: session.expiresAt,
+    serverId: session.serverId,
+  });
+});
+
+/**
+ * Protect the file transfer routes with the server-side session.
  */
 router.use(async (req, res, next) => {
-  let { token, serverId } = req.cookies;
   let ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
   let log = logger.child({ client: ip });
 
   res.locals.log = log;
 
   try {
-    let decoded = jwt.verify(token, config.secret);
+    const sessionId = req.cookies && req.cookies[SESSION_COOKIE];
+    const session = sessionManager.get(sessionId);
 
-    whitelist.check(decoded.host);
+    if (!session) {
+      const error = new Error("未登录或会话已过期");
+      error.status = 401;
+      return next(error);
+    }
 
-    res.locals.host = sanatizer.sanatizeHostname(decoded.host);
-
-    next();
+    res.locals.session = session;
+    return next();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 });
 
@@ -60,10 +161,10 @@ router.get("/download", async (req, res, next) => {
     let { ftkey, size, name } = req.query;
 
     let port = sanatizer.sanatizePort(req.query.port);
-    let { log, host } = res.locals;
+    let { log, session } = res.locals;
     let socket = new Socket();
 
-    socket.connect(port, host);
+    socket.connect(port, session.credentials.host);
 
     socket.on("connect", () => {
       res.setHeader("content-disposition", `attachment; filename=${name}`);
@@ -92,7 +193,7 @@ router.get("/download", async (req, res, next) => {
 router.post("/upload", async (req, res, next) => {
   let ftkey = req.headers["x-file-transfer-key"];
   let port = sanatizer.sanatizePort(req.headers["x-file-transfer-port"]);
-  let { log, host } = res.locals;
+  let { log, session } = res.locals;
   let busboy = Busboy({ headers: req.headers });
   let socket = new Socket();
 
@@ -101,7 +202,7 @@ router.post("/upload", async (req, res, next) => {
       let { filename } = info;
       socket.setTimeout(5000);
 
-      socket.connect(port, host);
+      socket.connect(port, session.credentials.host);
 
       socket.on("connect", () => {
         socket.write(ftkey);
@@ -164,7 +265,7 @@ router.use((error, req, res, next) => {
 
   log.error(error.message);
 
-  res.status(400).send(error.message);
+  res.status(error.status || 400).send(error.message);
 });
 
 module.exports = router;

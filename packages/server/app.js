@@ -9,6 +9,11 @@ const socket = require("./socket");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const routes = require("./routes");
+const { sessionManager } = require("./session");
+
+// Trust the reverse proxy so Secure cookies and req.ip work correctly when the
+// app runs behind Nginx/Caddy or a Docker proxy.
+app.set("trust proxy", 1);
 
 // Enable cross-origin resource sharing for the frontend in development
 const corsOptions = {
@@ -30,6 +35,18 @@ app.use((req, res, next) => {
 
 app.use(cookieParser());
 
+// JSON body parsing for the session login/logout API.
+app.use(express.json());
+
+// Security migration: drop the legacy JWT token cookie if a client still sends
+// it. New logins use the HttpOnly session cookie instead.
+app.use((req, res, next) => {
+  if (req.cookies && req.cookies.token) {
+    res.clearCookie("token", { path: "/" });
+  }
+  return next();
+});
+
 app.use(express.static(path.join(__dirname, "../ui/dist/")));
 
 app.use("/api", routes.api);
@@ -46,6 +63,9 @@ if (require.main === module) {
   const server = app.listen(config.port, () => {
     console.log(`Server listening on http://127.0.0.1:${config.port}`);
   });
+
+  // Periodically clean expired sessions (temporary + remembered).
+  sessionManager.startCleanup();
 
   socket.init(server, corsOptions);
 }
