@@ -113,7 +113,7 @@ Windows 用户可以直接双击项目根目录中的脚本：
 
 从 GitHub Releases 下载 `TS3-ChineseWebPageManager-win-x64-版本号.exe` 后，将其重命名为 `TS3-ChineseWebPageManager.exe` 并放在项目根目录，然后双击 `一键启动.bat`。Windows 原生版不需要安装 Docker。
 
-开发者也可以双击 `构建Windows版.bat` 从当前源码生成 EXE。构建需要 Node.js 和网络连接；普通使用者直接下载 Release 中的 EXE 即可。
+开发者也可以双击 `构建Windows版.bat` 从当前源码生成 EXE。构建环境统一使用 Node.js 22，并由 `@yao-pkg/pkg` 生成内嵌 Node.js 22 的 Windows x64 程序；普通使用者直接下载 Release 中的 EXE 即可。
 
 如果项目根目录没有 EXE，启动脚本才会尝试 Docker：优先使用新版 `docker compose`，其次尝试旧版 `docker-compose`；两者都未安装时使用原生 `docker build` 和 `docker run`。
 
@@ -223,13 +223,12 @@ docker compose logs -f ts3-manager
 
 项目为 npm workspace，前端使用 Vue 2 与 Vuetify 2，后端使用 Node.js、Express 和 Socket.IO。
 
-项目仍采用 Vue 2 与 Vuetify 2 技术栈。推荐使用项目自动构建流程或 Windows 构建脚本；手动构建时建议使用 Node.js 16。使用较新的 Node.js 版本时，旧版 Webpack 可能需要设置 `NODE_OPTIONS=--openssl-legacy-provider`。
+项目仍采用 Vue 2 与 Vuetify 2 技术栈，开发、Docker 构建/运行和 Windows 可执行文件统一使用 Node.js 22。项目已升级到 Vue CLI 5 与 Webpack 5，不再需要 `NODE_OPTIONS=--openssl-legacy-provider`。
 
 ### 安装依赖
 
 ```powershell
-npm install --prefix .\packages\ui
-npm install --prefix .\packages\server
+npm ci
 ```
 
 ### 启动开发环境
@@ -251,7 +250,7 @@ npm run server:dev
 npm run build
 ```
 
-若本机 Node.js 版本与旧版 Vue CLI 不兼容，请使用 Dockerfile 提供的构建环境。
+根目录的 `package.json` 要求 Node.js 22 和 npm 10 或更高版本；Dockerfile 使用同一 Node.js 主版本并从锁文件安装依赖。
 
 ## 安全建议
 

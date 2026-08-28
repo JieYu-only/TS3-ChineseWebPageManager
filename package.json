@@ -4,6 +4,10 @@
   "workspaces": [
     "packages/*"
   ],
+  "engines": {
+    "node": ">=22 <23",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "concurrently --kill-others --names \"UI,SERVER\" -c \"bgGreen.black,bgMagenta.black\" \"npm run serve --workspace=@ts3-manager/ui\" \"npm run dev --workspace=@ts3-manager/server\"",
     "build": "npm run build --workspace=@ts3-manager/ui --workspace=@ts3-manager/server",

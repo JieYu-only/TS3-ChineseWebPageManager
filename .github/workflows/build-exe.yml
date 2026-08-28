@@ -18,25 +18,35 @@ jobs:
         include:
           - os: windows-latest
             file: server.exe
+            target: node22-win-x64
             file-name: TS3-ChineseWebPageManager-win-x64-${{ github.event.release.tag_name }}.exe
           - os: ubuntu-latest
             file: server
+            target: node22-linux-x64
             file-name: ts3-manager-linux-x64-${{ github.event.release.tag_name }}
           - os: macos-latest
             file: server
+            target: node22-macos-x64
             file-name: ts3-manager-macos-x64-${{ github.event.release.tag_name }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
-      - run: |
-          npm install
-          npm run build --if-present
+          node-version: 22.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build management page
+        run: npm run ui:build
+
+      - name: Build executable
+        run: npm exec --workspace=@ts3-manager/server -- pkg . --target ${{ matrix.target }}
 
       - name: Upload binaries
         uses: svenstaro/upload-release-action@v2

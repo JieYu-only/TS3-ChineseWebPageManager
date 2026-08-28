@@ -110,13 +110,13 @@ echo Docker Hub 连接失败，5 秒后改用 DaoCloud 公共镜像...
 timeout /t 5 /nobreak >nul
 
 echo Docker 镜像构建尝试 2/3（DaoCloud）...
-docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:16 --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
+docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:22-bookworm-slim --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
 if not errorlevel 1 goto :build_complete
 echo 镜像构建失败，10 秒后重试...
 timeout /t 10 /nobreak >nul
 
 echo Docker 镜像构建尝试 3/3（DaoCloud）...
-docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:16 --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
+docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:22-bookworm-slim --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
 if not errorlevel 1 goto :build_complete
 echo.
 echo [ERROR] Docker image build failed after 3 attempts.
