@@ -6,7 +6,7 @@
         v-if="connected"
       ></v-app-bar-nav-icon>
       <div v-if="connected" class="page-caption">
-        <span class="caption-kicker">TEAMSpeak Console</span>
+        <span class="caption-kicker">TeamSpeak 管理控制台</span>
         <strong>{{ currentTitle }}</strong>
       </div>
       <v-spacer></v-spacer>

@@ -36,10 +36,10 @@
                   </template>
                   <v-list>
                     <v-list-item @click="openDeleteDialog([item])">
-                      <v-list-item-title> Delete Token </v-list-item-title>
+                      <v-list-item-title>删除密钥</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="copyToClipboard(item.token)">
-                      <v-list-item-title> Copy Token </v-list-item-title>
+                      <v-list-item-title>复制密钥</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -61,12 +61,12 @@
 
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
-          <v-card-title> Delete Token </v-card-title>
-          <v-card-text> Do you really want to delete this token? </v-card-text>
+          <v-card-title>删除密钥</v-card-title>
+          <v-card-text>确定要删除所选密钥吗？此操作无法撤销。</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">No</v-btn>
-            <v-btn text color="primary" @click="deleteToken">Yes</v-btn>
+            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn text color="error" @click="deleteToken">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>

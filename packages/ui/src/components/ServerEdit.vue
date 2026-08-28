@@ -3,15 +3,15 @@
     <v-layout justify-center>
       <v-flex lg6 md8 sm8 xs12>
         <v-card>
-          <v-card-title>Manage Virtual Server</v-card-title>
+          <v-card-title>管理虚拟服务器</v-card-title>
           <v-card-text>
             <v-text-field
-              label="Server Name"
+              label="服务器名称"
               v-model="serverInfo.virtualserverName"
               :disabled="$store.state.query.loading"
             ></v-text-field>
             <v-text-field
-              label="Password"
+              label="服务器密码"
               v-model="serverInfo.virtualserverPassword"
               :disabled="$store.state.query.loading"
               type="password"
@@ -19,7 +19,7 @@
             <v-layout justify-space-between>
               <v-flex xs5>
                 <v-text-field
-                  label="Maximum Clients"
+                  label="最大用户数"
                   v-model="serverInfo.virtualserverMaxclients"
                   :disabled="$store.state.query.loading"
                   type="number"
@@ -27,7 +27,7 @@
               </v-flex>
               <v-flex xs5>
                 <v-text-field
-                  label="Reserved Slots"
+                  label="预留席位数"
                   v-model="serverInfo.virtualserverReservedSlots"
                   :disabled="$store.state.query.loading"
                   type="number"
@@ -35,47 +35,47 @@
               </v-flex>
             </v-layout>
             <v-textarea
-              label="Welcome Message"
+              label="欢迎消息"
               v-model="serverInfo.virtualserverWelcomemessage"
               :disabled="$store.state.query.loading"
             ></v-textarea>
 
             <v-expansion-panels accordion flat>
               <v-expansion-panel>
-                <v-expansion-panel-header> Host </v-expansion-panel-header>
+                <v-expansion-panel-header>主机信息</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-card outlined>
-                    <v-card-subtitle>Host Message</v-card-subtitle>
+                    <v-card-subtitle>主机消息</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
-                        label="Message"
+                        label="消息内容"
                         v-model="serverInfo.virtualserverHostmessage"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
                       <v-select
-                        label="Message Mode"
+                        label="消息显示方式"
                         v-model="serverInfo.virtualserverHostmessageMode"
                         :items="messageModes"
                       ></v-select>
                     </v-card-text>
                   </v-card>
                   <v-card class="mt-2" outlined>
-                    <v-card-subtitle>Host Banner</v-card-subtitle>
+                    <v-card-subtitle>主机横幅</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
-                        label="Banner Gfx URL"
+                        label="横幅图片 URL"
                         v-model="serverInfo.virtualserverHostbannerGfxUrl"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
                       <v-text-field
-                        label="URL"
+                        label="链接 URL"
                         v-model="serverInfo.virtualserverHostbannerUrl"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
                       <v-layout justify-space-between>
                         <v-flex xs4>
                           <v-text-field
-                            label="Gfx Interval"
+                            label="图片切换间隔"
                             v-model="
                               serverInfo.virtualserverHostbannerGfxInterval
                             "
@@ -85,7 +85,7 @@
                         </v-flex>
                         <v-flex xs6>
                           <v-select
-                            label="Resize"
+                            label="缩放方式"
                             :items="bannerModes"
                             v-model="serverInfo.virtualserverHostbannerMode"
                           ></v-select>
@@ -94,20 +94,20 @@
                     </v-card-text>
                   </v-card>
                   <v-card class="my-2" outlined>
-                    <v-card-subtitle>Host Button</v-card-subtitle>
+                    <v-card-subtitle>主机按钮</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
-                        label="Tooltip"
+                        label="提示文字"
                         v-model="serverInfo.virtualserverHostbuttonTooltip"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
                       <v-text-field
-                        label="URL"
+                        label="链接 URL"
                         v-model="serverInfo.virtualserverHostbuttonUrl"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
                       <v-text-field
-                        label="Icon URL"
+                        label="图标 URL"
                         v-model="serverInfo.virtualserverHostbuttonGfxUrl"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
@@ -116,13 +116,13 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header> Transfers </v-expansion-panel-header>
+                <v-expansion-panel-header>文件传输</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-card outlined>
-                    <v-card-subtitle>Upload</v-card-subtitle>
+                    <v-card-subtitle>上传</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
-                        label="Bandwidth Limit"
+                        label="带宽限制"
                         v-model="
                           serverInfo.virtualserverMaxUploadTotalBandwidth
                         "
@@ -134,7 +134,7 @@
                         </template>
                       </v-text-field>
                       <v-text-field
-                        label="Upload Quota"
+                        label="上传配额"
                         v-model="serverInfo.virtualserverUploadQuota"
                         :disabled="$store.state.query.loading"
                         type="number"
@@ -146,10 +146,10 @@
                     </v-card-text>
                   </v-card>
                   <v-card class="my-2" outlined>
-                    <v-card-subtitle>Download</v-card-subtitle>
+                    <v-card-subtitle>下载</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
-                        label="Bandwidth Limit"
+                        label="带宽限制"
                         v-model="
                           serverInfo.virtualserverMaxDownloadTotalBandwidth
                         "
@@ -161,7 +161,7 @@
                         </template>
                       </v-text-field>
                       <v-text-field
-                        label="Download Quota"
+                        label="下载配额"
                         v-model="serverInfo.virtualserverDownloadQuota"
                         :disabled="$store.state.query.loading"
                         type="number"
@@ -182,7 +182,7 @@
                   <v-card class="mb-2" outlined>
                     <v-card-text>
                       <v-text-field
-                        label="Reduced point per tick"
+                        label="每周期减少的防洪积分"
                         v-model="
                           serverInfo.virtualserverAntifloodPointsTickReduce
                         "
@@ -190,7 +190,7 @@
                         type="number"
                       ></v-text-field>
                       <v-text-field
-                        label="Points needed to block commands"
+                        label="阻止命令所需积分"
                         v-model="
                           serverInfo.virtualserverAntifloodPointsNeededCommand_block
                         "
@@ -198,7 +198,7 @@
                         type="number"
                       ></v-text-field>
                       <v-text-field
-                        label="Points needed to block IP"
+                        label="封锁 IP 所需积分"
                         v-model="
                           serverInfo.virtualserverAntifloodPointsNeededIp_block
                         "
@@ -210,12 +210,12 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header> Security </v-expansion-panel-header>
+                <v-expansion-panel-header>安全设置</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-card class="mb-2" outlined>
                     <v-card-text>
                       <v-text-field
-                        label="Needed Security Level"
+                        label="所需安全等级"
                         v-model="
                           serverInfo.virtualserverNeededIdentitySecurityLevel
                         "
@@ -223,7 +223,7 @@
                         type="number"
                       ></v-text-field>
                       <v-select
-                        label="Channel voice data encrypption"
+                        label="频道语音数据加密"
                         v-model="serverInfo.virtualserverCodecEncryptionMode"
                         :items="encryptionModes"
                       ></v-select>
@@ -232,17 +232,17 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header> Misc </v-expansion-panel-header>
+                <v-expansion-panel-header>其他设置</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-card outlined>
-                    <v-card-subtitle>Default Groups</v-card-subtitle>
+                    <v-card-subtitle>默认用户组</v-card-subtitle>
                     <v-card-text>
                       <v-autocomplete
                         :items="serverGroups"
                         item-text="name"
                         item-value="sgid"
                         v-model="serverInfo.virtualserverDefaultServerGroup"
-                        label="Server Group"
+                        label="服务器组"
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
@@ -257,7 +257,7 @@
                         item-text="name"
                         item-value="cgid"
                         v-model="serverInfo.virtualserverDefaultChannelGroup"
-                        label="Channel Group"
+                        label="频道组"
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
@@ -274,7 +274,7 @@
                         v-model="
                           serverInfo.virtualserverDefaultChannelAdminGroup
                         "
-                        label="Channel Admin Group"
+                        label="频道管理员组"
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
@@ -287,12 +287,12 @@
                     </v-card-text>
                   </v-card>
                   <v-card class="mt-2" outlined>
-                    <v-card-subtitle>Complain</v-card-subtitle>
+                    <v-card-subtitle>投诉与自动封禁</v-card-subtitle>
                     <v-card-text>
                       <v-layout justify-space-between wrap>
                         <v-flex xs5 md3>
                           <v-text-field
-                            label="Autoban Count"
+                            label="触发自动封禁的投诉次数"
                             :disabled="$store.state.query.loading"
                             v-model="
                               serverInfo.virtualserverComplainAutobanCount
@@ -302,7 +302,7 @@
                         </v-flex>
                         <v-flex xs5 md3>
                           <v-text-field
-                            label="Autoban Time"
+                            label="自动封禁时长"
                             :disabled="$store.state.query.loading"
                             v-model="
                               serverInfo.virtualserverComplainAutobanTime
@@ -310,13 +310,13 @@
                             type="number"
                           >
                             <template #append>
-                              <div>sec</div>
+                              <div>秒</div>
                             </template>
                           </v-text-field>
                         </v-flex>
                         <v-flex xs5 md3>
                           <v-text-field
-                            label="Remove Time"
+                            label="投诉记录移除时间"
                             :disabled="$store.state.query.loading"
                             v-model="
                               serverInfo.virtualserverComplainRemoveTime
@@ -324,7 +324,7 @@
                             type="number"
                           >
                             <template #append>
-                              <div>sec</div>
+                              <div>秒</div>
                             </template>
                           </v-text-field>
                         </v-flex>
@@ -334,7 +334,7 @@
                   <v-card class="my-2" outlined>
                     <v-card-text>
                       <v-text-field
-                        label="Min clients in channel before silence"
+                        label="启用静音前频道最少用户数"
                         :disabled="$store.state.query.loading"
                         v-model="
                           serverInfo.virtualserverMinClientsInChannel_beforeForcedSilence
@@ -342,7 +342,7 @@
                         type="number"
                       ></v-text-field>
                       <v-text-field
-                        label="Priority Speaker dim modificator"
+                        label="优先发言者音量衰减系数"
                         :disabled="$store.state.query.loading"
                         v-model="
                           serverInfo.virtualserverPrioritySpeakerDimmModificator
@@ -350,7 +350,7 @@
                         type="number"
                       ></v-text-field>
                       <v-text-field
-                        label="Delete delay for temporary channel"
+                        label="临时频道删除延迟"
                         :disabled="$store.state.query.loading"
                         v-model="
                           serverInfo.virtualserverChannelTempDeleteDelay_default
@@ -358,12 +358,12 @@
                         type="number"
                       ></v-text-field>
                       <v-text-field
-                        label="Phonetic Name"
+                        label="语音名称"
                         :disabled="$store.state.query.loading"
                         v-model="serverInfo.virtualserverNamePhonetic"
                       ></v-text-field>
                       <v-checkbox
-                        label="Enable reporting to serverlist"
+                        label="允许上报到公开服务器列表"
                         v-model="weblistEnabled"
                       ></v-checkbox>
                     </v-card-text>
@@ -371,21 +371,21 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header> Logs </v-expansion-panel-header>
+                <v-expansion-panel-header>日志设置</v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-card class="mb-2" outlined>
-                    <v-card-subtitle>Enable Logging For</v-card-subtitle>
+                    <v-card-subtitle>启用以下日志</v-card-subtitle>
                     <v-card-text>
                       <v-checkbox
-                        label="Clients"
+                        label="用户"
                         v-model="logClient"
                       ></v-checkbox>
                       <v-checkbox
-                        label="Channel"
+                        label="频道"
                         v-model="logChannel"
                       ></v-checkbox>
                       <v-checkbox
-                        label="Server"
+                        label="服务器"
                         v-model="logServer"
                       ></v-checkbox>
                       <v-checkbox
@@ -393,11 +393,11 @@
                         v-model="logQuery"
                       ></v-checkbox>
                       <v-checkbox
-                        label="Permissions"
+                        label="权限"
                         v-model="logPermissions"
                       ></v-checkbox>
                       <v-checkbox
-                        label="File transfer"
+                        label="文件传输"
                         v-model="logFileTransfer"
                       ></v-checkbox>
                     </v-card-text>
@@ -415,7 +415,7 @@
               @click="saveChanges"
               >OK
             </v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
               text
               :disabled="this.$store.state.query.loading"
@@ -437,20 +437,20 @@ export default {
       serverInfo: {},
       serverInfoCopy: {},
       messageModes: [
-        { text: "No message", value: 0 },
-        { text: "Show message in log", value: 1 },
-        { text: "Show modal message", value: 2 },
-        { text: "Modal message and exit", value: 3 },
+        { text: "不显示消息", value: 0 },
+        { text: "在日志中显示", value: 1 },
+        { text: "弹窗显示", value: 2 },
+        { text: "弹窗显示并退出", value: 3 },
       ],
       bannerModes: [
-        { text: "Do not adjust", value: 0 },
-        { text: "Adjust but ignore aspect ratio", value: 1 },
-        { text: "Adjust and keep aspect ratio", value: 2 },
+        { text: "不调整", value: 0 },
+        { text: "调整并忽略宽高比", value: 1 },
+        { text: "按宽高比调整", value: 2 },
       ],
       encryptionModes: [
-        { text: "Configure per Channel", value: 0 },
-        { text: "Globally Off", value: 1 },
-        { text: "Globally On", value: 2 },
+        { text: "按频道配置", value: 0 },
+        { text: "全局关闭", value: 1 },
+        { text: "全局开启", value: 2 },
       ],
       serverGroups: [],
       channelGroups: [],

@@ -12,7 +12,7 @@
         <template #activator="{ on }">
           <v-icon v-on="on" @click="copyToClipboard">mdi-content-copy</v-icon>
         </template>
-        <span>Copy To Clipboard</span>
+        <span>复制到剪贴板</span>
       </v-tooltip>
     </template>
   </v-text-field>

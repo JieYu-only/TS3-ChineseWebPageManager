@@ -361,11 +361,11 @@ export default {
     getGroupType(type) {
       switch (type) {
         case 0:
-          return "Template Group";
+          return "模板组";
         case 1:
-          return "Regular Group";
+          return "常规组";
         case 2:
-          return "ServerQuery Group";
+          return "ServerQuery 管理组";
       }
     },
   },

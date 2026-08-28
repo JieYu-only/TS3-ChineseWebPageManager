@@ -4,6 +4,16 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 
 > 本项目不是 TeamSpeak 服务器。使用前必须准备一台可访问的 TeamSpeak 3 服务器，以及拥有相应权限的 ServerQuery 账号。
 
+## 最新更新
+
+- 补齐 API 密钥、权限密钥、频道、服务器、通知、仪表盘及各类操作弹窗的简体中文翻译
+- 统一汉化按钮、表单字段、筛选条件、空数据、分页、确认操作和常见服务器错误提示
+- 优化未知英文异常的展示方式，避免直接向普通用户显示难以理解的原始报错
+- 保留 TeamSpeak、ServerQuery、UID、IP、权限标识符及服务器自定义名称等必要技术内容
+- 完成生产依赖的兼容性安全升级，降低已知依赖风险，同时保持现有 Vue 2 / Vuetify 2 功能兼容
+- 修正文件上传图标兼容性，并加强通知标题的安全渲染
+- 已通过前端代码检查和生产环境构建验证
+
 ## 项目特色
 
 - 现代化中文控制台，统一优化顶部栏、侧边栏、面包屑、卡片和数据表格
@@ -213,7 +223,7 @@ docker compose logs -f ts3-manager
 
 项目为 npm workspace，前端使用 Vue 2 与 Vuetify 2，后端使用 Node.js、Express 和 Socket.IO。
 
-由于原项目工具链较旧，推荐使用 Node.js 16 进行前端构建。
+项目仍采用 Vue 2 与 Vuetify 2 技术栈。推荐使用项目自动构建流程或 Windows 构建脚本；手动构建时建议使用 Node.js 16。使用较新的 Node.js 版本时，旧版 Webpack 可能需要设置 `NODE_OPTIONS=--openssl-legacy-provider`。
 
 ### 安装依赖
 

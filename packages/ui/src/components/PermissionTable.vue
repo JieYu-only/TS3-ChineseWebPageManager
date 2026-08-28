@@ -80,7 +80,7 @@
     </v-card>
     <v-dialog v-model="dialog" max-width="500px">
       <v-card>
-        <v-card-title>{{ editedPermission.permdesc }}</v-card-title>
+        <v-card-title>编辑权限：{{ editedPermission.permname }}</v-card-title>
         <v-card-text>
           <v-layout wrap justify-space-between>
             <v-flex xs12 v-if="editableContent.includes('permvalue')">

@@ -20,5 +20,15 @@
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
+  },
+  "overrides": {
+    "@vue/compiler-sfc": {
+      "postcss": "^8.5.26"
+    },
+    "local-echo": {
+      "shell-quote": "^1.10.0"
+    },
+    "socket.io-adapter": "^2.5.8",
+    "socket.io-parser": "^4.2.7"
   }
 }

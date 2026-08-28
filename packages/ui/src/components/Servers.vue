@@ -33,10 +33,10 @@
                       :to="{ name: 'server-edit' }"
                       :disabled="isOffline(item.virtualserverStatus)"
                     >
-                      <v-list-item-title> Edit Server </v-list-item-title>
+                      <v-list-item-title>编辑服务器</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="openDeleteDialog(item)">
-                      <v-list-item-title> Delete Server </v-list-item-title>
+                      <v-list-item-title>删除服务器</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -95,30 +95,30 @@
 
     <v-dialog v-model="stopDialog" max-width="500px">
       <v-card>
-        <v-card-title>Stop Server</v-card-title>
+        <v-card-title>停止服务器</v-card-title>
         <v-card-text>
-          Do really want to stop this virtual server instance?
+          确定要停止这个虚拟服务器吗？
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="stopDialog = false" color="primary">Cancel</v-btn>
-          <v-btn text @click="stopServer" color="primary">Stop</v-btn>
+          <v-btn text @click="stopDialog = false" color="primary">取消</v-btn>
+          <v-btn text @click="stopServer" color="primary">停止</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="deleteDialog" max-width="500px">
       <v-card>
-        <v-card-title>Delete Server</v-card-title>
+        <v-card-title>删除服务器</v-card-title>
         <v-card-text>
-          Do really want to delete this virtual server instance?
+          确定要删除这个虚拟服务器吗？此操作无法撤销。
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn text @click="deleteDialog = false" color="primary"
-            >Cancel</v-btn
+            >取消</v-btn
           >
-          <v-btn text @click="deleteServer" color="primary">Delete</v-btn>
+          <v-btn text @click="deleteServer" color="error">删除</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

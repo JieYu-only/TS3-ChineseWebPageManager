@@ -17,7 +17,7 @@
             <v-switch v-model="showNotifications"></v-switch>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Enable Notifications</v-list-item-title>
+            <v-list-item-title>启用更新通知</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -25,7 +25,7 @@
       <v-list v-if="showNotifications">
         <v-list-item v-if="!countNotifications">
           <v-list-item-content>
-            <v-list-item-title>No Notifications</v-list-item-title>
+            <v-list-item-title>暂无通知</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -38,7 +38,7 @@
             <v-icon>{{ notification.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-html="notification.title"></v-list-item-title>
+            <v-list-item-title>{{ notification.title }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -170,8 +170,7 @@ export default {
         ) {
           this.createNotification({
             link: this.URL.ts3Manager[1],
-            title: `New TS3-Manager <b>${(() =>
-              this.latestTSMRelease.name)()}</b> Is Out Now`,
+            title: `TS3 Manager 新版本 ${this.latestTSMRelease.name} 已发布`,
             icon: "mdi-update",
           });
         }
@@ -184,8 +183,7 @@ export default {
         ) {
           this.createNotification({
             link: `https://teamspeak.com`,
-            title: `New TeamSpeak Server Version <b>${(() =>
-              this.latestTeamSpeakVersion)()}</b> Available`,
+            title: `TeamSpeak 服务端新版本 ${this.latestTeamSpeakVersion} 可用`,
             icon: "mdi-update",
           });
         }

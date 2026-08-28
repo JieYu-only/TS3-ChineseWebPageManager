@@ -10,7 +10,7 @@
       @click="setServerList"
       @change="switchServer"
       item-text="virtualserverName"
-      placeholder="Select A Server"
+      placeholder="请选择服务器"
     >
       <template #item="{ item }">
         {{ item.virtualserverName }} (sid: {{ item.virtualserverId }})

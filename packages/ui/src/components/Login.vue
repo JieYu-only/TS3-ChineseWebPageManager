@@ -6,7 +6,7 @@
     </div>
     <v-card class="login-card" elevation="0">
       <div class="login-heading">
-        <span class="eyebrow">SERVER QUERY</span>
+        <span class="eyebrow">SERVERQUERY 登录</span>
         <h1>连接服务器</h1>
         <p>使用 ServerQuery 凭据进入管理控制台</p>
       </div>

@@ -1,6 +1,6 @@
 <template lang="html">
   <channel-form
-    title="Create Spacer"
+    title="创建频道分隔符"
     @save="save"
     spacer
     :channel="channel"

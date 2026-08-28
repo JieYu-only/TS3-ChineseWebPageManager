@@ -3,17 +3,17 @@
     <v-layout justify-center>
       <v-flex lg6 md8 sm8 xs12>
         <v-card>
-          <v-card-title> Add Token </v-card-title>
+          <v-card-title>创建权限密钥</v-card-title>
           <v-card-text>
             <v-select
               :items="tokenTypes"
-              label="Type"
+              label="密钥类型"
               v-model="selectedType"
               :disabled="$store.state.query.loading"
             ></v-select>
             <v-autocomplete
               :items="availableGroups"
-              label="Group"
+              label="用户组"
               v-model="selectedGroup"
               :disabled="
                 typeof selectedType === 'undefined' ||
@@ -22,7 +22,7 @@
             ></v-autocomplete>
             <v-autocomplete
               :items="availableChannels"
-              label="Channel"
+              label="频道"
               v-model="selectedChannel"
               :disabled="
                 selectedType === 0 ||
@@ -31,12 +31,12 @@
               "
             ></v-autocomplete>
             <v-textarea
-              label="Description"
+              label="描述"
               v-model="tokenDescription"
             ></v-textarea>
             <key-text-field
               v-model="token"
-              label="Generated Privilege Key"
+              label="生成的权限密钥"
             ></key-text-field>
           </v-card-text>
           <v-card-actions>
@@ -46,9 +46,9 @@
               @click="createToken"
               color="primary"
               :disabled="typeof selectedType === 'undefined'"
-              >Create</v-btn
+              >创建</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">Close</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -65,8 +65,8 @@ export default {
     return {
       token: undefined,
       tokenTypes: [
-        { text: "Server Group", value: 0 },
-        { text: "Channel Group", value: 1 },
+        { text: "服务器组", value: 0 },
+        { text: "频道组", value: 1 },
       ],
       selectedType: undefined,
       selectedGroup: undefined,

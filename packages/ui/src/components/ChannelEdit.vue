@@ -2,23 +2,22 @@
   <div>
     <channel-form
       :applyButton="true"
-      title="Channel Edit"
+      title="编辑频道"
       :channel="channel"
       @save="save"
     ></channel-form>
 
     <v-dialog v-model="temporaryChannelWarning" max-width="500px">
       <v-card>
-        <v-card-title> Temporary Channel </v-card-title>
+        <v-card-title>临时频道提示</v-card-title>
         <v-card-text>
-          If there are no clients inside the channel and you change it to
-          temporary, the channel will be deleted. Do you want to continue?
+          如果频道中没有用户并将其改为临时频道，该频道会立即被删除。是否继续？
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="saveAndLeave">Yes</v-btn>
+          <v-btn text color="primary" @click="saveAndLeave">继续</v-btn>
           <v-btn text color="primary" @click="temporaryChannelWarning = false"
-            >No</v-btn
+            >取消</v-btn
           >
         </v-card-actions>
       </v-card>

@@ -55,10 +55,10 @@ export default {
       clientList: [],
       serverInfo: {},
       daysPicker: [
-        { text: "Last 30 Days", value: 30 },
-        { text: "Last 60 Days", value: 60 },
-        { text: "Last 90 Days", value: 90 },
-        { text: "All Days", value: 0 },
+        { text: "最近 30 天", value: 30 },
+        { text: "最近 60 天", value: 60 },
+        { text: "最近 90 天", value: 90 },
+        { text: "全部时间", value: 0 },
       ],
     };
   },

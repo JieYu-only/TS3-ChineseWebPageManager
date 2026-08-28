@@ -9,7 +9,7 @@
           <v-card-text>
             <div v-if="spacer">
               <v-select
-                label="Special Spacer"
+                label="特殊分隔符"
                 :items="specialSpacerList"
                 v-model="specialSpacer"
                 :disabled="!!spacerAlignment || !!spacerText"
@@ -22,7 +22,7 @@
               <v-row>
                 <v-col>
                   <v-select
-                    label="Alignment"
+                    label="对齐方式"
                     :items="spacerAlignmentList"
                     v-model="spacerAlignment"
                     :disabled="!!specialSpacer"
@@ -31,7 +31,7 @@
                 </v-col>
                 <v-col>
                   <v-text-field
-                    label="Text"
+                    label="文本"
                     v-model="spacerText"
                     :disabled="!!specialSpacer"
                   >
@@ -42,7 +42,7 @@
 
             <v-text-field
               v-else
-              label="Name"
+              label="频道名称"
               v-model="channelName"
               :disabled="$store.state.query.loading"
             >
@@ -50,17 +50,17 @@
 
             <v-text-field
               type="password"
-              label="Password"
+              label="频道密码"
               v-model="channelPassword"
               :disabled="$store.state.query.loading"
             ></v-text-field>
             <v-text-field
-              label="Topic"
+              label="频道主题"
               v-model="channelTopic"
               :disabled="$store.state.query.loading"
             ></v-text-field>
             <v-textarea
-              label="Description"
+              label="频道描述"
               v-model="channelDescription"
               :disabled="$store.state.query.loading"
             ></v-textarea>
@@ -76,54 +76,54 @@
                         <v-flex xs12>
                           <v-autocomplete
                             :items="channelOrderSelection"
-                            label="Sort This Channel After"
+                            label="排序到此频道之后"
                             v-model="selectedChannelOrder"
                             :disabled="$store.state.query.loading"
                           ></v-autocomplete>
                         </v-flex>
                         <v-flex md4>
                           <v-radio-group
-                            label="Max Users"
+                            label="最大用户数"
                             v-model="channelUnlimitedClients"
                           >
-                            <v-radio label="Unlimited" :value="1"></v-radio>
-                            <v-radio label="Limited" :value="0"></v-radio>
+                            <v-radio label="不限制" :value="1"></v-radio>
+                            <v-radio label="限制" :value="0"></v-radio>
                           </v-radio-group>
                           <v-text-field
-                            label="Number Of Clients"
+                            label="用户数量"
                             v-model="channelMaxClients"
                             :disabled="!!channelUnlimitedClients"
                           ></v-text-field>
                         </v-flex>
                         <v-flex md4>
                           <v-radio-group
-                            label="Channel Type"
+                            label="频道类型"
                             v-model="channelType"
                           >
                             <v-radio
-                              label="Temporary"
+                              label="临时频道"
                               value="temporary"
                             ></v-radio>
                             <v-radio
-                              label="Permanent"
+                              label="永久频道"
                               value="permanent"
                             ></v-radio>
                             <v-radio
-                              label="Semi-Permanent"
+                              label="半永久频道"
                               value="semi-permanent"
                             ></v-radio>
                           </v-radio-group>
                         </v-flex>
                         <v-flex md4>
                           <v-checkbox
-                            label="Default Channel"
+                            label="默认频道"
                             v-model="channelIsDefault"
                             :disabled="!!initChannelData.channelFlagDefault"
                           ></v-checkbox>
                         </v-flex>
                         <v-flex md4>
                           <v-checkbox
-                            label="Voice Data encrypted"
+                            label="语音数据加密"
                             v-model="channelIsUnencrypted"
                           ></v-checkbox>
                         </v-flex>
@@ -142,16 +142,16 @@
               @click="save"
               :disabled="this.$store.state.query.loading"
               color="primary"
-              >OK</v-btn
+              >确定</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
               text
               @click="save"
               :disabled="this.$store.state.query.loading"
               color="primary"
               :class="{ 'd-none': !applyButton }"
-              >Apply</v-btn
+              >应用</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -194,9 +194,9 @@ export default {
       specialSpacer: "",
       spacerAlignmentList: [
         { text: "", value: "" },
-        { text: "left", value: "l" },
-        { text: "center", value: "c" },
-        { text: "right", value: "r" },
+        { text: "左对齐", value: "l" },
+        { text: "居中", value: "c" },
+        { text: "右对齐", value: "r" },
       ],
       spacerAlignment: "",
       spacerText: "",

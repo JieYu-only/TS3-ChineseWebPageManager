@@ -1,5 +1,5 @@
 <template>
-  <channel-form title="Create Channel" @save="save"></channel-form>
+  <channel-form title="创建频道" @save="save"></channel-form>
 </template>
 
 <script>

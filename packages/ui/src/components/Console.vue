@@ -4,7 +4,7 @@
       <v-flex lg8 md10 sm10 xs12>
         <v-card>
           <v-card-text>
-            <v-switch v-model="prettyPrint" label="Pretty print"></v-switch>
+            <v-switch v-model="prettyPrint" label="格式化显示"></v-switch>
             <div ref="terminal" v-resize="resizeTerminal"></div>
           </v-card-text>
         </v-card>

@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title>
       <v-row>
-        <v-col>Client Connections History</v-col>
+        <v-col>用户连接历史</v-col>
         <v-col cols="12" sm="4" md="3">
           <v-select
             :items="days"
@@ -13,7 +13,7 @@
     </v-card-title>
     <v-card-text>
       <canvas v-if="loaded" ref="chart" height="200"></canvas>
-      <span v-else>Loading Data...</span>
+      <span v-else>正在加载数据……</span>
     </v-card-text>
   </v-card>
 </template>
@@ -99,7 +99,7 @@ export default {
             data: {
               datasets: [
                 {
-                  label: "Unique Client Connections",
+                  label: "独立用户连接数",
                   data: this.clientConnections,
                   cubicInterpolationMode: "monotone",
                 },

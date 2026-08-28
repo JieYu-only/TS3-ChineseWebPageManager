@@ -1,14 +1,14 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>Groups</v-card-title>
+      <v-card-title>用户组</v-card-title>
       <v-card-text>
         <v-row>
           <v-col>
             <v-list>
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title>Users</v-list-item-title>
+                  <v-list-item-title>用户</v-list-item-title>
                 </v-list-item-content>
                 <!-- <v-list-item-action>
                   <v-menu>
@@ -19,7 +19,7 @@
                     </template>
                     <v-list>
                       <v-list-item>
-                        <v-list-item-title> Add to Group </v-list-item-title>
+                        <v-list-item-title>添加到组</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-menu>
@@ -55,7 +55,7 @@
             <v-list>
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title>Members</v-list-item-title>
+                  <v-list-item-title>组成员</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider></v-divider>

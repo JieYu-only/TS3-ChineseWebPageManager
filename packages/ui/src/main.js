@@ -51,6 +51,18 @@ import socket from "./socket";
     [/ECONNREFUSED/i, "无法连接到目标服务，请检查地址和端口"],
     [/ENOTFOUND/i, "无法解析服务器地址，请检查主机名"],
     [/socket.*disconnect|disconnected/i, "与服务器的连接已断开"],
+    [/invalid loginname or password|invalid password/i, "用户名或密码错误"],
+    [/insufficient client permissions/i, "当前账号权限不足，无法完成此操作"],
+    [/invalid parameter/i, "提交的参数无效，请检查输入内容"],
+    [/database empty result set/i, "没有找到符合条件的数据"],
+    [/connection failed|could not connect/i, "连接 TeamSpeak 服务器失败"],
+    [/server.*offline/i, "目标服务器当前未运行"],
+    [/file not found/i, "未找到指定文件"],
+    [/already member of group/i, "该用户已经属于此用户组"],
+    [/not a member of group/i, "该用户不属于此用户组"],
+    [/channel name is already in use/i, "频道名称已被使用"],
+    [/nickname is already in use/i, "昵称已被使用"],
+    [/invalid uid/i, "用户唯一标识（UID）无效"],
   ];
   Vue.prototype.$toast.error = (message, options) => {
     const rawMessage =
@@ -58,7 +70,15 @@ import socket from "./socket";
     const translated = errorTranslations.find(([pattern]) =>
       pattern.test(rawMessage)
     );
-    return originalToastError(translated ? translated[1] : rawMessage, options);
+    const errorCode = rawMessage.match(/(?:error\s*)?(?:id|code)\D*(\d+)/i);
+    const localizedMessage = translated
+      ? translated[1]
+      : /[\u4e00-\u9fff]/.test(rawMessage)
+      ? rawMessage
+      : `操作失败，请检查输入和服务器状态${
+          errorCode ? `（错误码：${errorCode[1]}）` : ""
+        }`;
+    return originalToastError(localizedMessage, options);
   };
 
   Vue.config.productionTip = false;

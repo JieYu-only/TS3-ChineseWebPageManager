@@ -81,11 +81,12 @@ router.post("/upload", async (req, res, next) => {
   let ftkey = req.headers["x-file-transfer-key"];
   let port = sanatizer.sanatizePort(req.headers["x-file-transfer-port"]);
   let { log, host } = res.locals;
-  let busboy = new Busboy({ headers: req.headers });
+  let busboy = Busboy({ headers: req.headers });
   let socket = new Socket();
 
   try {
-    busboy.on("file", async (fieldname, file, filename, encoding, mimetype) => {
+    busboy.on("file", async (fieldname, file, info) => {
+      let { filename } = info;
       socket.setTimeout(5000);
 
       socket.connect(port, host);

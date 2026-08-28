@@ -3,14 +3,14 @@
     <v-layout justify-center>
       <v-flex lg6 md8 sm8 xs12>
         <v-card>
-          <v-card-title> Create Server </v-card-title>
+          <v-card-title>创建服务器</v-card-title>
           <v-card-text>
             <v-form v-model="valid">
               <v-layout justify-space-between wrap>
                 <v-flex xs12>
                   <v-text-field
                     v-model="serverName"
-                    label="Name"
+                    label="服务器名称"
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
                   ></v-text-field>
@@ -18,7 +18,7 @@
                 <v-flex xs12 md4>
                   <v-text-field
                     v-model="serverPort"
-                    label="Port"
+                    label="端口"
                     type="number"
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
@@ -27,7 +27,7 @@
                 <v-flex xs12 md4>
                   <v-text-field
                     v-model="maxClients"
-                    label="Max. Clients"
+                    label="最大用户数"
                     type="number"
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
@@ -36,7 +36,7 @@
                 <v-flex xs12>
                   <key-text-field
                     v-model="token"
-                    label="Generated Server Token"
+                    label="生成的服务器密钥"
                   ></key-text-field>
                 </v-flex>
               </v-layout>
@@ -45,9 +45,9 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn text @click="createServer" :disabled="!valid" color="primary"
-              >Create</v-btn
+              >创建</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">Close</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>

@@ -1,9 +1,9 @@
 <template lang="html">
   <v-card>
-    <v-card-title>Most Active Clients</v-card-title>
+    <v-card-title>最活跃用户</v-card-title>
     <v-card-text>
       <canvas v-if="loaded" ref="chart"></canvas>
-      <span v-else>Loading Data...</span>
+      <span v-else>正在加载数据……</span>
     </v-card-text>
   </v-card>
 </template>
@@ -91,7 +91,7 @@ export default {
             data: {
               datasets: [
                 {
-                  label: "Time spent (hours)",
+                  label: "在线时长（小时）",
                   data: this.clientConnections,
                 },
               ],

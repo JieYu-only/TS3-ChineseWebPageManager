@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import axios, { CancelToken } from "axios";
+import axios from "axios";
 
 export default {
   data() {
@@ -132,9 +132,11 @@ export default {
             percentage,
           });
         },
-        cancelToken: new CancelToken((cancel) => {
-          this.cancelUpload = cancel;
-        }),
+        signal: (() => {
+          const controller = new AbortController();
+          this.cancelUpload = () => controller.abort();
+          return controller.signal;
+        })(),
       });
     },
     async startUploadLoop(clientTransferId) {
@@ -190,7 +192,7 @@ export default {
     },
     handleUploadError(err) {
       // Hide error when upload got paused
-      if (err.constructor.name !== "Cancel") {
+      if (!axios.isCancel(err)) {
         this.$toast.error(err.message);
       }
 

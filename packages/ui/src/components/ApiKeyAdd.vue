@@ -3,21 +3,21 @@
     <v-row justify="center">
       <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
-          <v-card-title>Add API Key</v-card-title>
+          <v-card-title>创建 API 密钥</v-card-title>
           <v-card-text>
             <v-select
-              label="Scope"
+              label="权限范围"
               :items="scopes"
               v-model="selectedScope"
             ></v-select>
             <v-text-field
-              label="Lifetime"
+              label="有效期"
               type="number"
-              suffix="days"
+              suffix="天"
               v-model="lifetime"
             ></v-text-field>
             <v-autocomplete
-              label="Client"
+              label="用户"
               chips
               :items="dbClients"
               item-text="clientNickname"
@@ -38,7 +38,7 @@
             </v-autocomplete>
             <key-text-field
               v-model="apiKey"
-              label="Generated API Key"
+              label="生成的 API 密钥"
             ></key-text-field>
           </v-card-text>
           <v-card-actions>
@@ -49,9 +49,9 @@
               :disabled="selectedScope === undefined"
               @click="addApiKey"
             >
-              Create
+              创建
             </v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">Close</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -67,9 +67,9 @@ export default {
   data() {
     return {
       scopes: [
-        { text: "Manage", value: "manage" },
-        { text: "Write", value: "write" },
-        { text: "Read", value: "read" },
+        { text: "管理", value: "manage" },
+        { text: "写入", value: "write" },
+        { text: "只读", value: "read" },
       ],
       selectedScope: undefined,
       dbClients: [],
