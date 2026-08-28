@@ -6,3 +6,11 @@
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
 }
+
+html, body { background: #f4f6f9; }
+.v-application { font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif !important; color: #273146 !important; }
+.v-application .v-card, .v-application .v-data-table { border-radius: 10px; }
+.v-application .v-btn { text-transform: none; letter-spacing: .2px; }
+.v-application .v-input--is-focused .v-input__slot { box-shadow: 0 0 0 3px rgba(98, 104, 223, .08); }
+.theme--light.v-application { background: #f4f6f9 !important; }
+.theme--light.v-card { border: 1px solid #edf0f4; box-shadow: 0 5px 18px rgba(25, 40, 67, .045); }

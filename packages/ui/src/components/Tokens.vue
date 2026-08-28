@@ -1,8 +1,11 @@
 <template>
-  <v-container>
+  <v-container fluid class="console-page">
+    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>密钥</strong></div>
+    <server-management-tabs active="tokens" />
+    <div class="page-title-row"><div><h1>密钥列表</h1><p>创建和管理服务器组、频道组权限密钥</p></div><v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon left small>mdi-plus</v-icon>创建密钥</v-btn></div>
     <v-layout>
-      <v-flex md10 xs12 offset-md1>
-        <v-card>
+      <v-flex xs12>
+        <v-card class="content-card" elevation="0">
           <v-card-title>
             <v-btn
               color="error"
@@ -10,7 +13,7 @@
               @click="openDeleteDialog(selectedTableItems)"
             >
               <v-icon left>delete</v-icon>
-              Remove
+              删除所选
             </v-btn>
           </v-card-title>
           <v-card-text>
@@ -45,6 +48,13 @@
               <template #item.tokenCreated="{ item }">
                 {{ new Date(item.tokenCreated * 1000).toLocaleString() }}
               </template>
+              <template #item.tokenType="{ item }">
+                <v-chip x-small :color="item.tokenType === 0 ? 'primary' : 'secondary'" text-color="white">{{ item.tokenType === 0 ? '服务器组' : '频道组' }}</v-chip>
+              </template>
+              <template #item.token="{ item }">
+                <code class="token-value">{{ item.token }}</code>
+                <v-btn icon x-small class="ml-1" @click="copyToClipboard(item.token)"><v-icon x-small>mdi-content-copy</v-icon></v-btn>
+              </template>
             </v-data-table>
           </v-card-text>
         </v-card>
@@ -63,15 +73,12 @@
       </v-dialog>
 
       <v-btn
-        fab
+        class="mobile-create"
         color="primary"
-        fixed
-        bottom
-        right
         dark
         :to="{ name: 'token-add' }"
       >
-        <v-icon>add</v-icon>
+        <v-icon left>add</v-icon>创建密钥
       </v-btn>
     </v-layout>
   </v-container>
@@ -79,18 +86,19 @@
 
 <script>
 export default {
+  components: { ServerManagementTabs: () => import("@/components/ServerManagementTabs") },
   data() {
     return {
       dialog: false,
       tokens: [],
       headers: [
         { text: "", value: "actions", align: "start", sortable: false },
-        { text: "Privilege Key", value: "token" },
-        { text: "Type", value: "tokenType" },
-        { text: "Group", value: "tokenId1" },
-        { text: "Channel", value: "tokenId2" },
-        { text: "Created", value: "tokenCreated" },
-        { text: "Description", value: "tokenDescription" },
+        { text: "密钥", value: "token" },
+        { text: "类型", value: "tokenType" },
+        { text: "用户组", value: "tokenId1" },
+        { text: "频道", value: "tokenId2" },
+        { text: "创建时间", value: "tokenCreated" },
+        { text: "描述", value: "tokenDescription" },
       ],
       rowsPerPage: [25, 50, 75, -1],
       selectedTableItems: [],
@@ -127,7 +135,7 @@ export default {
     copyToClipboard(token) {
       this.$clipboard(token);
 
-      this.$toast.info("Token Copied To Clipboard");
+      this.$toast.info("密钥已复制");
     },
     async init() {
       try {
@@ -142,3 +150,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.console-page { max-width: 1440px; padding: 22px 30px 50px; }.page-breadcrumb { display:flex;align-items:center;gap:7px;margin-bottom:18px;color:#9099a8;font-size:12px;}.page-breadcrumb strong{color:#4b5668;font-weight:500}.page-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.page-title-row h1{margin:0;color:#19253b;font-size:23px}.page-title-row p{margin:4px 0 0;color:#929cab;font-size:12px}.content-card{overflow:hidden}.token-value{display:inline-block;max-width:290px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap}.mobile-create{display:none}@media(max-width:600px){.console-page{padding:16px}.page-title-row>.v-btn{display:none}.mobile-create{display:flex;margin:18px auto}}
+</style>

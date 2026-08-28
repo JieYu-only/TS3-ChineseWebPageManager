@@ -1,18 +1,22 @@
 <template>
   <div>
-    <v-app-bar app>
+    <v-app-bar app flat class="console-header" color="white">
       <v-app-bar-nav-icon
         @click="drawer = !drawer"
         v-if="connected"
       ></v-app-bar-nav-icon>
+      <div v-if="connected" class="page-caption">
+        <span class="caption-kicker">TEAMSpeak Console</span>
+        <strong>{{ currentTitle }}</strong>
+      </div>
       <v-spacer></v-spacer>
       <dark-mode-switch></dark-mode-switch>
       <file-upload-icon v-if="connected"></file-upload-icon>
       <bell-icon v-if="connected"></bell-icon>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="drawer" v-if="connected" width="300">
-      <v-list dense class="pt-2" subheader nav>
+    <v-navigation-drawer app v-model="drawer" v-if="connected" width="272" class="console-drawer">
+      <v-list dense class="pt-3 px-3" subheader nav>
         <logo></logo>
         <v-divider></v-divider>
 
@@ -92,78 +96,78 @@ export default {
       drawer: null,
       menuEntries: [
         {
-          title: "Server List",
+          title: "服务器列表",
           icon: "dns",
           route: { name: "servers" },
         },
         {
-          title: "Server Viewer",
+          title: "实时监控",
           icon: "remove_red_eye",
           route: { name: "serverviewer" },
         },
         {
-          title: "Chat",
+          title: "消息中心",
           icon: "mail_outline",
           route: { name: "chat" },
         },
         {
-          title: "File Browser",
+          title: "文件管理",
           icon: "mdi-folder",
           route: { name: "files" },
         },
         {
-          title: "Server Log",
+          title: "服务器日志",
           icon: "mdi-file-document-outline",
           route: { name: "logs" },
         },
         {
-          title: "Backup/Restore",
+          title: "备份与恢复",
           icon: "settings_backup_restore",
           route: { name: "snapshot" },
         },
         {
-          title: "Server Query",
+          title: "查询终端",
           icon: "mdi-console",
           route: { name: "console" },
         },
         {
-          title: "Privilege Keys",
+          title: "权限密钥",
           icon: "mdi-key",
           route: { name: "tokens" },
         },
         {
-          title: "API Keys",
+          title: "API 密钥",
           icon: "mdi-shield-key",
           route: { name: "apikeys" },
         },
         {
-          title: "Ban List",
+          title: "封禁列表",
           icon: "not_interested",
           route: { name: "bans" },
         },
         {
-          title: "Complaints List",
+          title: "投诉记录",
           icon: "warning",
           route: { name: "complaints" },
         },
 
         {
-          title: "List All Clients",
+          title: "用户管理",
           icon: "person",
           route: { name: "clients" },
         },
         {
-          title: "Server Groups",
+          title: "服务器组",
           icon: "group",
           route: { name: "servergroups" },
         },
         {
-          title: "Channel Groups",
+          title: "频道组",
           icon: "mdi-hexagon-slice-4",
           route: { name: "channelgroups" },
         },
         {
-          title: "Permissions",
+          title: "权限管理",
           icon: "mdi-format-section",
           submenu: [
             {
@@ -194,7 +198,7 @@ export default {
           ],
         },
         {
-          title: "Logout",
+          title: "退出登录",
           icon: "exit_to_app",
           route: { name: "logout" },
         },
@@ -204,6 +208,15 @@ export default {
   computed: {
     connected() {
       return this.$store.state.query.connected;
+    },
+    currentTitle() {
+      const direct = this.menuEntries.find((entry) => entry.route && entry.route.name === this.$route.name);
+      if (direct) return direct.title;
+      for (const entry of this.menuEntries) {
+        const child = entry.submenu && entry.submenu.find((item) => item.route.name === this.$route.name);
+        if (child) return child.title;
+      }
+      return "管理控制台";
     },
   },
   methods: {
@@ -215,3 +228,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.console-header { border-bottom: 1px solid #edf0f4 !important; }
+.page-caption { display: flex; flex-direction: column; margin-left: 10px; line-height: 1.25; }
+.page-caption strong { color: #1d2940; font-size: 16px; }
+.caption-kicker { color: #9aa3b1; font-size: 9px; letter-spacing: 1.3px; text-transform: uppercase; }
+.console-drawer { border-right: 0 !important; box-shadow: 4px 0 18px rgba(25, 40, 67, .05); }
+.console-drawer .v-list-item { min-height: 42px; margin-bottom: 4px; border-radius: 7px; color: #596579; }
+.console-drawer .v-list-item--active { color: #6268df !important; background: #f0f1ff !important; }
+.console-drawer .v-list-item__icon { margin-right: 18px; }
+</style>
