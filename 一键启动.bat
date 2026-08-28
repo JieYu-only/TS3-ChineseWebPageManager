@@ -69,21 +69,25 @@ for /f "tokens=2,* delims==" %%P in ('findstr /b "WHITELIST=" .env') do set "WHI
 if not defined WEB_PORT set "WEB_PORT=8080"
 
 echo 正在构建本地镜像...
-set "BUILD_ATTEMPT=1"
-:build_image
-echo Docker 镜像构建尝试 %BUILD_ATTEMPT%/3...
+echo Docker 镜像构建尝试 1/3（Docker Hub）...
 docker build -t ts3-manager-custom:latest .
 if not errorlevel 1 goto :build_complete
-if %BUILD_ATTEMPT% GEQ 3 (
-  echo.
-  echo [错误] 连续 3 次无法构建镜像。
-  echo 如果提示 registry-1.docker.io 超时，请在 Docker Desktop 中配置代理或镜像加速器后重试。
-  exit /b 1
-)
-set /a BUILD_ATTEMPT+=1
-echo 构建失败，10 秒后重试...
+echo Docker Hub 连接失败，5 秒后改用 DaoCloud 公共镜像...
+timeout /t 5 /nobreak >nul
+
+echo Docker 镜像构建尝试 2/3（DaoCloud）...
+docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:16 --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
+if not errorlevel 1 goto :build_complete
+echo 镜像构建失败，10 秒后重试...
 timeout /t 10 /nobreak >nul
-goto :build_image
+
+echo Docker 镜像构建尝试 3/3（DaoCloud）...
+docker build --build-arg BUILD_IMAGE=m.daocloud.io/docker.io/library/node:16 --build-arg RUNTIME_IMAGE=m.daocloud.io/docker.io/library/node:22-alpine -t ts3-manager-custom:latest .
+if not errorlevel 1 goto :build_complete
+echo.
+echo [ERROR] Docker image build failed after 3 attempts.
+echo Please check the Docker Desktop network or proxy settings and try again.
+exit /b 1
 
 :build_complete
 

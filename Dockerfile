@@ -1,6 +1,7 @@
 # package local-echo needs git for installation
 # alpine image of node does not have git installed
-FROM node:16 as build
+ARG BUILD_IMAGE=node:16
+FROM ${BUILD_IMAGE} as build
 
 # create the directory "app" inside the docker image and set it to the default directory
 WORKDIR /app 
@@ -14,7 +15,8 @@ RUN npm install --prefix ./packages/ui && \
   npm run build --prefix ./packages/ui && \
   npm install --prefix ./packages/server
 
-FROM node:22-alpine
+ARG RUNTIME_IMAGE=node:22-alpine
+FROM ${RUNTIME_IMAGE}
 
 WORKDIR /app 
 

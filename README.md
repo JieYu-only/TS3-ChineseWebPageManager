@@ -267,7 +267,9 @@ packages/ui/src/components/
 
 如果构建时出现 `registry-1.docker.io`、`context deadline exceeded` 或 `Client.Timeout exceeded`，说明 Docker 无法正常访问 Docker Hub，并非项目代码错误。
 
-请在 Docker Desktop 的代理或 Docker Engine 配置中设置你当前网络可用的代理/镜像加速服务，应用配置并重启 Docker Desktop，然后再次运行 `一键启动.bat`。启动脚本会自动重试构建三次。
+`一键启动.bat` 会先通过 Docker Hub 构建；连接失败后会自动改用 [DaoCloud 公共镜像](https://github.com/DaoCloud/public-image-mirror) 重试两次。该镜像采用地址前缀方式代理 Docker Hub，镜像内容与源站保持一致。
+
+如果三次尝试仍然失败，请在 Docker Desktop 的代理或 Docker Engine 配置中设置当前网络可用的代理/镜像加速服务，应用配置并重启 Docker Desktop，然后再次运行脚本。
 
 ## 上游项目与许可证
 
