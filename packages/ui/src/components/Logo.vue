@@ -17,6 +17,7 @@ import logo from "@/assets/ts3_manager_logo.svg";
 export default {
   data() {
     return {
+      logo,
       version: packageInfo.version,
     };
   },
