@@ -15,10 +15,11 @@
       <bell-icon v-if="connected"></bell-icon>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="drawer" v-if="connected" width="272" class="console-drawer">
+    <v-navigation-drawer app v-model="drawer" v-if="connected" width="240" class="console-drawer">
       <v-list dense class="pt-3 px-3" subheader nav>
         <logo></logo>
         <v-divider></v-divider>
+        <div class="drawer-label">主导航</div>
 
         <!-- Avoid v-if with v-for https://v3.vuejs.org/style-guide/#avoid-v-if-with-v-for-essential -->
         <template v-for="(entry, i) in menuEntries">
@@ -97,109 +98,12 @@ export default {
       menuEntries: [
         {
           title: "服务器列表",
-          icon: "dns",
+          icon: "mdi-server",
           route: { name: "servers" },
         },
         {
-          title: "实时监控",
-          icon: "remove_red_eye",
-          route: { name: "serverviewer" },
-        },
-        {
-          title: "消息中心",
-          icon: "mail_outline",
-          route: { name: "chat" },
-        },
-        {
-          title: "文件管理",
-          icon: "mdi-folder",
-          route: { name: "files" },
-        },
-        {
-          title: "服务器日志",
-          icon: "mdi-file-document-outline",
-          route: { name: "logs" },
-        },
-        {
-          title: "备份与恢复",
-          icon: "settings_backup_restore",
-          route: { name: "snapshot" },
-        },
-        {
-          title: "查询终端",
-          icon: "mdi-console",
-          route: { name: "console" },
-        },
-        {
-          title: "权限密钥",
-          icon: "mdi-key",
-          route: { name: "tokens" },
-        },
-        {
-          title: "API 密钥",
-          icon: "mdi-shield-key",
-          route: { name: "apikeys" },
-        },
-        {
-          title: "封禁列表",
-          icon: "not_interested",
-          route: { name: "bans" },
-        },
-        {
-          title: "投诉记录",
-          icon: "warning",
-          route: { name: "complaints" },
-        },
-
-        {
-          title: "用户管理",
-          icon: "person",
-          route: { name: "clients" },
-        },
-        {
-          title: "服务器组",
-          icon: "group",
-          route: { name: "servergroups" },
-        },
-        {
-          title: "频道组",
-          icon: "mdi-hexagon-slice-4",
-          route: { name: "channelgroups" },
-        },
-        {
-          title: "权限管理",
-          icon: "mdi-format-section",
-          submenu: [
-            {
-              title: "Server Group",
-              icon: "group",
-              route: { name: "permissions-servergroup" },
-            },
-            {
-              title: "Client Permissions",
-              icon: "person",
-              route: { name: "permissions-client" },
-            },
-            {
-              title: "Channel Permissions",
-              icon: "mdi-hexagon-slice-4",
-              route: { name: "permissions-channel" },
-            },
-            {
-              title: "Channel Groups",
-              icon: "mdi-hexagon-slice-4",
-              route: { name: "permissions-channelgroup" },
-            },
-            {
-              title: "Channel Client Permissions",
-              icon: "mdi-hexagon-slice-4",
-              route: { name: "permissions-channelclient" },
-            },
-          ],
-        },
-        {
           title: "退出登录",
-          icon: "exit_to_app",
+          icon: "mdi-logout",
           route: { name: "logout" },
         },
       ],
@@ -216,7 +120,28 @@ export default {
         const child = entry.submenu && entry.submenu.find((item) => item.route.name === this.$route.name);
         if (child) return child.title;
       }
-      return "管理控制台";
+      const hiddenTitles = {
+        servers: "服务器列表",
+        tokens: "权限密钥",
+        apikeys: "API 密钥",
+        bans: "封禁列表",
+        snapshot: "备份与恢复",
+        serverviewer: "实时在线",
+        chat: "消息中心",
+        files: "文件管理",
+        logs: "服务器日志",
+        console: "查询终端",
+        complaints: "投诉记录",
+        clients: "用户管理",
+        servergroups: "服务器组",
+        channelgroups: "频道组",
+        "permissions-servergroup": "服务器组权限",
+        "permissions-client": "用户权限",
+        "permissions-channel": "频道权限",
+        "permissions-channelgroup": "频道组权限",
+        "permissions-channelclient": "频道用户权限",
+      };
+      return hiddenTitles[this.$route.name] || "管理控制台";
     },
   },
   methods: {
@@ -230,12 +155,15 @@ export default {
 </script>
 
 <style scoped>
-.console-header { border-bottom: 1px solid #edf0f4 !important; }
+.console-header { border-bottom: 1px solid rgba(224, 229, 238, .8) !important; box-shadow: 0 3px 16px rgba(29, 41, 64, .035) !important; }
 .page-caption { display: flex; flex-direction: column; margin-left: 10px; line-height: 1.25; }
-.page-caption strong { color: #1d2940; font-size: 16px; }
+.page-caption strong { color: #19263d; font-size: 16px; font-weight: 700; }
 .caption-kicker { color: #9aa3b1; font-size: 9px; letter-spacing: 1.3px; text-transform: uppercase; }
-.console-drawer { border-right: 0 !important; box-shadow: 4px 0 18px rgba(25, 40, 67, .05); }
-.console-drawer .v-list-item { min-height: 42px; margin-bottom: 4px; border-radius: 7px; color: #596579; }
-.console-drawer .v-list-item--active { color: #6268df !important; background: #f0f1ff !important; }
-.console-drawer .v-list-item__icon { margin-right: 18px; }
+.console-drawer { border-right: 1px solid #e9edf4 !important; background: linear-gradient(180deg,#fff 0%,#fbfcff 100%) !important; box-shadow: 5px 0 22px rgba(25, 40, 67, .045); }
+.drawer-label { padding: 22px 12px 8px; color: #a0a9b7; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
+.console-drawer .v-list-item { min-height: 46px; margin-bottom: 6px; padding: 0 14px; border-radius: 10px; color: #5c687b; transition: all .18s ease; }
+.console-drawer .v-list-item:hover { color: #424bba; background: #f5f6ff; transform: translateX(2px); }
+.console-drawer .v-list-item--active { color: #555cda !important; background: linear-gradient(90deg,#eeefff,#f6f6ff) !important; box-shadow: inset 3px 0 #6268df; }
+.console-drawer .v-list-item__icon { margin-right: 14px; }
+.console-drawer .v-icon { font-size: 21px; }
 </style>

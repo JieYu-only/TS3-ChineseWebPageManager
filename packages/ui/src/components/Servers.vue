@@ -2,7 +2,7 @@
   <v-container fluid class="console-page">
     <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>服务器列表</strong></div>
     <div class="page-title-row">
-      <div><h1>服务器列表</h1><p>管理 TeamSpeak 虚拟服务器及运行状态</p></div>
+      <div><div class="title-with-count"><h1>服务器列表</h1><v-chip small color="indigo lighten-5" text-color="indigo">{{ servers.length }} 台</v-chip></div><p>管理 TeamSpeak 虚拟服务器及运行状态</p></div>
       <v-btn color="primary" elevation="0" :to="{ name: 'server-create' }"><v-icon left small>mdi-plus</v-icon>创建服务器</v-btn>
     </div>
     <v-layout>
@@ -15,6 +15,7 @@
               "
               :headers="headers"
               :items="servers"
+              :item-class="serverRowClass"
               item-key="virtualserverId"
               :footer-props="{ 'items-per-page-options': rowsPerPage }"
             >
@@ -62,13 +63,29 @@
               </template>
               <template #item.virtualserverStatus="{ item }">
                 <!-- <v-switch v-model="onlineServerIds" :value="item.virtualserverId"></v-switch> -->
-                <v-switch
-                  :input-value="!isOffline(item.virtualserverStatus)"
-                  readonly
-                  @click="changeServerStatus(item)"
+                <div class="status-cell">
+                  <v-switch
+                    :input-value="!isOffline(item.virtualserverStatus)"
+                    readonly
+                    hide-details
+                    inset
+                    @click="changeServerStatus(item)"
+                  ></v-switch>
+                  <span :class="['status-text', isOffline(item.virtualserverStatus) ? 'offline' : 'online']">
+                    {{ isOffline(item.virtualserverStatus) ? '已停止' : '运行中' }}
+                  </span>
+                </div>
+              </template>
+              <template #item.manage="{ item }">
+                <v-btn
+                  small outlined
+                  color="primary"
+                  elevation="0"
+                  :disabled="isOffline(item.virtualserverStatus)"
+                  @click="manageServer(item)"
                 >
-                  <!-- @click.native.stop="changeServerStatus(item)" -->
-                </v-switch>
+                  <v-icon left small>mdi-cog-outline</v-icon>管理
+                </v-btn>
               </template>
             </v-data-table>
           </v-card-text>
@@ -111,7 +128,7 @@
       class="mobile-create"
       :to="{ name: 'server-create' }"
     >
-      <v-icon left>add</v-icon>创建服务器
+      <v-icon left>mdi-plus</v-icon>创建服务器
     </v-btn>
   </v-container>
 </template>
@@ -178,6 +195,11 @@ export default {
           sortable: false,
         },
         {
+          text: "管理",
+          value: "manage",
+          sortable: false,
+        },
+        {
           text: "运行状态",
           value: "virtualserverStatus",
           sortable: false,
@@ -207,6 +229,20 @@ export default {
     },
   },
   methods: {
+    serverRowClass(item) {
+      return item.virtualserverId === this.joinedServerId
+        ? "selected-server-row"
+        : "";
+    },
+    async manageServer(server) {
+      try {
+        await this.$TeamSpeak.selectServer(server.virtualserverId);
+        this.queryUser = await this.getQueryUserData();
+        this.$router.push({ name: "serverviewer" });
+      } catch (err) {
+        this.$toast.error(err.message);
+      }
+    },
     secondsToDHMS(seconds) {
       return {
         days: (seconds / 86400) >> 0,
@@ -327,11 +363,18 @@ export default {
 </script>
 
 <style scoped>
-.console-page { max-width: 1440px; padding: 22px 30px 40px; }
+.console-page { max-width: 1440px; padding: 30px 30px 48px; }
 .page-breadcrumb { display: flex; align-items: center; gap: 7px; margin-bottom: 28px; color: #9099a8; font-size: 12px; }
 .page-breadcrumb strong { color: #4b5668; font-weight: 500; }
 .page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.page-title-row h1 { margin: 0; color: #19253b; font-size: 24px; }.page-title-row p { margin: 4px 0 0; color: #929cab; font-size: 12px; }
-.content-card { overflow: hidden; }.mobile-create { display: none; }
+.page-title-row h1 { margin: 0; color: #19253b; font-size: 26px; letter-spacing: -.4px; }.page-title-row p { margin: 6px 0 0; color: #8a96a8; font-size: 13px; }
+.title-with-count { display: flex; align-items: center; gap: 12px; }
+.content-card { overflow: hidden; border-radius: 14px !important; }.mobile-create { display: none; }
+.status-cell { display: flex; align-items: center; gap: 9px; min-width: 105px; }
+.status-cell .v-input { margin: 0; padding: 0; }
+.status-text { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status-text.online { color: #23a26d; }.status-text.offline { color: #9aa4b2; }
+::v-deep .selected-server-row { background: #f7f8ff !important; }
+::v-deep .selected-server-row td:first-child { box-shadow: inset 3px 0 #6268df; }
 @media (max-width: 600px) { .console-page { padding: 16px; }.page-title-row p { display: none; }.page-title-row > .v-btn { display: none; }.mobile-create { display: flex; margin: 18px auto; }.page-breadcrumb { margin-bottom: 18px; } }
 </style>

@@ -1,10 +1,10 @@
 <template>
   <v-card outlined :disabled="disabled">
-    <v-card-subtitle>Members</v-card-subtitle>
+    <v-card-subtitle>组成员</v-card-subtitle>
 
     <v-card-text>
       <v-text-field
-        label="Filter"
+        label="筛选成员"
         v-model="clientGroupListFilter"
       ></v-text-field>
       <v-list height="400" class="overflow-y-auto">
@@ -35,14 +35,14 @@
       <v-dialog v-model="addDialog" max-width="500px">
         <template #activator="{ on, attrs }">
           <v-btn v-on="on" v-bind="attrs" color="primary">
-            <v-icon left>add</v-icon>Add
+            <v-icon left>mdi-plus</v-icon>添加成员
           </v-btn>
         </template>
         <v-card>
-          <v-card-title>Clients</v-card-title>
+          <v-card-title>选择用户</v-card-title>
           <v-card-text>
             <v-text-field
-              label="Filter"
+              label="筛选用户"
               v-model="availableClientsFilter"
             ></v-text-field>
             <v-list height="400px" class="overflow-y-auto">
@@ -76,10 +76,10 @@
               color="primary"
               @click="addClients"
               :disabled="!addSelection.length"
-              >Add</v-btn
+              >添加</v-btn
             >
             <v-btn text color="primary" @click="addDialog = false"
-              >Cancel</v-btn
+              >取消</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -90,7 +90,7 @@
         class="ml-2"
         @click="removeClients"
       >
-        <v-icon left>delete</v-icon>Remove
+        <v-icon left>mdi-delete</v-icon>移除成员
       </v-btn>
     </v-card-actions>
   </v-card>

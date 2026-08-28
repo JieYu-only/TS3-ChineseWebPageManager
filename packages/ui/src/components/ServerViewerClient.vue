@@ -21,41 +21,41 @@
             <v-icon>mdi-alert-octagram</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Poke Client </v-list-item-title>
+            <v-list-item-title> 提醒用户 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="openPrivateChat(client.clid)">
           <v-list-item-action>
-            <v-icon>send</v-icon>
+            <v-icon>mdi-send</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Open Text Chat </v-list-item-title>
+            <v-list-item-title> 发起私聊 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
           :to="{ name: 'client-edit', params: { clid: client.clid } }"
         >
           <v-list-item-action>
-            <v-icon>edit</v-icon>
+            <v-icon>mdi-pencil</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Edit Client </v-list-item-title>
+            <v-list-item-title> 编辑用户 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="openKickDialog(4)">
           <v-list-item-action>
-            <v-icon>forward</v-icon>
+            <v-icon>mdi-forward</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Kick Client from Channel </v-list-item-title>
+            <v-list-item-title> 移出当前频道 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="openKickDialog(5)">
           <v-list-item-action>
-            <v-icon>forward</v-icon>
+            <v-icon>mdi-forward</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Kick Client from Server </v-list-item-title>
+            <v-list-item-title> 踢出服务器 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -65,10 +65,10 @@
           }"
         >
           <v-list-item-action>
-            <v-icon>not_interested</v-icon>
+            <v-icon>mdi-block-helper</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Ban Client </v-list-item-title>
+            <v-list-item-title> 封禁用户 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -76,35 +76,35 @@
 
     <v-dialog v-model="kickClientDialog" max-width="500px">
       <v-card>
-        <v-card-title>Kick from {{ destination }}</v-card-title>
+        <v-card-title>从{{ destination }}移出用户</v-card-title>
         <v-card-text>
-          <v-text-field label="Kick Message" v-model="reason"></v-text-field>
+          <v-text-field label="操作原因" v-model="reason"></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn text @click="kickClientDialog = false" color="primary"
-            >Cancel</v-btn
+            >取消</v-btn
           >
-          <v-btn text @click="kick" color="primary">OK</v-btn>
+          <v-btn text @click="kick" color="primary">确定</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="pokeClientDialog" max-width="500px">
       <v-card>
-        <v-card-title>Poke</v-card-title>
+        <v-card-title>提醒用户</v-card-title>
         <v-card-text>
           <v-text-field
-            label="Poke Message"
+            label="提醒消息"
             v-model="pokeMessage"
           ></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn text @click="pokeClientDialog = false" color="primary"
-            >Cancel</v-btn
+            >取消</v-btn
           >
-          <v-btn text @click="poke" color="primary">Send</v-btn>
+          <v-btn text @click="poke" color="primary">发送</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -132,11 +132,11 @@ export default {
   computed: {
     statusIcon() {
       if (this.client.clientAway) {
-        return "cancel_presentation";
+        return "mdi-account-clock-outline";
       } else if (this.client.clientOutputMuted) {
-        return "volume_off";
+        return "mdi-volume-off";
       } else if (this.client.clientInputMuted) {
-        return "mic_off";
+        return "mdi-microphone-off";
       }
     },
   },
@@ -161,10 +161,10 @@ export default {
 
       switch (this.reasonid) {
         case 4:
-          this.destination = "Channel";
+          this.destination = "频道";
           break;
         case 5:
-          this.destination = "Server";
+          this.destination = "服务器";
       }
 
       this.kickClientDialog = true;

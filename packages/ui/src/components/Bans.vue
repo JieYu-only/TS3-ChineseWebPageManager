@@ -1,7 +1,6 @@
 <template>
   <v-container fluid class="console-page">
     <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>黑名单</strong></div>
-    <server-management-tabs active="bans" />
     <div class="page-title-row"><div><h1>黑名单</h1><p>按 IP、名称或 UID 管理服务器封禁记录</p></div><v-btn color="primary" elevation="0" @click="addBan"><v-icon left small>mdi-plus</v-icon>添加封禁</v-btn></div>
     <v-layout>
       <v-flex xs12>
@@ -14,13 +13,13 @@
                   :disabled="!Boolean(selectedTableItems.length)"
                   @click="openDialog(selectedTableItems)"
                 >
-                  <v-icon left>delete</v-icon>
+                  <v-icon left>mdi-delete</v-icon>
                   删除所选
                 </v-btn>
               </v-flex>
               <v-flex md4 sm6 xs12>
                 <v-text-field
-                  append-icon="search"
+                  append-icon="mdi-magnify"
                   label="搜索黑名单"
                   v-model="filter"
                 ></v-text-field>
@@ -30,7 +29,7 @@
           <v-card-text>
             <v-data-table
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '正在加载……' : '暂无封禁记录'
               "
               :headers="headers"
               :items="preparedBanlist"
@@ -51,10 +50,10 @@
                     <v-list-item
                       :to="{ name: 'ban-edit', params: { banid: item.banid } }"
                     >
-                      <v-list-item-title> Edit Ban </v-list-item-title>
+                      <v-list-item-title>编辑封禁</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="openDialog([item])">
-                      <v-list-item-title> Remove Ban </v-list-item-title>
+                      <v-list-item-title>删除封禁</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -76,18 +75,18 @@
         </v-card>
       </v-flex>
       <v-btn color="primary" class="mobile-create" dark @click="addBan">
-        <v-icon left>add</v-icon>添加封禁
+        <v-icon left>mdi-plus</v-icon>添加封禁
       </v-btn>
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
-          <v-card-title> Delete Ban </v-card-title>
+          <v-card-title>删除封禁</v-card-title>
           <v-card-text>
-            Do you really want to delete the selected ban(s)?
+            确定要删除所选封禁记录吗？此操作无法撤销。
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">No</v-btn>
-            <v-btn text color="primary" @click="deleteBans">Yes</v-btn>
+            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn text color="error" @click="deleteBans">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -97,7 +96,6 @@
 
 <script>
 export default {
-  components: { ServerManagementTabs: () => import("@/components/ServerManagementTabs") },
   data() {
     return {
       headers: [

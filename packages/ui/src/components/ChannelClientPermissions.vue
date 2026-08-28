@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="permission-page">
     <v-layout>
       <v-flex xs12>
         <permission-table
@@ -15,7 +15,7 @@
               <v-autocomplete
                 :items="channelSelection"
                 v-model="selectedChannel"
-                label="Channel"
+                label="频道"
                 @change="changeChannel"
                 :disabled="$store.state.query.loading"
               ></v-autocomplete>
@@ -24,7 +24,7 @@
               <v-autocomplete
                 :items="clientSelection"
                 v-model="selectedClient"
-                label="Client"
+                label="用户"
                 @change="changeClient"
                 :disabled="$store.state.query.loading"
               ></v-autocomplete>
@@ -196,3 +196,5 @@ export default {
   },
 };
 </script>
+
+<style scoped>.permission-page{max-width:1440px;padding:22px 30px 50px}@media(max-width:600px){.permission-page{padding:16px}}</style>

@@ -2,6 +2,10 @@
   <v-app>
     <app-shell></app-shell>
     <v-main>
+      <server-management-tabs
+        v-if="showServerManagement"
+        :active="$route.name"
+      />
       <router-view></router-view>
     </v-main>
   </v-app>
@@ -11,6 +15,14 @@
 export default {
   components: {
     AppShell: () => import("@/components/AppShell"),
+    ServerManagementTabs: () => import("@/components/ServerManagementTabs"),
+  },
+  computed: {
+    showServerManagement() {
+      return !["login", "logout", "servers", "server-create"].includes(
+        this.$route.name
+      );
+    },
   },
   methods: {
     handleReceivedMessages(e) {

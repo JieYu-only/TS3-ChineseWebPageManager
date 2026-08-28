@@ -1,6 +1,7 @@
 <template>
   <group-list
     :groups="channelGroups"
+    kind="channel"
     @add="addChannelGroup"
     @remove="removeChannelGroup"
     @edit="editChannelGroup"

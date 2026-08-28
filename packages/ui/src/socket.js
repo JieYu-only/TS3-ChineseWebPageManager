@@ -37,7 +37,7 @@ socket.on("connect", () => {
   if (connectErrorShown) {
     connectErrorToast.dismiss();
 
-    Vue.prototype.$toast.success("Reconnected");
+    Vue.prototype.$toast.success("已重新连接服务器");
 
     connectErrorShown = false;
   }

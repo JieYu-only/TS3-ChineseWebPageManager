@@ -28,7 +28,7 @@ export default {
     copyToClipboard() {
       this.$clipboard(this.value);
 
-      this.$toast.info("Copied To Clipboard");
+      this.$toast.info("已复制到剪贴板");
     },
   },
 };

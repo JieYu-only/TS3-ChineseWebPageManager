@@ -1,20 +1,20 @@
 <template>
   <div>
-    <v-card>
+    <v-card class="permission-card" elevation="0">
       <v-card-title>
         <v-layout justify-space-between wrap>
           <slot name="selectMenu"></slot>
           <v-flex xs12 sm5>
             <v-text-field
               v-model="filter"
-              append-icon="filter_list"
-              label="Filter"
+          append-icon="mdi-filter-variant"
+              label="筛选权限"
             ></v-text-field>
           </v-flex>
           <v-flex xs12 sm2>
             <v-checkbox
               v-model="onlyGranted"
-              label="only granted"
+              label="仅显示已授予"
               primary
             ></v-checkbox>
           </v-flex>
@@ -23,7 +23,7 @@
       <v-card-text>
         <v-data-table
           :no-data-text="
-            $store.state.query.loading ? '...loading' : $vuetify.noDataText
+            $store.state.query.loading ? '正在加载……' : '暂无权限数据'
           "
           :headers="headers"
           :items="permissionlist"
@@ -39,10 +39,10 @@
               </template>
               <v-list>
                 <v-list-item @click="editPermission(item)">
-                  <v-list-item-title> Edit Permission </v-list-item-title>
+                  <v-list-item-title>编辑权限</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="confirmDeletion(item)">
-                  <v-list-item-title> Remove Permission </v-list-item-title>
+                  <v-list-item-title>移除权限</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -85,20 +85,20 @@
           <v-layout wrap justify-space-between>
             <v-flex xs12 v-if="editableContent.includes('permvalue')">
               <v-text-field
-                label="Value"
+                label="权限值"
                 type="number"
                 v-model="editedPermission.permvalue"
               ></v-text-field>
             </v-flex>
             <v-flex xs5 v-if="editableContent.includes('permskip')">
               <v-checkbox
-                label="Skip"
+                label="跳过权限检查"
                 v-model="editedPermission.permskip"
               ></v-checkbox>
             </v-flex>
             <v-flex xs5 v-if="editableContent.includes('permnegated')">
               <v-checkbox
-                label="Negated"
+                label="拒绝权限"
                 v-model="editedPermission.permnegated"
                 :disabled="type === 'Client Permissions' ? true : false"
               ></v-checkbox>
@@ -107,23 +107,22 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="savePermission" color="primary">Save</v-btn>
-          <v-btn text @click="dialog = false" color="primary">Cancel</v-btn>
+          <v-btn text @click="savePermission" color="primary">保存</v-btn>
+          <v-btn text @click="dialog = false" color="primary">取消</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="deleteDialog" max-width="500px">
       <v-card>
-        <v-card-title>Remove Permission</v-card-title>
+        <v-card-title>移除权限</v-card-title>
         <v-card-text>
-          Do you really want to remove the
-          <b>{{ editedPermission.permname }}</b> permission values?
+          确定要移除权限 <b>{{ editedPermission.permname }}</b> 吗？
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="removePermission" color="primary">Yes</v-btn>
+          <v-btn text @click="removePermission" color="error">移除</v-btn>
           <v-btn text @click="deleteDialog = false" color="primary"
-            >Cancel</v-btn
+            >取消</v-btn
           >
         </v-card-actions>
       </v-card>
@@ -149,25 +148,25 @@ export default {
           sortable: false,
         },
         {
-          text: "Permission",
+          text: "权限标识",
           align: "left",
           value: "permname",
           sortable: false,
         },
         {
-          text: "Value",
+          text: "权限值",
           align: "left",
           value: "permvalue",
           sortable: false,
         },
         {
-          text: "Skip",
+          text: "跳过检查",
           align: "left",
           value: "permskip",
           sortable: false,
         },
         {
-          text: "Negate",
+          text: "拒绝",
           align: "left",
           value: "permnegated",
           sortable: false,
@@ -274,3 +273,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.permission-card { overflow: hidden; }
+</style>

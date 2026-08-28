@@ -15,7 +15,7 @@
             <v-icon>mdi-upload</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Upload File</v-list-item-title>
+            <v-list-item-title>上传文件</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="openSubfolderDialog">
@@ -23,7 +23,7 @@
             <v-icon>mdi-plus</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Create Subfolder</v-list-item-title>
+            <v-list-item-title>创建子文件夹</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <!-- Disable option if it is a channel  -->
@@ -35,7 +35,7 @@
             <v-icon>mdi-pencil</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Rename Folder</v-list-item-title>
+            <v-list-item-title>重命名文件夹</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <!-- Disable option if it is a channel  -->
@@ -47,7 +47,7 @@
             <v-icon>mdi-delete</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Delete Folder</v-list-item-title>
+            <v-list-item-title>删除文件夹</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -55,18 +55,18 @@
 
     <v-dialog v-model="subfolderDialog" max-width="500px">
       <v-card>
-        <v-card-title>Create Folder</v-card-title>
+        <v-card-title>创建文件夹</v-card-title>
         <v-card-text>
           <v-text-field
             v-model="newSubfolderName"
-            label="Folder Name"
+            label="文件夹名称"
           ></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="createSubfolder" color="primary">OK</v-btn>
+          <v-btn text @click="createSubfolder" color="primary">确定</v-btn>
           <v-btn text @click="subfolderDialog = false" color="primary"
-            >Cancel</v-btn
+            >取消</v-btn
           >
         </v-card-actions>
       </v-card>

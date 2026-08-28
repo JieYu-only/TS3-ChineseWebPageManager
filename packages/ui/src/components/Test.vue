@@ -32,13 +32,13 @@
                 </v-list>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="primary"><v-icon left>add</v-icon>Add</v-btn>
+                <v-btn color="primary"><v-icon left>mdi-plus</v-icon>Add</v-btn>
                 <v-btn
                   color="error"
                   :disabled="!selectedMembers.length"
                   @click="removeDialog = !removeDialog"
                 >
-                  <v-icon left>delete</v-icon>Remove
+                  <v-icon left>mdi-delete</v-icon>Remove
                 </v-btn>
               </v-card-actions>
             </v-card>

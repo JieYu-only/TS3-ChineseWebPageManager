@@ -14,7 +14,7 @@
       <v-list>
         <v-list-item v-if="!uploadQueue.length">
           <v-list-item-content>
-            <v-list-item-title>No Uploads</v-list-item-title>
+            <v-list-item-title>暂无上传任务</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 

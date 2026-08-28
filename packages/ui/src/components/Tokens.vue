@@ -1,7 +1,6 @@
 <template>
   <v-container fluid class="console-page">
     <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>密钥</strong></div>
-    <server-management-tabs active="tokens" />
     <div class="page-title-row"><div><h1>密钥列表</h1><p>创建和管理服务器组、频道组权限密钥</p></div><v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon left small>mdi-plus</v-icon>创建密钥</v-btn></div>
     <v-layout>
       <v-flex xs12>
@@ -12,7 +11,7 @@
               :disabled="!Boolean(selectedTableItems.length)"
               @click="openDeleteDialog(selectedTableItems)"
             >
-              <v-icon left>delete</v-icon>
+              <v-icon left>mdi-delete</v-icon>
               删除所选
             </v-btn>
           </v-card-title>
@@ -78,7 +77,7 @@
         dark
         :to="{ name: 'token-add' }"
       >
-        <v-icon left>add</v-icon>创建密钥
+        <v-icon left>mdi-plus</v-icon>创建密钥
       </v-btn>
     </v-layout>
   </v-container>
@@ -86,7 +85,6 @@
 
 <script>
 export default {
-  components: { ServerManagementTabs: () => import("@/components/ServerManagementTabs") },
   data() {
     return {
       dialog: false,

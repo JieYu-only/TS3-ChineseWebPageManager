@@ -23,10 +23,10 @@
       <v-list>
         <v-list-item @click="enterChannel">
           <v-list-item-action>
-            <v-icon>arrow_forward</v-icon>
+            <v-icon>mdi-arrow-right</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Switch to Channel </v-list-item-title>
+            <v-list-item-title> 移动到此频道 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -37,36 +37,36 @@
           }"
         >
           <v-list-item-action>
-            <v-icon>edit</v-icon>
+            <v-icon>mdi-pencil</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Edit Channel </v-list-item-title>
+            <v-list-item-title> 编辑频道 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
           :to="{ name: 'permissions-channel', params: { cid: channel.cid } }"
         >
           <v-list-item-action>
-            <v-icon>verified_user</v-icon>
+            <v-icon>mdi-shield-check</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Channel Permissions </v-list-item-title>
+            <v-list-item-title> 频道权限 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item :to="{ name: 'channel-add', query: { pid: channel.cid } }">
           <v-list-item-action>
-            <v-icon>add</v-icon>
+            <v-icon>mdi-plus</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Create Sub-Channel </v-list-item-title>
+            <v-list-item-title> 创建子频道 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="confirmChannelDeletion(channel)">
           <v-list-item-action>
-            <v-icon>delete</v-icon>
+            <v-icon>mdi-delete</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Delete Channel </v-list-item-title>
+            <v-list-item-title> 删除频道 </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -74,19 +74,19 @@
 
     <v-dialog v-model="deleteChannelDialog" max-width="500px">
       <v-card>
-        <v-card-title>Delete Channel</v-card-title>
+        <v-card-title>删除频道</v-card-title>
         <v-card-text>
-          Do you really want to delete that channel?
+          确定要删除这个频道吗？
           <v-checkbox
             v-model="forceDeletion"
-            label="Delete even if there are clients in the channel"
+            label="即使频道中仍有用户也强制删除"
           ></v-checkbox>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="deleteChannel" color="primary">Yes</v-btn>
+          <v-btn text @click="deleteChannel" color="primary">确定</v-btn>
           <v-btn text @click="deleteChannelDialog = false" color="primary"
-            >No</v-btn
+            >取消</v-btn
           >
         </v-card-actions>
       </v-card>

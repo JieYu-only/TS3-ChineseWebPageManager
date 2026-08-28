@@ -3,21 +3,21 @@
     <v-layout justify-center>
       <v-flex lg6 md8 sm8 xs12>
         <v-card>
-          <v-card-title> Edit Client </v-card-title>
+          <v-card-title>编辑用户</v-card-title>
           <v-card-text>
             <v-text-field
-              label="Nickname"
+              label="昵称"
               :placeholder="client.clientNickname"
               disabled
             ></v-text-field>
-            <v-textarea label="Description" v-model="description"></v-textarea>
+            <v-textarea label="描述" v-model="description"></v-textarea>
             <v-autocomplete
               :items="availableServerGroups"
               item-text="name"
               item-value="sgid"
               :item-disabled="notSelectableGroup"
               chips
-              label="Servergroups"
+              label="服务器组"
               multiple
               v-model="selectedGroups"
             >
@@ -36,8 +36,8 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="save" color="primary">OK</v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
+            <v-btn text @click="save" color="primary">保存</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -71,9 +71,9 @@ export default {
     getServerGroupTypeName(num) {
       switch (num) {
         case 1:
-          return "Regular Group";
+          return "常规服务器组";
         case 2:
-          return "ServerQuery Group";
+          return "ServerQuery 管理组";
       }
     },
     /**
@@ -109,7 +109,7 @@ export default {
         await this.addServergroups();
         await this.removeServergroups();
 
-        this.$toast.success("Client updated");
+        this.$toast.success("用户信息已更新");
       } catch (err) {
         this.$toast.error(err.message);
       }

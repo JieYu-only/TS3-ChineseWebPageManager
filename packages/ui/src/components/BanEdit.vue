@@ -1,5 +1,5 @@
 <template>
-  <ban-form title="Edit Ban" @addban="save" :ban="ban"></ban-form>
+  <ban-form title="编辑封禁" @addban="save" :ban="ban"></ban-form>
 </template>
 
 <script>

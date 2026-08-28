@@ -11,7 +11,7 @@
             }"
           >
             <v-list subheader class="my-2" width="100%">
-              <v-subheader>Channels</v-subheader>
+              <v-subheader>频道列表</v-subheader>
               <v-list-item-group :value="selectedChannelItem">
                 <channel
                   v-for="channel in channelList"
@@ -25,7 +25,7 @@
                 </channel>
               </v-list-item-group>
 
-              <v-subheader>Clients</v-subheader>
+              <v-subheader>在线用户</v-subheader>
               <client
                 v-for="client in clientList"
                 :client="client"
@@ -92,7 +92,7 @@
                     <span
                       >{{ textPrivateTab.name
                       }}<v-icon @click.stop="closeTextPrivate(textPrivateTab)"
-                        >close</v-icon
+                        >mdi-close</v-icon
                       ></span
                     >
                   </v-badge>
@@ -105,14 +105,14 @@
                 <!-- Server text message history -->
                 <v-tab-item :transition="false" :reverse-transition="false">
                   <p class="text-center text--secondary">
-                    Server Text Messages
+                    服务器消息
                   </p>
                   <div v-for="message in serverTextMessages">
                     <div>
                       <v-icon v-if="message.sender.clid === queryUser.clientId"
-                        >arrow_upward</v-icon
+                        >mdi-arrow-up</v-icon
                       >
-                      <v-icon v-else>arrow_downward</v-icon>
+                      <v-icon v-else>mdi-arrow-down</v-icon>
                       {{ new Date(message.meta.timestamp).toLocaleString() }}
                       <b>{{ message.sender.clientNickname }}</b>
                     </div>
@@ -124,14 +124,14 @@
                 <!-- Channel text message history -->
                 <v-tab-item :transition="false" :reverse-transition="false">
                   <p class="text-center text--secondary">
-                    Channel Text Messages
+                    频道消息
                   </p>
                   <div v-for="message in channelTextMessages">
                     <div>
                       <v-icon v-if="message.sender.clid === queryUser.clientId"
-                        >arrow_upward</v-icon
+                        >mdi-arrow-up</v-icon
                       >
-                      <v-icon v-else>arrow_downward</v-icon>
+                      <v-icon v-else>mdi-arrow-down</v-icon>
                       {{ new Date(message.meta.timestamp).toLocaleString() }}
                       <b>{{ message.sender.clientNickname }}</b>
                     </div>
@@ -148,16 +148,16 @@
                   :reverse-transition="false"
                 >
                   <p class="text-center text--secondary">
-                    Private Text Messages
+                    私聊消息
                   </p>
                   <div v-for="message in privateTextMessages">
                     <div v-if="message.target === textPrivateTab.target">
                       <div>
                         <v-icon
                           v-if="message.sender.clid === queryUser.clientId"
-                          >arrow_upward</v-icon
+                          >mdi-arrow-up</v-icon
                         >
-                        <v-icon v-else>arrow_downward</v-icon>
+                        <v-icon v-else>mdi-arrow-down</v-icon>
                         {{ new Date(message.meta.timestamp).toLocaleString() }}
                         <b>{{ message.sender.clientNickname }}</b>
                       </div>
@@ -172,8 +172,8 @@
 
             <div>
               <v-text-field
-                :append-icon="'send'"
-                label="Send Message"
+                :append-icon="'mdi-send'"
+                label="输入消息"
                 v-model="message"
                 @click:append="sendMessage"
                 @keyup="keyPressed"
@@ -318,13 +318,13 @@ export default {
     },
     clientStatusIcon(client) {
       if (client.clientAway) {
-        return "cancel_presentation";
+        return "mdi-account-clock-outline";
       } else if (client.clientOutputMuted) {
-        return "volume_off";
+        return "mdi-volume-off";
       } else if (client.clientInputMuted) {
-        return "mic_off";
+        return "mdi-microphone-off";
       } else {
-        return "fiber_manual_record";
+        return "mdi-circle";
       }
     },
     countUnreadMessages(textChannel) {

@@ -1,7 +1,6 @@
 <template>
   <v-container fluid class="console-page">
     <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>快照</strong></div>
-    <server-management-tabs active="snapshot" />
     <div class="page-title-row"><h1>服务器快照</h1><p>下载完整配置备份，或从本地快照恢复服务器</p></div>
     <v-row>
       <v-col cols="12" md="6">
@@ -31,7 +30,6 @@
 <script>
 import { saveAs } from "file-saver";
 export default {
-  components: { ServerManagementTabs: () => import("@/components/ServerManagementTabs") },
   data() { return { fileName: "", fileContent: {}, creating: false, restoring: false, restoreDialog: false }; },
   methods: {
     async createSnapshot() {

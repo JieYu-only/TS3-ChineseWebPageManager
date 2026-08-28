@@ -1,11 +1,13 @@
 <template>
-  <v-container>
-    <v-row justify="center">
-      <v-col cols="12" sm="8" md="8" lg="6" xl="4">
-        <v-card>
+  <v-container fluid class="console-page">
+    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>{{ entityName }}</strong></div>
+    <div class="page-title-row"><div><h1>{{ entityName }}</h1><p>{{ pageDescription }}</p></div><v-btn color="primary" elevation="0" @click="addDialog = true"><v-icon left small>mdi-plus</v-icon>创建{{ entityName }}</v-btn></div>
+    <v-row>
+      <v-col cols="12">
+        <v-card class="content-card" elevation="0">
           <v-list>
             <template v-if="regularGroups.length">
-              <v-subheader>Regular Groups</v-subheader>
+              <v-subheader>常规{{ entityName }}</v-subheader>
               <v-list-item
                 v-for="regularGroup in regularGroups"
                 :key="regularGroup.sgid || regularGroup.cgid"
@@ -25,13 +27,13 @@
                     </template>
                     <v-list>
                       <v-list-item @click="editGroup(regularGroup)">
-                        <v-list-item-title> Edit Group </v-list-item-title>
+                        <v-list-item-title>编辑{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="openCopyDialog(regularGroup)">
-                        <v-list-item-title> Copy Group </v-list-item-title>
+                        <v-list-item-title>复制{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="confirmDeletion(regularGroup)">
-                        <v-list-item-title> Delete Group </v-list-item-title>
+                        <v-list-item-title>删除{{ entityName }}</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-menu>
@@ -42,7 +44,7 @@
             </template>
 
             <template v-if="templateGroups.length">
-              <v-subheader>Template Groups</v-subheader>
+              <v-subheader>模板组</v-subheader>
               <v-list-item
                 v-for="templateGroup in templateGroups"
                 :key="templateGroup.sgid || templateGroup.cgid"
@@ -66,13 +68,13 @@
                     </template>
                     <v-list>
                       <v-list-item @click="editGroup(templateGroup)">
-                        <v-list-item-title> Edit Group </v-list-item-title>
+                        <v-list-item-title>编辑{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="openCopyDialog(templateGroup)">
-                        <v-list-item-title> Copy Group </v-list-item-title>
+                        <v-list-item-title>复制{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="confirmDeletion(templateGroup)">
-                        <v-list-item-title> Delete Group </v-list-item-title>
+                        <v-list-item-title>删除{{ entityName }}</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-menu>
@@ -83,7 +85,7 @@
             <template v-if="serverQueryGroups.length">
               <v-divider></v-divider>
 
-              <v-subheader>ServerQuery Groups</v-subheader>
+              <v-subheader>ServerQuery 管理组</v-subheader>
               <v-list-item
                 v-for="serverQueryGroup in serverQueryGroups"
                 :key="serverQueryGroup.sgid || serverQueryGroup.cgid"
@@ -107,13 +109,13 @@
                     </template>
                     <v-list>
                       <v-list-item @click="editGroup(serverQueryGroup)">
-                        <v-list-item-title> Edit Group </v-list-item-title>
+                        <v-list-item-title>编辑{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="openCopyDialog(serverQueryGroup)">
-                        <v-list-item-title> Copy Group </v-list-item-title>
+                        <v-list-item-title>复制{{ entityName }}</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="confirmDeletion(serverQueryGroup)">
-                        <v-list-item-title> Delete Group </v-list-item-title>
+                        <v-list-item-title>删除{{ entityName }}</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-menu>
@@ -124,6 +126,7 @@
         </v-card>
       </v-col>
       <v-btn
+        class="mobile-create"
         fab
         color="primary"
         fixed
@@ -132,55 +135,55 @@
         dark
         @click="addDialog = true"
       >
-        <v-icon>add</v-icon>
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
       <v-dialog v-model="removeDialog" max-width="500px">
         <v-card>
-          <v-card-title> Confirm Delete Group </v-card-title>
+          <v-card-title>确认删除{{ entityName }}</v-card-title>
           <v-card-text>
-            Please confirm deleting the group <b>{{ selectedGroup.name }}</b>
+            确定要删除{{ entityName }} <b>{{ selectedGroup.name }}</b> 吗？
             <v-checkbox
               v-model="forceDeletion"
-              label="Delete even if there are clients in the group"
+              label="即使组内仍有用户也强制删除"
             ></v-checkbox>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn text color="primary" @click="removeDialog = false"
-              >Abort</v-btn
+              >取消</v-btn
             >
             <v-btn text color="primary" @click="removeGroup"
-              >Delete Group</v-btn
+              >删除</v-btn
             >
           </v-card-actions>
         </v-card>
       </v-dialog>
       <v-dialog v-model="addDialog" max-width="500px">
         <v-card>
-          <v-card-title> Add Group </v-card-title>
+          <v-card-title>创建{{ entityName }}</v-card-title>
           <v-card-text>
-            <v-text-field v-model="groupName" label="Group Name"></v-text-field>
+            <v-text-field v-model="groupName" :label="`${entityName}名称`"></v-text-field>
             <v-select
-              label="Group Type"
+              :label="`${entityName}类型`"
               :items="groupTypes"
               v-model="selectedGroupType"
             ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="addGroup">Add</v-btn>
+            <v-btn text color="primary" @click="addGroup">创建</v-btn>
             <v-btn text color="primary" @click="addDialog = false"
-              >Cancel</v-btn
+              >取消</v-btn
             >
           </v-card-actions>
         </v-card>
       </v-dialog>
       <v-dialog v-model="copyDialog" max-width="500px">
         <v-card>
-          <v-card-title>Copy Group</v-card-title>
+          <v-card-title>复制{{ entityName }}</v-card-title>
           <v-card-text>
             <v-select
-              label="Copy Group"
+              :label="`源${entityName}`"
               :items="allGroups"
               v-model="selectedGroup"
               :item-disabled="disabledSourceGroup"
@@ -199,13 +202,13 @@
             </v-select>
             <v-row class="px-3">
               <v-checkbox
-                label="Overwrite"
+                label="覆盖现有组"
                 hide-details
                 class="mr-3 shrink"
                 v-model="overwriteGroup"
               ></v-checkbox>
               <v-select
-                label="Target Group"
+                :label="`目标${entityName}`"
                 :disabled="!overwriteGroup"
                 :items="allGroups"
                 item-text="name"
@@ -225,13 +228,13 @@
               </v-select>
             </v-row>
             <v-text-field
-              label="Target Group Name"
+              :label="`新${entityName}名称`"
               :disabled="overwriteGroup"
               v-model="targetGroupName"
               autofocus
             ></v-text-field>
             <v-select
-              label="Target Group Type"
+              :label="`新${entityName}类型`"
               :items="groupTypes"
               v-model="selectedTargetGroupType"
               :disabled="overwriteGroup"
@@ -239,9 +242,9 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="copyGroup">OK</v-btn>
+            <v-btn text color="primary" @click="copyGroup">确定</v-btn>
             <v-btn text color="primary" @click="copyDialog = false"
-              >Cancel</v-btn
+              >取消</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -254,6 +257,10 @@
 export default {
   props: {
     groups: Array,
+    kind: {
+      type: String,
+      default: "server",
+    },
   },
   data() {
     return {
@@ -265,9 +272,9 @@ export default {
       forceDeletion: false, // Delete group even if there are clients
       selectedGroupType: 1,
       groupTypes: [
-        { text: "Regular Group", value: 1 },
-        { text: "Template Group", value: 0 },
-        { text: "ServerQuery Group", value: 2 },
+        { text: "常规组", value: 1 },
+        { text: "模板组", value: 0 },
+        { text: "ServerQuery 管理组", value: 2 },
       ],
       overwriteGroup: false,
       selectedTargetGroup: {},
@@ -276,15 +283,23 @@ export default {
     };
   },
   computed: {
+    entityName() {
+      return this.kind === "channel" ? "频道组" : "服务器组";
+    },
+    pageDescription() {
+      return this.kind === "channel"
+        ? "管理频道权限组、模板组及成员分配"
+        : "管理服务器组、模板组及 ServerQuery 管理组";
+    },
     allGroups() {
       return [
-        { header: "Regular Groups" },
+        { header: "常规组" },
         ...this.regularGroups,
         { divider: true },
-        { header: "Template Groups" },
+        { header: "模板组" },
         ...this.templateGroups,
         { divider: true },
-        { header: "ServerQuery Groups" },
+        { header: "ServerQuery 管理组" },
         ...this.serverQueryGroups,
       ];
     },
@@ -368,3 +383,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.console-page{max-width:1440px;padding:22px 30px 50px}.page-breadcrumb{display:flex;align-items:center;gap:7px;margin-bottom:18px;color:#9099a8;font-size:12px}.page-breadcrumb strong{color:#4b5668;font-weight:500}.page-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.page-title-row h1{margin:0;color:#19253b;font-size:23px}.page-title-row p{margin:4px 0 0;color:#929cab;font-size:12px}.content-card{overflow:hidden}.mobile-create{display:none}@media(max-width:600px){.console-page{padding:16px}.page-title-row>.v-btn{display:none}.mobile-create{display:flex}}
+</style>

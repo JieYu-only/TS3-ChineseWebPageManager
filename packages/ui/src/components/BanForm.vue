@@ -16,17 +16,17 @@
                     v-model="ip"
                   ></v-text-field>
                   <v-text-field
-                    label="Name"
+                    label="名称"
                     :disabled="$store.state.query.loading"
                     v-model="name"
                   ></v-text-field>
                   <v-text-field
-                    label="Unique ID"
+                    label="唯一标识（UID）"
                     :disabled="$store.state.query.loading"
                     v-model="uid"
                   ></v-text-field>
                   <v-textarea
-                    label="Reason"
+                    label="封禁原因"
                     v-model="reason"
                     :disabled="$store.state.query.loading"
                   >
@@ -35,7 +35,7 @@
                 <v-flex sm5 xs12>
                   <v-text-field
                     type="number"
-                    label="Duration"
+                    label="封禁时长"
                     :disabled="!selectedUnit || $store.state.query.loading"
                     v-model="time"
                   ></v-text-field>
@@ -56,9 +56,9 @@
                 @click="addBan"
                 :disabled="disabledButton"
                 color="primary"
-                >OK</v-btn
+                >确定</v-btn
               >
-              <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
+              <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
@@ -77,23 +77,23 @@ export default {
     return {
       timeUnits: [
         {
-          text: "seconds",
+          text: "秒",
           value: 1,
         }, // value = seconds
         {
-          text: "minutes",
+          text: "分钟",
           value: 60,
         },
         {
-          text: "hours",
+          text: "小时",
           value: 3600,
         },
         {
-          text: "days",
+          text: "天",
           value: 86400,
         },
         {
-          text: "permanent",
+          text: "永久",
           value: 0,
         },
       ],

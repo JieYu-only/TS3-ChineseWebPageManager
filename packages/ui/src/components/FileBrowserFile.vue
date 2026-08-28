@@ -18,7 +18,7 @@
             <v-icon>mdi-download</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Download File</v-list-item-title>
+            <v-list-item-title>下载文件</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="deleteDialog = true">
@@ -26,7 +26,7 @@
             <v-icon>mdi-delete</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Delete File</v-list-item-title>
+            <v-list-item-title>删除文件</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="renameDialog = true">
@@ -34,7 +34,7 @@
             <v-icon>mdi-pencil</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Rename File</v-list-item-title>
+            <v-list-item-title>重命名文件</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>

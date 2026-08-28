@@ -8,28 +8,28 @@
               <v-col cols="3" xl="1">
                 <v-checkbox
                   v-model="level.debug"
-                  label="Debug"
+                  label="调试"
                   color="primary"
                 ></v-checkbox>
               </v-col>
               <v-col cols="3" xl="1">
                 <v-checkbox
                   v-model="level.error"
-                  label="Errors"
+                  label="错误"
                   color="error"
                 ></v-checkbox>
               </v-col>
               <v-col cols="3" xl="1">
                 <v-checkbox
                   v-model="level.warning"
-                  label="Warnings"
+                  label="警告"
                   color="warning"
                 ></v-checkbox>
               </v-col>
               <v-col cols="3" xl="1">
                 <v-checkbox
                   v-model="level.info"
-                  label="Info"
+                  label="信息"
                   color="info"
                 ></v-checkbox>
               </v-col>
@@ -37,14 +37,14 @@
                 <v-select
                   :items="timezones"
                   v-model="selectedTimezone"
-                  label="Timestamp"
+                  label="时间显示"
                 ></v-select>
               </v-col>
               <v-col cols="12" sm="6" xl="4">
-                <v-text-field label="Filter" v-model="filter"></v-text-field>
+                <v-text-field label="筛选日志" v-model="filter"></v-text-field>
               </v-col>
               <v-col cols="12" xl="1">
-                <v-btn color="primary" @click="reloadLogView">Reload</v-btn>
+                <v-btn color="primary" @click="reloadLogView">重新加载</v-btn>
               </v-col>
             </v-row>
           </v-card-title>
@@ -54,7 +54,7 @@
               :items="parsedLogView"
               :headers="headers"
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '正在加载...' : '暂无日志记录'
               "
               hide-default-footer
               :search="filter"
@@ -62,7 +62,7 @@
             >
               <template #item.level="{ item }">
                 <v-chip :color="levelColors[item.level.toLowerCase()]">{{
-                  item.level
+                  levelLabels[item.level.toLowerCase()] || item.level
                 }}</v-chip>
               </template>
             </v-data-table>
@@ -83,22 +83,22 @@ export default {
       filter: "",
       headers: [
         {
-          text: "Timestamp",
+          text: "时间",
           value: "timestamp",
           sortable: false,
         },
         {
-          text: "Level",
+          text: "级别",
           value: "level",
           sortable: false,
         },
         {
-          text: "Channel",
+          text: "日志模块",
           value: "channel",
           sortable: false,
         },
         {
-          text: "Message",
+          text: "日志内容",
           value: "msg",
           sortable: false,
         },
@@ -115,14 +115,20 @@ export default {
         warning: "warning",
         info: "info",
       },
+      levelLabels: {
+        debug: "调试",
+        error: "错误",
+        warning: "警告",
+        info: "信息",
+      },
       selectedTimezone: "local",
       timezones: [
         {
-          text: "UTC Time",
+          text: "UTC 时间",
           value: "utc",
         },
         {
-          text: "Locale Time",
+          text: "本地时间",
           value: "local",
         },
       ],

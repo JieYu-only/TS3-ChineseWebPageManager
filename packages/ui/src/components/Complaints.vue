@@ -1,22 +1,29 @@
 <template>
-  <v-container>
+  <v-container fluid class="console-page">
+    <div class="page-breadcrumb">
+      <v-icon small>mdi-home</v-icon><span>控制台</span>
+      <v-icon x-small>mdi-chevron-right</v-icon><strong>投诉记录</strong>
+    </div>
+    <div class="page-title-row">
+      <div><h1>投诉记录</h1><p>查看并处理服务器用户投诉记录</p></div>
+    </div>
     <v-layout>
-      <v-flex md8 sm10 xs12 offset-md2 offset-sm1>
-        <v-card>
+      <v-flex xs12>
+        <v-card class="content-card" elevation="0">
           <v-card-title>
             <v-btn
               color="error"
               :disabled="!Boolean(selected.length)"
               @click="openDialog(selected)"
             >
-              <v-icon left>delete</v-icon>
-              Remove
+              <v-icon left>mdi-delete</v-icon>
+              删除所选
             </v-btn>
           </v-card-title>
           <v-card-text>
             <v-data-table
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '正在加载……' : '暂无投诉记录'
               "
               :headers="headers"
               :items="complaints"
@@ -35,16 +42,16 @@
                   <v-list>
                     <v-list-item :to="`/client/${item.tcldbid}/ban`">
                       <v-list-item-title>
-                        Ban <b>{{ item.tname }}</b>
+                        封禁被投诉用户 <b>{{ item.tname }}</b>
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item :to="`/client/${item.fcldbid}/ban`">
                       <v-list-item-title>
-                        Ban <b>{{ item.fname }}</b>
+                        封禁投诉人 <b>{{ item.fname }}</b>
                       </v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="openDialog([item])">
-                      <v-list-item-title> Remove Complaint </v-list-item-title>
+                      <v-list-item-title>删除此投诉</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -58,14 +65,14 @@
       </v-flex>
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
-          <v-card-title> Remove Complaints </v-card-title>
+          <v-card-title>删除投诉记录</v-card-title>
           <v-card-text>
-            Do you really want to remove the selected complaint(s)?
+            确定要删除所选投诉记录吗？此操作无法撤销。
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">No</v-btn>
-            <v-btn text color="primary" @click="removeComplaints">Yes</v-btn>
+            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn text color="error" @click="removeComplaints">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -84,15 +91,15 @@ export default {
           value: "actions",
         },
         {
-          text: "Target Nickname",
+          text: "被投诉用户",
           value: "tname",
         },
         {
-          text: "From Nickname",
+          text: "投诉人",
           value: "fname",
         },
         {
-          text: "Reason",
+          text: "投诉原因",
           value: "message",
         },
       ],
@@ -145,3 +152,46 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.console-page {
+  max-width: 1440px;
+  padding: 22px 30px 50px;
+}
+.page-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+  color: #9099a8;
+  font-size: 12px;
+}
+.page-breadcrumb strong {
+  color: #4b5668;
+  font-weight: 500;
+}
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.page-title-row h1 {
+  margin: 0;
+  color: #19253b;
+  font-size: 23px;
+}
+.page-title-row p {
+  margin: 4px 0 0;
+  color: #929cab;
+  font-size: 12px;
+}
+.content-card {
+  overflow: hidden;
+}
+@media (max-width: 600px) {
+  .console-page {
+    padding: 16px;
+  }
+}
+</style>

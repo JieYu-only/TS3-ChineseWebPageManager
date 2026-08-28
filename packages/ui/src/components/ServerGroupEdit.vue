@@ -3,11 +3,11 @@
     <v-layout>
       <v-flex xs12 sm6 offset-sm3>
         <v-card>
-          <v-card-title> Edit Servergroup </v-card-title>
+          <v-card-title>编辑服务器组</v-card-title>
           <v-card-text>
             <v-text-field
               v-model="serverGroupName"
-              label="Name"
+              label="服务器组名称"
               :disabled="$store.state.query.loading"
             ></v-text-field>
             <group-client-list
@@ -24,18 +24,18 @@
             <v-spacer></v-spacer>
             <v-btn
               text
-              @click="save"
+              @click="save('close')"
               :disabled="$store.state.query.loading"
               color="primary"
-              >OK</v-btn
+              >保存</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
               text
-              @click="save"
+              @click="save('apply')"
               :disabled="$store.state.query.loading"
               color="primary"
-              >Apply</v-btn
+              >应用</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -134,7 +134,7 @@ export default {
         });
       }
     },
-    async save(e) {
+    async save(action) {
       try {
         await this.renameServerGroup();
         await this.removeMembers();
@@ -143,11 +143,11 @@ export default {
         this.$toast.error(err.message);
       }
 
-      switch (e.target.textContent) {
-        case "OK":
+      switch (action) {
+        case "close":
           this.$router.go(-1);
           break;
-        case "Apply":
+        case "apply":
           this.init();
       }
     },

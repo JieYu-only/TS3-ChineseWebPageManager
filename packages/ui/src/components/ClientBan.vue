@@ -1,5 +1,5 @@
 <template>
-  <ban-form title="Ban Client" @addban="banClient" :ban="form"></ban-form>
+  <ban-form title="封禁用户" @addban="banClient" :ban="form"></ban-form>
 </template>
 
 <script>

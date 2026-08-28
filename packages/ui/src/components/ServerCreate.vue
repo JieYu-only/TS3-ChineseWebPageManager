@@ -92,7 +92,7 @@ export default {
 
         this.token = response.token;
 
-        this.$toast.success("Server successfully created");
+        this.$toast.success("服务器创建成功");
 
         await this.$TeamSpeak.selectServer(response.sid);
       } catch (err) {

@@ -1,7 +1,7 @@
 <template lang="html">
   <div>
     <v-avatar @click.stop="openDialog">
-      <v-icon v-if="!avatarURL" class="accent" dark>person</v-icon>
+      <v-icon v-if="!avatarURL" class="accent" dark>mdi-account</v-icon>
       <v-img v-else :src="avatarURL"></v-img>
     </v-avatar>
 

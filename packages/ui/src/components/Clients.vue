@@ -1,8 +1,15 @@
 <template>
-  <v-container>
+  <v-container fluid class="console-page">
+    <div class="page-breadcrumb">
+      <v-icon small>mdi-home</v-icon><span>控制台</span>
+      <v-icon x-small>mdi-chevron-right</v-icon><strong>用户管理</strong>
+    </div>
+    <div class="page-title-row">
+      <div><h1>用户管理</h1><p>查询服务器历史用户及连接信息</p></div>
+    </div>
     <v-layout>
       <v-flex xs12>
-        <v-card>
+        <v-card class="content-card" elevation="0">
           <v-card-title>
             <v-layout wrap justify-space-between>
               <v-flex sm6 xs12>
@@ -11,14 +18,14 @@
                   :disabled="!Boolean(selectedTableItems.length)"
                   @click="openRemoveDialog(selectedTableItems)"
                 >
-                  <v-icon left>delete</v-icon>
-                  Remove
+                  <v-icon left>mdi-delete</v-icon>
+                  删除所选
                 </v-btn>
               </v-flex>
               <v-flex md4 sm6 xs12>
                 <v-text-field
-                  append-icon="search"
-                  label="Search"
+                  append-icon="mdi-magnify"
+                  label="搜索用户"
                   v-model="search"
                 ></v-text-field>
               </v-flex>
@@ -27,7 +34,7 @@
           <v-card-text>
             <v-data-table
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '正在加载……' : '暂无用户记录'
               "
               :headers="headers"
               :items="clientdblist"
@@ -46,10 +53,10 @@
                   </template>
                   <v-list>
                     <v-list-item :to="`/client/${item.cldbid}/ban`">
-                      <v-list-item-title> Ban Client </v-list-item-title>
+                      <v-list-item-title>封禁用户</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="openRemoveDialog([item])">
-                      <v-list-item-title> Delete Client </v-list-item-title>
+                      <v-list-item-title>删除用户记录</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -68,18 +75,18 @@
       </v-flex>
       <v-dialog max-width="500px" v-model="dialog">
         <v-card>
-          <v-card-title> Delete Client </v-card-title>
+          <v-card-title>删除用户记录</v-card-title>
           <v-card-text>
-            Do you really want to delete
+            确定要从服务器数据库中删除
             <b v-if="clientRemoveList.length === 1">{{
               clientRemoveList[0].clientNickname
             }}</b>
-            <b v-else>all selected clients</b> from the list?
+            <b v-else>所有选中的用户</b>吗？此操作无法撤销。
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="dialog = false" color="primary">No</v-btn>
-            <v-btn text @click="deleteClient" color="primary">Yes</v-btn>
+            <v-btn text @click="dialog = false" color="primary">取消</v-btn>
+            <v-btn text @click="deleteClient" color="error">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -99,31 +106,31 @@ export default {
           sortable: false,
         },
         {
-          text: "Last Nickname",
+          text: "最后昵称",
           value: "clientNickname",
         },
         {
-          text: "Unique Identifier",
+          text: "唯一标识（UID）",
           value: "clientUniqueIdentifier",
         },
         {
-          text: "Created",
+          text: "首次连接",
           value: "clientCreated",
         },
         {
-          text: "Last",
+          text: "最后连接",
           value: "clientLastconnected",
         },
         {
-          text: "Total",
+          text: "连接次数",
           value: "clientTotalconnections",
         },
         {
-          text: "Last IP",
+          text: "最后 IP",
           value: "clientLastip",
         },
         {
-          text: "Description",
+          text: "描述",
           value: "clientDescription",
         },
       ],
@@ -178,3 +185,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.console-page { max-width: 1440px; padding: 22px 30px 50px; }
+.page-breadcrumb { display: flex; align-items: center; gap: 7px; margin-bottom: 18px; color: #9099a8; font-size: 12px; }
+.page-breadcrumb strong { color: #4b5668; font-weight: 500; }
+.page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.page-title-row h1 { margin: 0; color: #19253b; font-size: 23px; }
+.page-title-row p { margin: 4px 0 0; color: #929cab; font-size: 12px; }
+.content-card { overflow: hidden; }
+@media (max-width: 600px) { .console-page { padding: 16px; } }
+</style>

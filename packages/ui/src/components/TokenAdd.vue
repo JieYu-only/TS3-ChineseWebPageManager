@@ -98,7 +98,7 @@ export default {
     copyToClipboard() {
       this.$clipboard(this.token);
 
-      this.$toast.info("Token Copied To Clipboard");
+      this.$toast.info("权限密钥已复制到剪贴板");
     },
     async createToken() {
       try {
@@ -109,7 +109,7 @@ export default {
           tokendescription: this.tokenDescription,
         });
 
-        this.$toast.success("Token successfully created");
+        this.$toast.success("权限密钥创建成功");
 
         this.token = response.token;
       } catch (err) {

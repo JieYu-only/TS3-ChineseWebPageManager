@@ -31,11 +31,11 @@ export default {
   computed: {
     statusIcon() {
       if (this.client.clientAway) {
-        return "cancel_presentation";
+        return "mdi-account-clock-outline";
       } else if (this.client.clientOutputMuted) {
-        return "volume_off";
+        return "mdi-volume-off";
       } else if (this.client.clientInputMuted) {
-        return "mic_off";
+        return "mdi-microphone-off";
       }
     },
   },

@@ -3,16 +3,16 @@
     <v-layout>
       <v-flex md6 sm8 xs12 offset-md3 offset-sm2>
         <v-card>
-          <v-card-title> Channel Group Edit </v-card-title>
+          <v-card-title>编辑频道组</v-card-title>
           <v-card-text>
             <v-text-field
-              label="Channel Group Name"
+              label="频道组名称"
               v-model="channelGroupName"
               :disabled="$store.state.query.loading"
             ></v-text-field>
             <v-autocomplete
               :items="channelSelection"
-              label="Channel"
+              label="频道"
               v-model="selectedChannel"
               :disabled="$store.state.query.loading"
             ></v-autocomplete>
@@ -24,9 +24,9 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="save" color="primary">OK</v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">Cancel</v-btn>
-            <v-btn text @click="save" color="primary">Apply</v-btn>
+            <v-btn text @click="save('close')" color="primary">保存</v-btn>
+            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn text @click="save('apply')" color="primary">应用</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -151,7 +151,7 @@ export default {
 
       await this.changeMembers(clientAddList, this.channelGroupId);
     },
-    async save(e) {
+    async save(action) {
       try {
         await this.renameChannelGroupName();
         await this.removeMembers();
@@ -160,11 +160,11 @@ export default {
         this.$toast.error(err.message);
       }
 
-      switch (e.target.textContent) {
-        case "OK":
+      switch (action) {
+        case "close":
           this.$router.go(-1);
           break;
-        case "Apply":
+        case "apply":
           try {
             this.channelGroup = await this.getChannelGroup();
           } catch (err) {

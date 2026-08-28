@@ -29,7 +29,7 @@
     <v-speed-dial right bottom fixed>
       <template #activator>
         <v-btn fab color="primary" dark>
-          <v-icon>add</v-icon>
+          <v-icon>mdi-plus</v-icon>
         </v-btn>
       </template>
       <v-btn fab color="primary" dark small :to="{ name: 'channel-add' }">

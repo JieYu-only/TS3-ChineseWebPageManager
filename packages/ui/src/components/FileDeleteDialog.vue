@@ -1,20 +1,17 @@
 <template lang="html">
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
-      <v-card-title
-        >Delete {{ item.type === 0 ? "Folder" : "File" }}</v-card-title
-      >
+      <v-card-title>删除{{ item.type === 0 ? "文件夹" : "文件" }}</v-card-title>
       <v-card-text v-if="item.type === 0">
-        Do you really want to delete this folder? All files inside the deleted
-        folder will be lost.
+        确定要删除这个文件夹吗？文件夹内的所有文件都将被删除。
       </v-card-text>
       <v-card-text v-else>
-        Do you really want to delete this file?
+        确定要删除这个文件吗？
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="deleteFile" color="primary">Yes</v-btn>
-        <v-btn text @click="dialog = false" color="primary">No</v-btn>
+        <v-btn text @click="deleteFile" color="primary">确定</v-btn>
+        <v-btn text @click="dialog = false" color="primary">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

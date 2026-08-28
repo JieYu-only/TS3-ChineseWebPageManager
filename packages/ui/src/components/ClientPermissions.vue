@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="permission-page">
     <v-layout>
       <v-flex xs12>
         <permission-table
@@ -16,7 +16,7 @@
                 :items="clientSelection"
                 v-model="selectedClient"
                 @change="changeClient"
-                label="Client"
+                label="用户"
                 :disabled="$store.state.query.loading"
               ></v-autocomplete>
             </v-flex>
@@ -152,3 +152,5 @@ export default {
   },
 };
 </script>
+
+<style scoped>.permission-page{max-width:1440px;padding:22px 30px 50px}@media(max-width:600px){.permission-page{padding:16px}}</style>

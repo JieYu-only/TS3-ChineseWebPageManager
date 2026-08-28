@@ -5,20 +5,20 @@
       @click="dialog = true"
       :disabled="!!!selectedFiles.length"
     >
-      <v-icon left>delete</v-icon>
-      Remove
+      <v-icon left>mdi-delete</v-icon>
+      删除所选
     </v-btn>
 
     <v-dialog v-model="dialog" max-width="500px">
       <v-card>
-        <v-card-title>Delete Selected Files/Folders</v-card-title>
+        <v-card-title>删除所选文件和文件夹</v-card-title>
         <v-card-text>
-          Do you really want to delete all selected files and folders?
+          确定要删除所有选中的文件和文件夹吗？此操作无法撤销。
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="deleteFiles" color="primary">Yes</v-btn>
-          <v-btn text @click="dialog = false" color="primary">No</v-btn>
+          <v-btn text @click="deleteFiles" color="primary">确定</v-btn>
+          <v-btn text @click="dialog = false" color="primary">取消</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

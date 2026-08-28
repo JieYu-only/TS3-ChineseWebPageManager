@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="permission-page">
     <v-layout>
       <v-flex xs12>
         <permission-table
@@ -16,7 +16,7 @@
                 :items="allGroups"
                 v-model="selectedGroupId"
                 @change="changeChannelGroup"
-                label="Channel Group"
+                label="频道组"
                 :disabled="$store.state.query.loading"
                 item-text="name"
                 item-value="cgid"
@@ -53,13 +53,13 @@ export default {
   computed: {
     allGroups() {
       return [
-        { header: "Regular Groups" },
+        { header: "常规频道组" },
         ...this.regularGroups,
         { divider: true },
-        { header: "Template Groups" },
+        { header: "模板组" },
         ...this.templateGroups,
         { divider: true },
-        { header: "ServerQuery Groups" },
+        { header: "ServerQuery 管理组" },
         ...this.serverQueryGroups,
       ];
     },
@@ -158,3 +158,5 @@ export default {
   },
 };
 </script>
+
+<style scoped>.permission-page{max-width:1440px;padding:22px 30px 50px}@media(max-width:600px){.permission-page{padding:16px}}</style>
