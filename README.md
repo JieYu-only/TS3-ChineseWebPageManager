@@ -85,6 +85,8 @@ Windows 用户可以直接双击项目根目录中的脚本：
 
 首次启动前可以复制并编辑 `.env.example`，或直接运行 `一键启动.bat`。脚本会自动创建 `.env` 并生成随机 `JWT_SECRET`。
 
+脚本会优先使用新版 `docker compose`，其次尝试旧版 `docker-compose`；如果两者都未安装，则自动使用原生 `docker build` 和 `docker run`，无需额外安装 Compose。
+
 如需限制可连接的 TeamSpeak 服务器，请编辑生成的 `.env`：
 
 ```dotenv

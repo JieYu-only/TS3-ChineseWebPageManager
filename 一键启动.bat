@@ -8,7 +8,11 @@ call :check_docker || goto :failed
 call :prepare_env || goto :failed
 
 echo [1/3] 正在构建并启动 TS3 Manager...
-%COMPOSE_COMMAND% up -d --build
+if defined COMPOSE_COMMAND (
+  %COMPOSE_COMMAND% up -d --build
+) else (
+  call :start_with_docker
+)
 if errorlevel 1 goto :failed
 
 echo [2/3] 正在等待管理页面启动...
@@ -37,8 +41,9 @@ if not errorlevel 1 (
   set "COMPOSE_COMMAND=docker-compose"
   exit /b 0
 )
-echo [错误] 未找到 Docker Compose。请安装 Compose 插件或 docker-compose。
-exit /b 1
+echo [提示] 未找到 Docker Compose，将使用原生 Docker 启动。
+set "COMPOSE_COMMAND="
+exit /b 0
 
 :prepare_env
 if not exist ".env" copy /y ".env.example" ".env" >nul
@@ -50,6 +55,28 @@ if errorlevel 1 (
   echo [错误] 无法生成 .env 配置。
   exit /b 1
 )
+exit /b 0
+
+:start_with_docker
+for /f "tokens=2 delims==" %%P in ('findstr /b "WEB_PORT=" .env') do set "WEB_PORT=%%P"
+for /f "tokens=2 delims==" %%P in ('findstr /b "JWT_SECRET=" .env') do set "JWT_SECRET=%%P"
+for /f "tokens=2,* delims==" %%P in ('findstr /b "WHITELIST=" .env') do set "WHITELIST=%%P"
+if not defined WEB_PORT set "WEB_PORT=8080"
+
+echo 正在构建本地镜像...
+docker build -t ts3-manager-custom:latest .
+if errorlevel 1 exit /b 1
+
+docker inspect ts3-manager >nul 2>&1
+if not errorlevel 1 (
+  echo 正在替换旧容器...
+  docker rm -f ts3-manager >nul
+  if errorlevel 1 exit /b 1
+)
+
+echo 正在创建容器...
+docker run -d --name ts3-manager --restart unless-stopped -p %WEB_PORT%:8080 -e PORT=8080 -e JWT_SECRET="%JWT_SECRET%" -e WHITELIST="%WHITELIST%" ts3-manager-custom:latest >nul
+if errorlevel 1 exit /b 1
 exit /b 0
 
 :failed
