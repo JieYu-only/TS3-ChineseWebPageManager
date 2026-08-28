@@ -1,194 +1,162 @@
 const socket = {};
+let io = null;
 
 socket.init = (server, corsOptions) => {
-  const config = require("./config");
-  const fs = require("fs");
-  const io = require("socket.io")(server, {
-    cors: corsOptions,
-  });
-  const crypto = require("crypto");
-  const jwt = require("jsonwebtoken");
+  const { TeamSpeak } = require("ts3-nodejs-library");
   const { logger, whitelist, sanatizer } = require("./utils");
   const cookie = require("cookie");
-  const { TeamSpeak } = require("ts3-nodejs-library");
+  const { sessionManager } = require("./session");
+
+  io = require("socket.io")(server, { cors: corsOptions });
 
   /**
-   * Client connects automatically to the websocket server.
+   * Authenticate the socket by resolving the HttpOnly session cookie to a valid
+   * server-side session. Credentials are never sent by the client.
    */
+  io.use(async (socket, next) => {
+    try {
+      const cookies = cookie.parse(socket.handshake.headers.cookie || "");
+      const sessionId = cookies.ts3_session;
+
+      if (!sessionId) return next(new Error("未登录或会话已过期"));
+
+      const session = sessionManager.get(sessionId);
+
+      if (!session) return next(new Error("未登录或会话已过期"));
+
+      socket.data.sessionId = sessionId;
+      socket.data.session = session;
+
+      next();
+    } catch (error) {
+      next(new Error("会话验证失败"));
+    }
+  });
+
   io.on("connection", async (socket) => {
-    let ip =
+    const session = socket.data.session;
+    const ip =
       socket.handshake.headers["x-forwarded-for"] ||
       socket.client.conn.remoteAddress;
-    let log = logger.child({ client: ip });
-    let clientCookie = socket.handshake.headers.cookie
-      ? cookie.parse(socket.handshake.headers.cookie)
-      : {};
-    let ServerQuery = {};
+    const log = logger.child({ client: ip });
 
     log.info("Socket.io connected");
 
     /**
      * Send the TeamSpeak error message back to the frontend.
-     * Check if the connection to the ServerQuery is established.
-     * @param  {Object}   err - error object
-     * @param  {Function} fn  - socket.io callback function
+     * @param {Object} err
+     * @param {Function} fn
      */
     const handleServerQueryError = (err, fn) => {
       log.error(err.message);
 
-      if (ServerQuery.query && ServerQuery.query.connected) {
-        fn({
-          message: err.message,
-          id: err.id,
-          connected: true,
-        });
+      const serverQuery = socket.data.serverQuery;
+
+      if (serverQuery && serverQuery.query && serverQuery.query.connected) {
+        fn({ message: err.message, id: err.id, connected: true });
       } else {
-        fn({
-          message: err.message,
-          connected: false,
-        });
+        fn({ message: err.message, connected: false });
       }
     };
 
     /**
-     * Handle the responses from the ServerQuery and send it to the frontend.
-     * By default socket.io converts the object to JSON and parses it on the
-     * client side automatically to a javascript object again.
-     * Sometimes the response contains properties which are undefined.
-     * These properties would be removed because JSON have no value "undefined".
-     * Because of that, all undefined properties are converted to "null" before
-     * they are emittet to the ui.
-     * @param  {Array}   response - results from the ServerQuery
-     * @param  {Function} fn      - socket.io callback function
+     * Serialise a response, replacing undefined with "" so socket.io JSON
+     * serialisation keeps every property.
+     * @param {*} response
+     * @param {Function} fn
      */
     const handleResponse = (response, fn) => {
       response = JSON.stringify(response, (k, v) => (v === undefined ? "" : v));
-
       fn(JSON.parse(response));
     };
 
     /**
-     * Register all available ServerQuery events.
+     * Register TeamSpeak event listeners that forward to the client.
+     * @param {object} serverQuery
      */
-    const initEventListeners = () => {
-      ServerQuery.on("error", (err) => {
+    const initEventListeners = (serverQuery) => {
+      serverQuery.on("error", (err) => {
         log.error(err.stack);
-
         socket.emit("teamspeak-error", err);
       });
-      ServerQuery.on("flooding", () => log.warn("Flooding"));
-      ServerQuery.on("debug", (data) => {
-        if (data.type === "send") log.info(data.data);
-      });
-      ServerQuery.on("close", () => {
+      serverQuery.on("flooding", () => log.warn("Flooding"));
+      serverQuery.on("close", () => {
         log.info("ServerQuery connection closed");
-
-        ServerQuery.removeAllListeners();
-
+        serverQuery.removeAllListeners();
         socket.emit("teamspeak-disconnect");
       });
-      ServerQuery.on("clientconnect", (data) =>
+      serverQuery.on("clientconnect", (data) =>
         socket.emit("teamspeak-clientconnect", data)
       );
-      ServerQuery.on("clientdisconnect", (data) =>
+      serverQuery.on("clientdisconnect", (data) =>
         socket.emit("teamspeak-clientdisconnect", data)
       );
-      ServerQuery.on("clientmoved", (data) =>
+      serverQuery.on("clientmoved", (data) =>
         socket.emit("teamspeak-clientmoved", data)
       );
-      ServerQuery.on("tokenused", (data) =>
+      serverQuery.on("tokenused", (data) =>
         socket.emit("teamspeak-tokenused", data)
       );
-      ServerQuery.on("textmessage", (data) =>
+      serverQuery.on("textmessage", (data) =>
         socket.emit("teamspeak-textmessage", data)
       );
-      ServerQuery.on("serveredit", (data) =>
+      serverQuery.on("serveredit", (data) =>
         socket.emit("teamspeak-serveredit", data)
       );
-      ServerQuery.on("channeledit", (data) =>
+      serverQuery.on("channeledit", (data) =>
         socket.emit("teamspeak-channeledit", data)
       );
-      ServerQuery.on("channelcreate", (data) =>
+      serverQuery.on("channelcreate", (data) =>
         socket.emit("teamspeak-channelcreate", data)
       );
-      ServerQuery.on("channelmoved", (data) =>
+      serverQuery.on("channelmoved", (data) =>
         socket.emit("teamspeak-channelmoved", data)
       );
-      ServerQuery.on("channeldelete", (data) =>
+      serverQuery.on("channeldelete", (data) =>
         socket.emit("teamspeak-channeldelete", data)
       );
     };
 
-    /**
-     * Decode the the token and send the decoded data back to the frontend.
-     */
-    socket.on("autofillform", (token, fn) => {
-      try {
-        let decoded = jwt.verify(token, config.secret);
+    // Establish the ServerQuery connection from the stored (server-side)
+    // credentials. This replaces the old client-supplied "teamspeak-connect".
+    try {
+      const serverQuery = await TeamSpeak.connect(session.credentials);
 
-        fn(decoded);
-      } catch (err) {
-        fn(err.message);
+      socket.data.serverQuery = serverQuery;
+
+      if (session.serverId) {
+        await serverQuery.execute("use", { sid: session.serverId });
       }
-    });
 
-    /**
-     * Try to reconnect to the ServerQuery.
-     */
-    socket.on("teamspeak-reconnect", async ({ token, serverId }, fn) => {
-      try {
-        let decoded = jwt.verify(token, config.secret);
+      initEventListeners(serverQuery);
 
-        whitelist.check(decoded.host);
-
-        ServerQuery = await TeamSpeak.connect(decoded);
-
-        if (serverId) {
-          await ServerQuery.execute("use", { sid: serverId });
-
-          initEventListeners();
-        }
-
-        log.info("ServerQuery reconnected");
-
-        handleResponse({ reconnected: true }, fn);
-      } catch (err) {
-        log.error(err.message);
-
-        handleServerQueryError(err, fn);
+      if (session.remember) {
+        sessionManager.get(session.id); // refresh lastUsedAt
       }
-    });
+
+      socket.emit("teamspeak-connected", {
+        connected: true,
+        serverId: session.serverId,
+      });
+    } catch (error) {
+      log.error(error.message);
+      socket.emit("teamspeak-error", { message: error.message, connected: false });
+    }
 
     /**
-     * Connect and login to the ServerQuery.
-     * Try to pick the first available server
-     */
-    socket.on("teamspeak-connect", async (options, fn) => {
-      try {
-        const validOptions = sanatizer.sanatizeOptions(options);
-
-        whitelist.check(validOptions.host);
-
-        ServerQuery = await TeamSpeak.connect(validOptions);
-
-        log.info("ServerQuery connected");
-
-        token = jwt.sign(validOptions, config.secret);
-
-        fn({ token });
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
-
-    /**
-     * Send command to the ServerQuery. The parameters and options are optional.
+     * Send command to the ServerQuery.
      */
     socket.on("teamspeak-execute", async (query, fn) => {
       let { command, params, options } = query;
 
       try {
-        let response = await ServerQuery.execute(command, params, options);
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+
+        let response = await socket.data.serverQuery.execute(
+          command,
+          params,
+          options
+        );
 
         handleResponse(response, fn);
       } catch (err) {
@@ -197,11 +165,15 @@ socket.init = (server, corsOptions) => {
     });
 
     /**
-     * Create a snapshot and send it back to the client.
+     * Create a snapshot.
      */
     socket.on("teamspeak-createsnapshot", async (fn) => {
       try {
-        let response = await ServerQuery.execute("serversnapshotcreate");
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+
+        let response = await socket.data.serverQuery.execute(
+          "serversnapshotcreate"
+        );
 
         handleResponse(response, fn);
       } catch (err) {
@@ -210,17 +182,19 @@ socket.init = (server, corsOptions) => {
     });
 
     /**
-     * Get the snapshot file and restore it.
+     * Deploy a snapshot.
      */
     socket.on("teamspeak-deploysnapshot", async (snapshot, fn) => {
       try {
-        // (Re)encoding the sended string (snapshot) to base64.
-        // This prevents crashing the sever if an invalid file is uploaded.
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+
         let verifiedSnapshot = Buffer.from(
           snapshot.toString(),
           "base64"
         ).toString("base64");
-        let response = await ServerQuery.deploySnapshot(verifiedSnapshot);
+        let response = await socket.data.serverQuery.deploySnapshot(
+          verifiedSnapshot
+        );
 
         handleResponse(response, fn);
       } catch (err) {
@@ -229,24 +203,22 @@ socket.init = (server, corsOptions) => {
     });
 
     /**
-     * Register TeamSpeak servernotifyregister. Used when a virtual server gets selected.
+     * Register TeamSpeak event notifications.
      */
     socket.on("teamspeak-registerevents", async (fn) => {
       try {
-        // Check if the event listeners for the teamspeak notifications got already initialized.
-        // If this is not the case, eventNames() will just return in Array with the value [newListener].
-        // With v3 of the TS3-NodeJS-Library it registers server notifications automatically when you start listening of the events.
-        // To avoid registering teamspeak notifications multiple times if a server got stopped and restarted
-        // or a server got recovered from a snapshot, this check is needed.
-        if (ServerQuery.eventNames().length > 1) {
-          await ServerQuery.registerEvent("textserver");
-          await ServerQuery.registerEvent("textchannel");
-          await ServerQuery.registerEvent("textprivate");
-          await ServerQuery.registerEvent("server");
-          await ServerQuery.registerEvent("channel", 0);
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+
+        const serverQuery = socket.data.serverQuery;
+
+        if (serverQuery.eventNames().length > 1) {
+          await serverQuery.registerEvent("textserver");
+          await serverQuery.registerEvent("textchannel");
+          await serverQuery.registerEvent("textprivate");
+          await serverQuery.registerEvent("server");
+          await serverQuery.registerEvent("channel", 0);
         } else {
-          // This will fire after login when no event are initialized.
-          initEventListeners();
+          initEventListeners(serverQuery);
         }
 
         handleResponse("ok", fn);
@@ -256,11 +228,13 @@ socket.init = (server, corsOptions) => {
     });
 
     /**
-     * Unregister TeamSpeak notifications.
+     * Unregister TeamSpeak event notifications.
      */
     socket.on("teamspeak-unregisterevent", async (fn) => {
       try {
-        let response = await ServerQuery.unregisterEvent();
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+
+        let response = await socket.data.serverQuery.unregisterEvent();
 
         handleResponse(response, fn);
       } catch (err) {
@@ -269,38 +243,51 @@ socket.init = (server, corsOptions) => {
     });
 
     /**
-     * Download files from the TeamSpeak server. Is used for smaller files like avatars.
-     * Bigger files are handled by the api route and are piped directly to the
-     * ServerQuery socket to save RAM.
+     * Download a small file (e.g. avatars) as base64.
      */
     socket.on("teamspeak-downloadfile", async ({ path, cid, cpw }, fn) => {
       try {
-        let buffer = await ServerQuery.downloadFile(path, cid, cpw);
+        if (!socket.data.serverQuery) throw new Error("连接未就绪");
 
-        handleResponse(buffer.toString("base64"), fn); // handleResponse(buffer, fn);
+        let buffer = await socket.data.serverQuery.downloadFile(path, cid, cpw);
+
+        handleResponse(buffer.toString("base64"), fn);
       } catch (err) {
         handleServerQueryError(err, fn);
       }
     });
 
     /**
-     * When the client disconnects from the server.
-     * Try to quit the connection to the ServerQuery, if the client closed the
-     * connection without logging out properly.
-     *
+     * When the client disconnects, quit the ServerQuery connection.
      */
     socket.on("disconnect", async () => {
       log.info("Socket.io disconnected");
 
-      if (ServerQuery instanceof TeamSpeak) {
+      const serverQuery = socket.data.serverQuery;
+
+      if (serverQuery instanceof TeamSpeak) {
         try {
-          await ServerQuery.execute("quit");
+          await serverQuery.execute("quit");
         } catch (err) {
           log.error(err.message);
         }
       }
     });
   });
+};
+
+/**
+ * Close every socket belonging to a session (used on logout).
+ * @param {string} sessionId
+ */
+socket.closeSession = (sessionId) => {
+  if (!io) return;
+
+  for (const [, s] of io.sockets.sockets.entries()) {
+    if (s.data && s.data.sessionId === sessionId) {
+      s.disconnect(true);
+    }
+  }
 };
 
 module.exports = socket;
