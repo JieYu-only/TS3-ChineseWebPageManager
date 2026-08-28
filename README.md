@@ -227,6 +227,8 @@ docker compose logs -f ts3-manager
 
 PWA 使用自定义 Workbox Service Worker：静态构建资源支持离线访问，API 与 Socket.IO 始终走网络。新版本安装完成后会自动接管并刷新一次，同时清理旧版 Workbox 预缓存。
 
+生产构建默认关闭 source map，并复用单一 WOFF2 图标字体；Webpack 运行时代码独立分块，以减少发布体积并提高长期缓存命中率。
+
 ### 安装依赖
 
 ```powershell

@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { version } from "../../../../package.json";
+import packageInfo from "../../../../package.json";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -50,7 +50,7 @@ export default {
       });
     });
   },
-  data() { return { valid: false, loading: false, showPassword: false, rules: { required: (value) => !!value || "此项为必填项" }, form: { host: "", queryport: 10022, ssh: true, username: "", password: "" }, appVersion: version }; },
+  data() { return { valid: false, loading: false, showPassword: false, rules: { required: (value) => !!value || "此项为必填项" }, form: { host: "", queryport: 10022, ssh: true, username: "", password: "" }, appVersion: packageInfo.version }; },
   computed: { rememberLogin: { set(value) { this.$store.commit("setRememberLogin", value); }, get() { return this.$store.state.settings.rememberLogin; } } },
   methods: {
     async connect() {

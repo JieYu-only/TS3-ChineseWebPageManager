@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { version } from "../../../../package.json";
+import packageInfo from "../../../../package.json";
 
 export default {
   data() {
@@ -58,7 +58,7 @@ export default {
           "https://www.ts3.app/releases",
         ],
       },
-      currentTSMVersion: version,
+      currentTSMVersion: packageInfo.version,
       latestTSMVersion: undefined,
       latestTSMRelease: {}, // latest TS3 Manager release
       currentTeamSpeakVersion: undefined,
