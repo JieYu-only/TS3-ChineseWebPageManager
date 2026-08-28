@@ -1,11 +1,18 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul
 cd /d "%~dp0"
 title TS3 Manager - 一键启动
 
-call :check_docker || goto :failed
 call :prepare_env || goto :failed
+
+if exist "%~dp0TS3-ChineseWebPageManager.exe" (
+  call :start_with_exe || goto :failed
+  goto :started
+)
+
+echo [提示] 未找到 Windows 定制版 EXE，将尝试使用 Docker。
+call :check_docker || goto :failed
 
 echo [1/3] 正在构建并启动 TS3 Manager...
 if defined COMPOSE_COMMAND (
@@ -15,6 +22,7 @@ if defined COMPOSE_COMMAND (
 )
 if errorlevel 1 goto :failed
 
+:started
 echo [2/3] 正在等待管理页面启动...
 timeout /t 5 /nobreak >nul
 
@@ -31,6 +39,15 @@ if errorlevel 1 (
   echo [错误] Docker Desktop 未安装、未启动，或当前用户无法访问 Docker。
   exit /b 1
 )
+set "DOCKER_OS_TYPE="
+for /f "usebackq delims=" %%O in (`docker info --format "{{.OSType}}" 2^>nul`) do set "DOCKER_OS_TYPE=%%O"
+if /i "%DOCKER_OS_TYPE%"=="windows" (
+  echo [ERROR] Docker is currently using Windows containers.
+  echo This project requires Linux containers.
+  echo Open the Docker Desktop tray menu and select "Switch to Linux containers".
+  echo Then wait for Docker Desktop to restart and run this file again.
+  exit /b 1
+)
 docker compose version >nul 2>&1
 if not errorlevel 1 (
   set "COMPOSE_COMMAND=docker compose"
@@ -43,6 +60,23 @@ if not errorlevel 1 (
 )
 echo [提示] 未找到 Docker Compose，将使用原生 Docker 启动。
 set "COMPOSE_COMMAND="
+exit /b 0
+
+:start_with_exe
+for /f "tokens=2 delims==" %%P in ('findstr /b "WEB_PORT=" .env') do set "WEB_PORT=%%P"
+if not defined WEB_PORT set "WEB_PORT=8080"
+if exist ".ts3-manager.pid" (
+  set /p OLD_PID=<".ts3-manager.pid"
+  tasklist /fi "PID eq !OLD_PID!" 2>nul | findstr /r /c:"[ ]!OLD_PID![ ]" >nul
+  if not errorlevel 1 (
+    echo [提示] TS3 Manager 已经在运行。
+    exit /b 0
+  )
+  del /q ".ts3-manager.pid" >nul 2>&1
+)
+echo [1/3] 正在启动 Windows 原生版 TS3 Manager...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $env:PORT='%WEB_PORT%'; $p=Start-Process -FilePath (Join-Path $PWD 'TS3-ChineseWebPageManager.exe') -WorkingDirectory $PWD -RedirectStandardOutput (Join-Path $PWD 'console.log') -RedirectStandardError (Join-Path $PWD 'console-error.log') -PassThru; Set-Content -LiteralPath '.ts3-manager.pid' -Value $p.Id -Encoding ascii"
+if errorlevel 1 exit /b 1
 exit /b 0
 
 :prepare_env
@@ -111,6 +145,6 @@ exit /b 1
 
 :success
 echo.
-echo 可以关闭此窗口，容器会继续在后台运行。
+echo 可以关闭此窗口，TS3 Manager 会继续在后台运行。
 timeout /t 3 /nobreak >nul
 exit /b 0

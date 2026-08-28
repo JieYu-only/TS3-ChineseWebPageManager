@@ -4,8 +4,6 @@ chcp 65001 >nul
 cd /d "%~dp0"
 title TS3 Manager - 更新并启动
 
-docker version >nul 2>&1
-if errorlevel 1 goto :docker_error
 git --version >nul 2>&1
 if errorlevel 1 goto :git_error
 
@@ -36,10 +34,6 @@ if errorlevel 1 goto :failed
 
 echo [4/4] 更新与启动完成。
 exit /b 0
-
-:docker_error
-echo [错误] Docker Desktop 未启动或不可用。
-goto :failed
 
 :git_error
 echo [错误] 未找到 Git，无法检查更新。

@@ -69,7 +69,7 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 
 ServerQuery 密码不是普通 TeamSpeak 客户端的服务器密码。首次安装 TeamSpeak 服务端时通常会生成 `serveradmin` 密码。
 
-## Docker 部署（推荐）
+## Windows 原生版（推荐）
 
 ### Windows 一键管理
 
@@ -77,15 +77,20 @@ Windows 用户可以直接双击项目根目录中的脚本：
 
 | 文件 | 用途 |
 | --- | --- |
-| `一键启动.bat` | 检查 Docker、生成本机密钥、构建镜像、启动容器并打开管理页面 |
-| `一键停止.bat` | 停止服务，但保留容器和配置 |
-| `一键重启.bat` | 重启现有服务；尚未创建容器时自动执行首次启动 |
-| `查看日志.bat` | 显示最近 200 行日志并持续跟踪，按 `Ctrl+C` 退出 |
+| `一键启动.bat` | 优先启动 Windows 原生 EXE；没有 EXE 时自动回退到 Docker |
+| `一键停止.bat` | 停止 Windows 原生进程或 Docker 容器，并保留配置 |
+| `一键重启.bat` | 按当前运行方式停止并重新启动服务 |
+| `查看日志.bat` | 显示 Windows 原生版或 Docker 版日志，按 `Ctrl+C` 退出 |
 | `更新并启动.bat` | 安全检查上游更新，然后重新构建和启动 |
+| `构建Windows版.bat` | 从当前源码生成 `TS3-ChineseWebPageManager.exe` |
 
 首次启动前可以复制并编辑 `.env.example`，或直接运行 `一键启动.bat`。脚本会自动创建 `.env` 并生成随机 `JWT_SECRET`。
 
-脚本会优先使用新版 `docker compose`，其次尝试旧版 `docker-compose`；如果两者都未安装，则自动使用原生 `docker build` 和 `docker run`，无需额外安装 Compose。
+从 GitHub Releases 下载 `TS3-ChineseWebPageManager-win-x64-版本号.exe` 后，将其重命名为 `TS3-ChineseWebPageManager.exe` 并放在项目根目录，然后双击 `一键启动.bat`。Windows 原生版不需要安装 Docker。
+
+开发者也可以双击 `构建Windows版.bat` 从当前源码生成 EXE。构建需要 Node.js 和网络连接；普通使用者直接下载 Release 中的 EXE 即可。
+
+如果项目根目录没有 EXE，启动脚本才会尝试 Docker：优先使用新版 `docker compose`，其次尝试旧版 `docker-compose`；两者都未安装时使用原生 `docker build` 和 `docker run`。
 
 如需限制可连接的 TeamSpeak 服务器，请编辑生成的 `.env`：
 
@@ -98,6 +103,8 @@ WHITELIST=ts3.example.com,192.0.2.10
 `.env` 已被 Git 忽略，不会被正常提交到代码仓库。
 
 “更新并启动”检测到未提交的源码修改时会跳过远程拉取，只重新构建当前版本，避免覆盖定制页面。
+
+## Docker 部署（可选）
 
 ### 1. 构建本项目镜像
 
@@ -270,6 +277,12 @@ packages/ui/src/components/
 `一键启动.bat` 会先通过 Docker Hub 构建；连接失败后会自动改用 [DaoCloud 公共镜像](https://github.com/DaoCloud/public-image-mirror) 重试两次。该镜像采用地址前缀方式代理 Docker Hub，镜像内容与源站保持一致。
 
 如果三次尝试仍然失败，请在 Docker Desktop 的代理或 Docker Engine 配置中设置当前网络可用的代理/镜像加速服务，应用配置并重启 Docker Desktop，然后再次运行脚本。
+
+### 提示 `no matching manifest for windows`
+
+这表示 Docker Desktop 当前使用的是 Windows 容器，而本项目使用 Linux 容器。请右键任务栏通知区域的 Docker Desktop 鲸鱼图标，选择 **Switch to Linux containers**，等待 Docker Desktop 重启完成后，再运行 `一键启动.bat`。
+
+启动脚本会在构建前检查容器模式；如果检测到 Windows 容器，会直接停止并显示切换提示，不再重复下载镜像。
 
 ## 上游项目与许可证
 

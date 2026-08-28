@@ -4,6 +4,18 @@ chcp 65001 >nul
 cd /d "%~dp0"
 title TS3 Manager - 一键重启
 
+if exist ".ts3-manager.pid" (
+  call "%~dp0一键停止.bat"
+  if errorlevel 1 exit /b 1
+  call "%~dp0一键启动.bat"
+  exit /b %errorlevel%
+)
+
+if exist "%~dp0TS3-ChineseWebPageManager.exe" (
+  call "%~dp0一键启动.bat"
+  exit /b %errorlevel%
+)
+
 docker version >nul 2>&1
 if errorlevel 1 goto :docker_error
 

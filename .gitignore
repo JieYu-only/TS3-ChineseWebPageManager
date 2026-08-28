@@ -40,3 +40,5 @@ test.js
 
 # Executables created with zeit/pkg
 *.exe
+.ts3-manager.pid
+console-error.log

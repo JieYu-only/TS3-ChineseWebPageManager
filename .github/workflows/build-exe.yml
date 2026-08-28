@@ -15,7 +15,7 @@ jobs:
         include:
           - os: windows-latest
             file: server.exe
-            file-name: ts3-manager-win-x64-${{ github.event.release.tag_name }}.exe
+            file-name: TS3-ChineseWebPageManager-win-x64-${{ github.event.release.tag_name }}.exe
           - os: ubuntu-latest
             file: server
             file-name: ts3-manager-linux-x64-${{ github.event.release.tag_name }}
