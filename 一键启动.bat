@@ -50,9 +50,14 @@ if not exist ".env" copy /y ".env.example" ".env" >nul
 findstr /r /c:"^JWT_SECRET=..*" ".env" >nul 2>&1
 if not errorlevel 1 exit /b 0
 echo 正在生成本机专用的 JWT_SECRET...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=[Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)); $c=Get-Content -LiteralPath '.env'; $c=$c -replace '^JWT_SECRET=.*$',('JWT_SECRET='+$p); Set-Content -LiteralPath '.env' -Value $c -Encoding utf8"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; try { $bytes=New-Object byte[] 32; $rng=[Security.Cryptography.RandomNumberGenerator]::Create(); $rng.GetBytes($bytes); $rng.Dispose(); $p=($bytes | ForEach-Object { $_.ToString('x2') }) -join ''; $c=Get-Content -LiteralPath '.env'; $c=$c -replace '^JWT_SECRET=.*$',('JWT_SECRET='+$p); Set-Content -LiteralPath '.env' -Value $c -Encoding utf8; exit 0 } catch { Write-Error $_; exit 1 }"
 if errorlevel 1 (
   echo [错误] 无法生成 .env 配置。
+  exit /b 1
+)
+findstr /r /c:"^JWT_SECRET=..*" .env >nul 2>&1
+if errorlevel 1 (
+  echo [错误] JWT_SECRET 生成后校验失败。
   exit /b 1
 )
 exit /b 0
@@ -64,8 +69,23 @@ for /f "tokens=2,* delims==" %%P in ('findstr /b "WHITELIST=" .env') do set "WHI
 if not defined WEB_PORT set "WEB_PORT=8080"
 
 echo 正在构建本地镜像...
+set "BUILD_ATTEMPT=1"
+:build_image
+echo Docker 镜像构建尝试 %BUILD_ATTEMPT%/3...
 docker build -t ts3-manager-custom:latest .
-if errorlevel 1 exit /b 1
+if not errorlevel 1 goto :build_complete
+if %BUILD_ATTEMPT% GEQ 3 (
+  echo.
+  echo [错误] 连续 3 次无法构建镜像。
+  echo 如果提示 registry-1.docker.io 超时，请在 Docker Desktop 中配置代理或镜像加速器后重试。
+  exit /b 1
+)
+set /a BUILD_ATTEMPT+=1
+echo 构建失败，10 秒后重试...
+timeout /t 10 /nobreak >nul
+goto :build_image
+
+:build_complete
 
 docker inspect ts3-manager >nul 2>&1
 if not errorlevel 1 (

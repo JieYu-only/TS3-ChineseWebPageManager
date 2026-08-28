@@ -263,6 +263,12 @@ packages/ui/src/components/
 
 确认已经选择正确的虚拟服务器、快照文件格式正确，并且 ServerQuery 账号拥有快照部署权限。
 
+### Docker Hub 连接超时
+
+如果构建时出现 `registry-1.docker.io`、`context deadline exceeded` 或 `Client.Timeout exceeded`，说明 Docker 无法正常访问 Docker Hub，并非项目代码错误。
+
+请在 Docker Desktop 的代理或 Docker Engine 配置中设置你当前网络可用的代理/镜像加速服务，应用配置并重启 Docker Desktop，然后再次运行 `一键启动.bat`。启动脚本会自动重试构建三次。
+
 ## 上游项目与许可证
 
 本项目基于 [joni1802/ts3-manager](https://github.com/joni1802/ts3-manager) 修改。原项目及本项目代码按照仓库中的 MIT License 使用。
