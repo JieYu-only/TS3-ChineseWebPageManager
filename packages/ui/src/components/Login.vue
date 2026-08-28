@@ -41,6 +41,7 @@
 import packageInfo from "../../../../package.json";
 import logo from "@/assets/ts3_manager_logo.svg";
 import { login as sessionLogin } from "@/api/session";
+import { connectToSession } from "@/socket";
 
 export default {
   data() {
@@ -78,12 +79,12 @@ export default {
           remember: this.rememberLogin,
         });
 
-        this.$store.dispatch("saveConnection", {
+        await connectToSession();
+
+        await this.$store.dispatch("saveConnection", {
           serverId: null,
           sessionExpiresAt: response.expiresAt,
         });
-
-        if (!this.$socket.connected) this.$socket.open();
 
         this.$router.push({ name: "servers" });
       } catch (err) {

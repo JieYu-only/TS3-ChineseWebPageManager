@@ -21,7 +21,7 @@ import "./registerServiceWorker";
 
 import store from "./store";
 import router from "./router";
-import socket from "./socket";
+import socket, { connectToSession } from "./socket";
 
 (async () => {
   NProgress.configure({
@@ -94,11 +94,11 @@ import socket from "./socket";
     const sessionStatusResp = await sessionStatus();
 
     if (sessionStatusResp.connected) {
-      store.dispatch("saveConnection", {
+      await connectToSession();
+      await store.dispatch("saveConnection", {
         sessionExpiresAt: sessionStatusResp.expiresAt,
         serverId: sessionStatusResp.serverId,
       });
-      socket.open();
     } else {
       store.dispatch("clearConnection");
     }

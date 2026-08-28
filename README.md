@@ -152,6 +152,7 @@ docker run -d `
   --restart unless-stopped `
   -p 8080:8080 `
   -e JWT_SECRET="请替换成足够长的随机字符串" `
+  -e SESSION_COOKIE_SECURE="false" `
   -e WHITELIST="你的TS3服务器IP或域名" `
   ts3-manager-custom
 ```
@@ -162,11 +163,13 @@ docker run -d `
 http://localhost:8080
 ```
 
-部署在远程服务器时访问：
+部署在远程服务器时应通过 Nginx、Caddy 等反向代理启用 HTTPS，然后访问：
 
 ```text
-http://服务器IP:8080
+https://你的管理面板域名
 ```
+
+`SESSION_COOKIE_SECURE=false` 只适用于可信局域网或本机的纯 HTTP 部署；公网部署必须保持 `true` 并使用 HTTPS，否则会话 Cookie 无法安全传输。
 
 ### Docker Compose 示例
 
@@ -182,6 +185,7 @@ services:
     environment:
       PORT: "8080"
       JWT_SECRET: "请替换成足够长的随机字符串"
+      SESSION_COOKIE_SECURE: "true"
       WHITELIST: "ts3.example.com,192.0.2.10"
 ```
 
@@ -205,6 +209,7 @@ docker compose logs -f ts3-manager
 | `PORT` | Web 服务监听端口 | Docker 中为 `8080` |
 | `JWT_SECRET` | 兼容用旧密钥（新登录改用服务端会话） | 每次启动随机生成 |
 | `SESSION_ENCRYPTION_KEY` | 加密“记住登录”长会话凭据的 32 字节 Base64 密钥 | 首次启动自动生成并保存到 `data/session.key` |
+| `SESSION_COOKIE_SECURE` | 是否仅通过 HTTPS 发送会话 Cookie；公网必须为 `true` | `true` |
 | `WHITELIST` | 允许连接的 TS3 地址，多个地址以英文逗号分隔 | 允许任意地址 |
 
 ## 凭据安全

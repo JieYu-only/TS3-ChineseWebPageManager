@@ -47,3 +47,14 @@ export function status() {
     })
     .then((data) => data.data);
 }
+
+/** Persist the selected virtual server in the current server-side session. */
+export function updateServer(serverId) {
+  return axios
+    .patch(
+      `${apiBase()}/api/session/server`,
+      { serverId },
+      { withCredentials: true }
+    )
+    .then((data) => data.data);
+}

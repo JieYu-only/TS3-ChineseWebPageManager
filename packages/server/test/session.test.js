@@ -166,6 +166,37 @@ test("get() refreshes lastUsedAt", () => {
   assert.ok(refreshed.lastUsedAt >= Date.now() - 1000);
 });
 
+test("remembered sessions also expire after 8 hours idle", () => {
+  const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "idle.enc"));
+  const manager = new SessionManager({ encryptedStore: store });
+  const session = manager.create({ credentials, remember: true });
+
+  session.lastUsedAt = Date.now() - 9 * 60 * 60 * 1000;
+  store.set(session);
+  manager.memory.clear();
+
+  assert.strictEqual(manager.get(session.id), null);
+});
+
+test("remembered session activity and server selection persist to disk", () => {
+  const file = path.join(DATA_DIR, "activity.enc");
+  const store = new EncryptedFileSessionStore(file);
+  const manager = new SessionManager({ encryptedStore: store });
+  const session = manager.create({ credentials, remember: true });
+
+  session.lastUsedAt = Date.now() - 60 * 60 * 1000;
+  store.set(session);
+  manager.memory.clear();
+
+  const refreshed = manager.get(session.id);
+  assert.ok(refreshed.lastUsedAt >= Date.now() - 1000);
+  manager.updateServerId(session.id, 9);
+
+  const reloaded = new EncryptedFileSessionStore(file).get(session.id);
+  assert.ok(reloaded.lastUsedAt >= Date.now() - 1000);
+  assert.strictEqual(reloaded.serverId, "9");
+});
+
 test("No password is written to the encrypted file in plaintext", () => {
   const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "sess3.enc"));
   const session = new SessionManager({ encryptedStore: store }).create({

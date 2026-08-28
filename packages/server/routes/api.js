@@ -153,6 +153,21 @@ router.use(async (req, res, next) => {
   }
 });
 
+/** Persist the currently selected virtual server in the authenticated session. */
+router.patch("/session/server", (req, res) => {
+  const sessionId = req.cookies && req.cookies[SESSION_COOKIE];
+  const serverId = req.body && req.body.serverId;
+
+  if (serverId === undefined || serverId === null || serverId === "") {
+    return res.status(400).json({ message: "缺少服务器 ID" });
+  }
+
+  const session = sessionManager.updateServerId(sessionId, serverId);
+  if (!session) return res.status(401).json({ message: "未登录或会话已过期" });
+
+  return res.json({ serverId: session.serverId });
+});
+
 /**
  * Download file from the server.
  */

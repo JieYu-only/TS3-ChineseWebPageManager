@@ -2,6 +2,7 @@ import socket from "../socket";
 import store from "../store";
 import router from "../router";
 import NProgress from "nprogress";
+import { updateServer } from "./session";
 
 // Polyfill for EventTarget because Safari has no constructor for it
 import EventTarget from "@ungap/event-target";
@@ -210,7 +211,8 @@ TeamSpeak.unregisterEvent = () => {
 
 TeamSpeak.selectServer = (sid) => {
   return TeamSpeak.execute("use", { sid })
-    .then(() => store.dispatch("saveServerId", sid))
+    .then(() => updateServer(sid))
+    .then(() => store.dispatch("setServerIdAction", sid))
     .then(() => TeamSpeak.registerEvents())
     .then(() => TeamSpeak.execute("whoami"))
     .then((userInfo) => store.commit("saveUserInfo", userInfo[0]));

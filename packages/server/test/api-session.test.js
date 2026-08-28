@@ -108,6 +108,41 @@ test("api: session endpoints", async (t) => {
     assert.strictEqual(data.connected, true);
   });
 
+  await t.test("selected virtual server is persisted in the session", async () => {
+    const login = await fetch(`${base}/api/session/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...loginBody, remember: true }),
+    });
+    const cookie = extractCookie(login);
+
+    const update = await fetch(`${base}/api/session/server`, {
+      method: "PATCH",
+      headers: {
+        ...cookieHeader(cookie),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ serverId: 7 }),
+    });
+    assert.strictEqual(update.status, 200);
+    assert.deepStrictEqual(await update.json(), { serverId: "7" });
+
+    const status = await fetch(`${base}/api/session/status`, {
+      headers: cookieHeader(cookie),
+    });
+    const statusData = await status.json();
+    assert.strictEqual(statusData.serverId, "7");
+  });
+
+  await t.test("server selection update requires a valid session", async () => {
+    const res = await fetch(`${base}/api/session/server`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ serverId: 1 }),
+    });
+    assert.strictEqual(res.status, 401);
+  });
+
   await t.test("logout invalidates the session and clears the cookie", async () => {
     const login = await fetch(`${base}/api/session/login`, {
       method: "POST",

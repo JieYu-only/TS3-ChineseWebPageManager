@@ -51,16 +51,11 @@ export default {
         this.$toast.error(err.message);
       }
     },
-    useServer(sid) {
-      return this.$TeamSpeak.execute("use", { sid });
-    },
     async switchServer(sid) {
       try {
         // The change event gets fired with the value NaN even if the selected value is disabled
         if (sid) {
-          await this.useServer(sid);
-
-          this.$store.dispatch("saveServerId", sid);
+          await this.$TeamSpeak.selectServer(sid);
         }
       } catch (err) {
         this.$toast.error(err.message);

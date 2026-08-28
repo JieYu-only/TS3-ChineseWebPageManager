@@ -85,6 +85,7 @@ class SessionManager {
 
     session.lastUsedAt = Date.now();
     this.memory.set(session);
+    if (session.remember) this.encrypted.set(session);
     return session;
   }
 
@@ -106,8 +107,7 @@ class SessionManager {
     const now = Date.now();
     if (session.expiresAt && now > session.expiresAt) return true;
 
-    const idleTtl = session.remember ? REMEMBER_SESSION_TTL_MS : IDLE_TTL_MS;
-    if (now - session.lastUsedAt > idleTtl) return true;
+    if (now - session.lastUsedAt > IDLE_TTL_MS) return true;
 
     return false;
   }
@@ -132,6 +132,22 @@ class SessionManager {
 
     this.encrypted.purge(isExpired);
     return removed;
+  }
+
+  /**
+   * Persist the selected virtual server for subsequent page loads/restarts.
+   * @param {string} id
+   * @param {string|number|null} serverId
+   * @returns {object|null}
+   */
+  updateServerId(id, serverId) {
+    const session = this.get(id);
+    if (!session) return null;
+
+    session.serverId = serverId == null ? null : String(serverId);
+    this.memory.set(session);
+    if (session.remember) this.encrypted.set(session);
+    return session;
   }
 
   /**
