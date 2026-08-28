@@ -1,34 +1,42 @@
 /* eslint-disable no-console */
 
-import { register } from "register-service-worker";
+const UPDATE_INTERVAL = 60 * 60 * 1000;
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  let hasActiveController = Boolean(navigator.serviceWorker.controller);
+  let reloading = false;
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // Reload only when replacing an existing worker. This keeps the running
+    // HTML and lazy-loaded chunks on the same application version.
+    if (hasActiveController && !reloading) {
+      reloading = true;
+      window.location.reload();
+    }
+    hasActiveController = true;
+  });
+
+  try {
+    const registration = await navigator.serviceWorker.register(
+      `${process.env.BASE_URL}service-worker.js`
+    );
+
+    const checkForUpdate = () =>
+      registration
+        .update()
+        .catch((error) => console.error("Service worker update failed:", error));
+
+    window.setInterval(checkForUpdate, UPDATE_INTERVAL);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    });
+  } catch (error) {
+    console.error("Service worker registration failed:", error);
+  }
+}
 
 if (process.env.NODE_ENV === "production") {
-  register(`${process.env.BASE_URL}service-worker.js`, {
-    ready() {
-      console.log(
-        "App is being served from cache by a service worker.\n" +
-          "For more details, visit https://goo.gl/AFskqB"
-      );
-    },
-    registered() {
-      console.log("Service worker has been registered.");
-    },
-    cached() {
-      console.log("Content has been cached for offline use.");
-    },
-    updatefound() {
-      console.log("New content is downloading.");
-    },
-    updated() {
-      console.log("New content is available; please refresh.🙌");
-    },
-    offline() {
-      console.log(
-        "No internet connection found. App is running in offline mode."
-      );
-    },
-    error(error) {
-      console.error("Error during service worker registration:", error);
-    },
-  });
+  window.addEventListener("load", registerServiceWorker);
 }

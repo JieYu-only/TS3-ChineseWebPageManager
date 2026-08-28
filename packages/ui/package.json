@@ -16,7 +16,6 @@
     "localforage": "^1.9.0",
     "nprogress": "^0.2.0",
     "path-browserify": "^1.0.1",
-    "register-service-worker": "^1.6.2",
     "secure-ls": "^2.0.0",
     "socket.io-client": "^4.8.3",
     "v-clipboard": "^2.2.2",

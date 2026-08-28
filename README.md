@@ -225,6 +225,8 @@ docker compose logs -f ts3-manager
 
 项目仍采用 Vue 2 与 Vuetify 2 技术栈，开发、Docker 构建/运行和 Windows 可执行文件统一使用 Node.js 22。项目已升级到 Vue CLI 5 与 Webpack 5，不再需要 `NODE_OPTIONS=--openssl-legacy-provider`。
 
+PWA 使用自定义 Workbox Service Worker：静态构建资源支持离线访问，API 与 Socket.IO 始终走网络。新版本安装完成后会自动接管并刷新一次，同时清理旧版 Workbox 预缓存。
+
 ### 安装依赖
 
 ```powershell
