@@ -11,6 +11,8 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 - 完善浅色/深色主题手动切换、系统主题初始化和本地偏好保存，修复深色主题文字对比度问题
 - 迁移 PWA Service Worker：版本化静态缓存，自动接管新版本，清理旧缓存，并确保 API 与 Socket.IO 始终走网络
 - 完成兼容范围内的依赖安全治理，审计告警由 57 项降至 24 项，严重级别告警由 4 项降至 0 项
+- 完成服务端会话、Origin/CSRF、Socket.IO 鉴权与限流、文件传输一次性票据及传输资源上限加固
+- 统一 HTTP 与 Socket.IO 对 `TRUST_PROXY` 的解释，并支持按真实代理层数解析客户端 IP
 - 清理生产构建警告，关闭生产 source map，并将 MDI 图标字体收敛为单一 WOFF2 资源
 - 生产构建目录由 26.3 MB 降至 7.72 MB，体积减少约 70.6%，同时加入独立 Webpack runtime 分块
 - 补齐 API 密钥、权限密钥、频道、服务器、通知、仪表盘及各类操作弹窗的简体中文翻译
@@ -19,6 +21,9 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 - 保留 TeamSpeak、ServerQuery、UID、IP、权限标识符及服务器自定义名称等必要技术内容
 - 修正文件上传图标兼容性，并加强通知标题的安全渲染
 - 已通过前端代码检查和生产环境构建验证
+- 已在 Node.js 22.23.0 干净环境通过 `npm ci`、87 项服务端测试、前端 lint、UI/服务端构建及 Windows EXE 健康检查
+
+完整的发布验收结果及尚待真实基础设施执行的项目见 [发布验收记录](docs/release-readiness.md)。
 
 ## 项目特色
 
@@ -151,7 +156,8 @@ docker run -d `
   --name ts3-manager `
   --restart unless-stopped `
   -p 8080:8080 `
-  -e JWT_SECRET="请替换成足够长的随机字符串" `
+  -v "${PWD}/data:/app/data" `
+  -e SESSION_ENCRYPTION_KEY="请替换成32字节随机值的Base64" `
   -e SESSION_COOKIE_SECURE="false" `
   -e WHITELIST="你的TS3服务器IP或域名" `
   ts3-manager-custom
@@ -182,11 +188,16 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    volumes:
+      - ./data:/app/data
     environment:
       PORT: "8080"
-      JWT_SECRET: "请替换成足够长的随机字符串"
+      SESSION_ENCRYPTION_KEY: "请替换成32字节随机值的Base64"
       SESSION_COOKIE_SECURE: "true"
       WHITELIST: "ts3.example.com,192.0.2.10"
+      ALLOWED_ORIGINS: "https://ts3.example.com"
+      TRUST_PROXY: "1"
+      TRUSTED_PROXY_HOPS: "1"
 ```
 
 运行：
@@ -211,6 +222,18 @@ docker compose logs -f ts3-manager
 | `SESSION_ENCRYPTION_KEY` | 加密“记住登录”长会话凭据的 32 字节 Base64 密钥 | 首次启动自动生成并保存到 `data/session.key` |
 | `SESSION_COOKIE_SECURE` | 是否仅通过 HTTPS 发送会话 Cookie；公网必须为 `true` | `true` |
 | `WHITELIST` | 允许连接的 TS3 地址，多个地址以英文逗号分隔 | 允许任意地址 |
+| `ALLOWED_ORIGINS` | 允许发起状态变更请求的生产来源，多个来源以英文逗号分隔 | 同源 |
+| `TRUST_PROXY` | 是否信任反向代理转发头；仅在代理后启用，接受 `1`、`true` 或 `yes` | 关闭 |
+| `TRUSTED_PROXY_HOPS` | 启用代理信任后，从转发链右侧跳过的可信代理层数 | `1` |
+| `SESSION_LOGIN_RATE_MAX` | 单个客户端 IP 在限流窗口内允许的登录尝试次数 | `5` |
+| `SOCKET_RATE_LIMIT_MAX` | 单个客户端 IP 在限流窗口内允许的 Socket.IO 连接次数 | `10` |
+| `SOCKET_SESSION_MAX_CONNECTIONS` | 单个登录会话允许的并发 Socket.IO 连接数 | `3` |
+| `FILE_TRANSFER_MAX_SIZE` | 单次上传文件大小上限（字节） | `2147483648` |
+| `FILE_TRANSFER_SESSION_CONCURRENCY` | 单个会话允许的并发文件传输数 | `2` |
+| `FILE_TRANSFER_GLOBAL_CONCURRENCY` | 服务全局允许的并发文件传输数 | `20` |
+| `FILE_TRANSFER_TOTAL_TIMEOUT_MS` | 单次文件传输的墙钟总时限 | `1800000` |
+
+其余会话、限流和文件传输参数见 [.env.example](.env.example)。公网部署的完整配置与检查清单见 [生产部署指引](docs/production-deployment.md)。`TRUST_PROXY` 只能在服务确实位于可信反向代理之后时启用，`TRUSTED_PROXY_HOPS` 必须与实际代理层数一致。
 
 ## 凭据安全
 
@@ -286,8 +309,9 @@ npm run build
 - 推荐使用 Nginx、Caddy 或其他反向代理配置 HTTPS
 - 为 ServerQuery 创建独立账号并遵循最小权限原则
 - 限制 ServerQuery 可连接的来源 IP
-- 设置固定且足够随机的 `JWT_SECRET`
+- 固定并妥善保管 `SESSION_ENCRYPTION_KEY`，同时持久化和备份 `data/`；不要把真实密钥提交到 Git
 - 使用 `WHITELIST` 限制面板能够连接的 TS3 服务器
+- 公网反向代理部署应设置准确的 `ALLOWED_ORIGINS`、`TRUST_PROXY` 和 `TRUSTED_PROXY_HOPS`
 - 不要把 `10011/TCP` 向整个公网开放
 - 恢复快照前先下载当前配置备份
 - 不要上传来源不明的 `.backup` 文件
@@ -318,7 +342,7 @@ packages/ui/src/components/
 
 ### 容器重启后保存的账号不可用
 
-检查是否配置了固定的 `JWT_SECRET`，并确认重启前后使用的是同一个值。
+确认已把宿主机 `data/` 挂载到容器的 `/app/data`，并且重启前后使用同一个 `SESSION_ENCRYPTION_KEY`。如果密钥或 `data/sessions.enc` 丢失，已保存的加密会话无法恢复，需要重新登录。`JWT_SECRET` 仅用于旧版兼容，不能解密当前保存的会话。
 
 ### 快照恢复失败
 
