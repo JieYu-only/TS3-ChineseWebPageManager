@@ -7,8 +7,8 @@ on:
     branches: [master]
 
 jobs:
-  server-test:
-    name: Server startup & API health check
+  verify:
+    name: Test, lint & build gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,30 +20,20 @@ jobs:
           node-version: 22.x
           cache: npm
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         run: npm ci
 
-      - name: Run server tests
+      - name: Server tests
         run: npm run server:test
 
-  ui-build:
-    name: Frontend production build check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Lint management page
+        run: npm run lint --workspace=@ts3-manager/ui
 
       - name: Build management page
         run: npm run ui:build
+
+      - name: Build server executable
+        run: npm run server:build
 
   windows-build:
     name: Windows x64 executable build validation
@@ -58,7 +48,7 @@ jobs:
           node-version: 22.x
           cache: npm
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         run: npm ci
 
       - name: Build management page
