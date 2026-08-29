@@ -5,6 +5,7 @@ const asyncRoute = require("./asyncRoute");
 const { createHttpError, createClientError } = require("./error");
 const { SlidingWindowRateLimiter } = require("./rateLimiter");
 const { TicketStore, hashTicket } = require("./fileTransferTickets");
+const { resolveClientIp, trustProxyEnabled } = require("./ip");
 
 module.exports = {
   logger,
@@ -16,4 +17,6 @@ module.exports = {
   SlidingWindowRateLimiter,
   TicketStore,
   hashTicket,
+  resolveClientIp,
+  trustProxyEnabled,
 };

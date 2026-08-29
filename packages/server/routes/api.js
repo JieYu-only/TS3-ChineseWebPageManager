@@ -18,6 +18,7 @@ const {
   asyncRoute,
   createClientError,
   SlidingWindowRateLimiter,
+  resolveClientIp,
 } = require("../utils");
 const { sessionManager } = require("../session");
 const socket = require("../socket");
@@ -33,9 +34,16 @@ const loginRateLimiter = new SlidingWindowRateLimiter({
   max: Number(process.env.SESSION_LOGIN_RATE_MAX) || 5,
 });
 
-/** Resolve the client IP, honouring the trust-proxy setting when enabled. */
+/**
+ * Resolve the client IP, honouring the same trust-proxy setting as the Socket
+ * layer. Without TRUST_PROXY the forwarding header is ignored so a client cannot
+ * switch rate-limit buckets by sending a different X-Forwarded-For.
+ */
 function getClientIp(req) {
-  return req.ip || req.socket.remoteAddress || "unknown";
+  return resolveClientIp({
+    remoteAddress: req.socket && req.socket.remoteAddress,
+    xForwardedFor: req.headers && req.headers["x-forwarded-for"],
+  });
 }
 
 /**

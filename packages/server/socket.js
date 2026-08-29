@@ -7,6 +7,7 @@ socket.init = (server, corsOptions) => {
     logger,
     createClientError,
     SlidingWindowRateLimiter,
+    resolveClientIp,
   } = require("./utils");
   const cookie = require("cookie");
   const { sessionManager } = require("./session");
@@ -27,9 +28,14 @@ socket.init = (server, corsOptions) => {
   const SESSION_MAX_CONNECTIONS =
     Number(process.env.SOCKET_SESSION_MAX_CONNECTIONS) || 3;
 
+  // Use the same trust-proxy policy as the HTTP layer: the forwarding header is
+  // ignored unless TRUST_PROXY=1, so a client cannot bypass connection limiting
+  // by injecting a different X-Forwarded-For.
   const getIp = (socket) =>
-    socket.handshake.headers["x-forwarded-for"] ||
-    socket.client.conn.remoteAddress;
+    resolveClientIp({
+      remoteAddress: socket.client.conn.remoteAddress,
+      xForwardedFor: socket.handshake.headers["x-forwarded-for"],
+    });
 
   /**
    * Authenticate the socket by resolving the HttpOnly session cookie to a valid
