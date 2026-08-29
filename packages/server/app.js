@@ -11,13 +11,14 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const routes = require("./routes");
 const { sessionManager } = require("./session");
+const { trustProxyEnabled } = require("./utils");
 
 // Trust the reverse proxy so Secure cookies and req.ip work correctly when the
 // app runs behind Nginx/Caddy or a Docker proxy. This is intentionally off by
 // default so a directly-exposed server cannot be tricked by forged
-// X-Forwarded-* headers; enable it with TRUST_PROXY=1 (or a restrictive value)
-// only behind a known proxy.
-if (process.env.TRUST_PROXY === "1") {
+// X-Forwarded-* headers; enable it with TRUST_PROXY=1 / true / yes only behind a
+// known proxy. Both the HTTP and Socket.IO layers share this same policy.
+if (trustProxyEnabled()) {
   app.set("trust proxy", 1);
 }
 
