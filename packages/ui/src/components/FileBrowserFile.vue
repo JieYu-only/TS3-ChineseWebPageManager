@@ -54,6 +54,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import fileTransfer from "@/mixins/fileTransfer";
 
 export default {
@@ -82,37 +83,41 @@ export default {
     },
   },
   methods: {
-    getDownloadUrl(ftkey, port, size, name) {
+    apiBase() {
       let base = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-      let url = new URL("/api/download", base);
-
-      url.searchParams.append("ftkey", ftkey);
-      url.searchParams.append("port", port);
-      url.searchParams.append("size", size);
-      url.searchParams.append("name", name);
-
-      return url.href;
+      return new URL(base).origin;
+    },
+    getDownloadUrl(ticket) {
+      return `${this.apiBase()}/api/file-transfers/${encodeURIComponent(
+        ticket
+      )}/download`;
     },
     initFileDownload(cpw = "", seekpos = 0) {
-      return this.$TeamSpeak
-        .execute("ftinitdownload", {
-          clientftfid: this.getClientFileTransferId(),
-          name: this.getFilePath(this.item.path, this.item.name),
-          cid: this.item.cid,
-          cpw,
-          seekpos,
-        })
-        .then((res) => res[0]);
+      return axios
+        .post(
+          `${this.apiBase()}/api/file-transfers/download`,
+          {
+            cid: this.item.cid,
+            path: this.getFilePath(this.item.path, this.item.name),
+            cpw,
+            seekpos,
+          },
+          { withCredentials: true }
+        )
+        .then((res) => res.data);
     },
     async downloadFile() {
       try {
-        let { name } = this.item;
-        let { ftkey, port, size } = await this.initFileDownload();
-        let url = this.getDownloadUrl(ftkey, port, size, name);
+        const { ticket } = await this.initFileDownload();
+        const url = this.getDownloadUrl(ticket);
 
         window.open(url);
       } catch (err) {
-        this.$toast.error(err.message);
+        const message =
+          (err.response && err.response.data && err.response.data.message) ||
+          err.message ||
+          "下载失败";
+        this.$toast.error(message);
       }
     },
     // Shamelessly copied from stackoverflow

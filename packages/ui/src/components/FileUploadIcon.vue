@@ -74,11 +74,14 @@ export default {
     },
   },
   methods: {
-    getUploadUrl(cid, path) {
+    apiBase() {
       let base = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-      let url = new URL("/api/upload", base);
-
-      return url.href;
+      return new URL(base).origin;
+    },
+    getUploadUrl(ticket) {
+      return `${this.apiBase()}/api/file-transfers/${encodeURIComponent(
+        ticket
+      )}/upload`;
     },
     getFileInfo(cid, name, cpw = "") {
       return this.$TeamSpeak
@@ -86,17 +89,20 @@ export default {
         .then((res) => res[0]);
     },
     initFileUpload(file, overwrite = 1, resume = 0, cpw = "") {
-      return this.$TeamSpeak
-        .execute("ftinitupload", {
-          clientftfid: file.clientftfid,
-          name: file.filePath,
-          cid: file.cid,
-          size: file.fileSize,
-          cpw,
-          overwrite,
-          resume,
-        })
-        .then((res) => res[0]);
+      return axios
+        .post(
+          `${this.apiBase()}/api/file-transfers/upload`,
+          {
+            cid: file.cid,
+            path: file.filePath,
+            size: file.fileSize,
+            cpw,
+            overwrite,
+            resume,
+          },
+          { withCredentials: true }
+        )
+        .then((res) => res.data);
     },
     watchQueue() {
       this.queueWatcher = this.$watch("$store.state.uploads.queue", () => {
@@ -109,18 +115,14 @@ export default {
     getFileInQueue(clientftfid) {
       return this.uploadQueue.find((file) => file.clientftfid === clientftfid);
     },
-    uploadFile(blob, clientftfid, ftkey, port, sendedBytes = 0) {
+    uploadFile(blob, clientftfid, ticket, sendedBytes = 0) {
       let formData = new FormData();
 
-      formData.append("file", blob);
+      formData.append("file", blob, blob.name);
 
       return axios({
-        headers: {
-          "x-file-transfer-key": ftkey,
-          "x-file-transfer-port": port,
-        },
         method: "POST",
-        url: this.getUploadUrl(),
+        url: this.getUploadUrl(ticket),
         withCredentials: true,
         data: formData,
         onUploadProgress: (e) => {
@@ -151,20 +153,19 @@ export default {
         file.uploading = true;
 
         if (file.progress) {
-          let { ftkey, port } = await this.initFileUpload(file, 0, 1);
+          let { ticket } = await this.initFileUpload(file, 0, 1);
           let { size } = await this.getFileInfo(file.cid, file.filePath);
 
           await this.uploadFile(
             file.blob.slice(size),
             clientftfid,
-            ftkey,
-            port,
+            ticket,
             size
           );
         } else {
-          let { ftkey, port } = await this.initFileUpload(file);
+          let { ticket } = await this.initFileUpload(file);
 
-          await this.uploadFile(file.blob, clientftfid, ftkey, port);
+          await this.uploadFile(file.blob, clientftfid, ticket);
         }
 
         this.$store.commit("removeFileFromQueue", clientftfid);

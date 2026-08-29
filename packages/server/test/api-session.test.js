@@ -12,6 +12,7 @@ process.env.SESSION_ENCRYPTION_KEY = crypto.randomBytes(32).toString("base64");
 process.env.DATA_DIR = DATA_DIR;
 process.env.SESSION_FILE = path.join(DATA_DIR, "sessions.enc");
 process.env.NODE_ENV = ""; // ensure Secure cookie is off over test HTTP
+process.env.SESSION_LOGIN_RATE_MAX = "1000"; // avoid throttling across many logins
 
 const { TeamSpeak } = require("ts3-nodejs-library");
 // Stub the connection + quit used by the login endpoint.
@@ -166,8 +167,17 @@ test("api: session endpoints", async (t) => {
     assert.strictEqual(statusData.connected, false, "session invalid after logout");
   });
 
-  await t.test("file download is blocked without a session", async () => {
-    const res = await fetch(`${base}/api/download?ftkey=x&size=1&name=a&port=1`);
+  await t.test("file transfer init is blocked without a session", async () => {
+    const res = await fetch(`${base}/api/file-transfers/download`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cid: 10, path: "/files/example.zip", cpw: "" }),
+    });
+    assert.strictEqual(res.status, 401);
+  });
+
+  await t.test("file transfer stream is blocked without a session", async () => {
+    const res = await fetch(`${base}/api/file-transfers/abc/download`);
     assert.strictEqual(res.status, 401);
   });
 });
