@@ -1,6 +1,11 @@
 module.exports = {
   lintOnSave: false,
-  runtimeCompiler: true,
+  // Use the Vue runtime build. Every component is a pre-compiled SFC and the
+  // app mounts with a render function, so the full build (which bundles the
+  // runtime template compiler / parseHTML) is never needed. Restricting to the
+  // runtime build removes that compiler — and the ReDoS-prone parseHTML code
+  // flagged in GHSA-5j4c-8p2g-v4jx — from the shipped bundle.
+  runtimeCompiler: false,
   productionSourceMap: false,
 
   css: {
