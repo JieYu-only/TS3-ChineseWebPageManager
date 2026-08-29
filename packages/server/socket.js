@@ -3,18 +3,47 @@ let io = null;
 
 socket.init = (server, corsOptions) => {
   const { TeamSpeak } = require("ts3-nodejs-library");
-  const { logger, whitelist, sanatizer } = require("./utils");
+  const {
+    logger,
+    createClientError,
+    SlidingWindowRateLimiter,
+  } = require("./utils");
   const cookie = require("cookie");
   const { sessionManager } = require("./session");
 
-  io = require("socket.io")(server, { cors: corsOptions });
+  // Cap inbound Socket.IO message size to 1 MiB. Larger payloads (e.g. snapshot
+  // restore) should go through a dedicated HTTP endpoint, not a global socket
+  // buffer increase.
+  io = require("socket.io")(server, {
+    cors: corsOptions,
+    maxHttpBufferSize: 1 * 1024 * 1024,
+  });
+
+  const connectionLimiter = new SlidingWindowRateLimiter({
+    windowMs: Number(process.env.SOCKET_RATE_LIMIT_WINDOW_MS) || 60 * 1000,
+    max: Number(process.env.SOCKET_RATE_LIMIT_MAX) || 10,
+  });
+  const sessionConnections = new Map();
+  const SESSION_MAX_CONNECTIONS =
+    Number(process.env.SOCKET_SESSION_MAX_CONNECTIONS) || 3;
+
+  const getIp = (socket) =>
+    socket.handshake.headers["x-forwarded-for"] ||
+    socket.client.conn.remoteAddress;
 
   /**
    * Authenticate the socket by resolving the HttpOnly session cookie to a valid
-   * server-side session. Credentials are never sent by the client.
+   * server-side session. Credentials are never sent by the client. Connection
+   * rate is throttled per IP and per session.
    */
-  io.use(async (socket, next) => {
+  io.use((socket, next) => {
     try {
+      const ip = getIp(socket);
+
+      if (!connectionLimiter.check(ip).allowed) {
+        return next(new Error("连接过于频繁，请稍后再试"));
+      }
+
       const cookies = cookie.parse(socket.handshake.headers.cookie || "");
       const sessionId = cookies.ts3_session;
 
@@ -23,6 +52,11 @@ socket.init = (server, corsOptions) => {
       const session = sessionManager.get(sessionId);
 
       if (!session) return next(new Error("未登录或会话已过期"));
+
+      const active = sessionConnections.get(sessionId) || 0;
+      if (active >= SESSION_MAX_CONNECTIONS) {
+        return next(new Error("会话连接数已达上限"));
+      }
 
       socket.data.sessionId = sessionId;
       socket.data.session = session;
@@ -35,27 +69,25 @@ socket.init = (server, corsOptions) => {
 
   io.on("connection", async (socket) => {
     const session = socket.data.session;
-    const ip =
-      socket.handshake.headers["x-forwarded-for"] ||
-      socket.client.conn.remoteAddress;
+    const ip = getIp(socket);
     const log = logger.child({ client: ip });
+
+    sessionConnections.set(
+      session.id,
+      (sessionConnections.get(session.id) || 0) + 1
+    );
 
     log.info("Socket.io connected");
 
     /**
-     * Send the TeamSpeak error message back to the frontend.
-     * @param {Object} err
-     * @param {Function} fn
+     * Send a payload back through the acknowledgement callback, tolerating a
+     * callback that was never provided by the client.
+     * @param {Function} ack
+     * @param {*} payload
      */
-    const handleServerQueryError = (err, fn) => {
-      log.error(err.message);
-
-      const serverQuery = socket.data.serverQuery;
-
-      if (serverQuery && serverQuery.query && serverQuery.query.connected) {
-        fn({ message: err.message, id: err.id, connected: true });
-      } else {
-        fn({ message: err.message, connected: false });
+    const reply = (ack, payload) => {
+      if (typeof ack === "function") {
+        ack(payload);
       }
     };
 
@@ -63,11 +95,45 @@ socket.init = (server, corsOptions) => {
      * Serialise a response, replacing undefined with "" so socket.io JSON
      * serialisation keeps every property.
      * @param {*} response
-     * @param {Function} fn
+     * @param {Function} ack
      */
-    const handleResponse = (response, fn) => {
-      response = JSON.stringify(response, (k, v) => (v === undefined ? "" : v));
-      fn(JSON.parse(response));
+    const handleResponse = (response, ack) => {
+      const ser = JSON.stringify(response, (k, v) => (v === undefined ? "" : v));
+      reply(ack, JSON.parse(ser));
+    };
+
+    /**
+     * Wrap an event handler so no rejected promise can escape as an unhandled
+     * rejection. Errors are logged and, when an acknowledgement callback was
+     * supplied, delivered to the client as a controlled error payload.
+     * @param {(arg: *, ack: Function) => Promise<*>} handler
+     * @returns {Function}
+     */
+    const safeSocketHandler = (handler) => (...args) => {
+      Promise.resolve(handler(...args)).catch((error) => {
+        const ack = args.at(-1);
+        const serverQuery = socket.data.serverQuery;
+        const connected = Boolean(
+          serverQuery && serverQuery.query && serverQuery.query.connected
+        );
+
+        log.error(error.stack || error.message);
+
+        // Preserve TeamSpeak response details and safe client errors; fall back
+        // to a generic message for internal failures.
+        if (error && error.id) {
+          reply(ack, { message: error.message, id: error.id, connected });
+        } else if (error && error.expose) {
+          reply(ack, { message: error.message, connected });
+        } else {
+          reply(ack, { message: "请求处理失败", connected });
+        }
+      });
+    };
+
+    const notReady = () => {
+      if (socket.data.serverQuery) return;
+      throw createClientError("连接未就绪", 409);
     };
 
     /**
@@ -146,68 +212,77 @@ socket.init = (server, corsOptions) => {
     /**
      * Send command to the ServerQuery.
      */
-    socket.on("teamspeak-execute", async (query, fn) => {
-      let { command, params, options } = query;
+    socket.on(
+      "teamspeak-execute",
+      safeSocketHandler(async (query, ack) => {
+        if (!query || typeof query !== "object") {
+          throw createClientError("无效的请求参数");
+        }
 
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+        const { command, params = {}, options = [] } = query;
 
-        let response = await socket.data.serverQuery.execute(
+        if (typeof command !== "string" || !command) {
+          throw createClientError("缺少命令");
+        }
+
+        notReady();
+
+        const response = await socket.data.serverQuery.execute(
           command,
           params,
           options
         );
 
-        handleResponse(response, fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        handleResponse(response, ack);
+      })
+    );
 
     /**
      * Create a snapshot.
      */
-    socket.on("teamspeak-createsnapshot", async (fn) => {
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+    socket.on(
+      "teamspeak-createsnapshot",
+      safeSocketHandler(async (ack) => {
+        notReady();
 
-        let response = await socket.data.serverQuery.execute(
+        const response = await socket.data.serverQuery.execute(
           "serversnapshotcreate"
         );
 
-        handleResponse(response, fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        handleResponse(response, ack);
+      })
+    );
 
     /**
      * Deploy a snapshot.
      */
-    socket.on("teamspeak-deploysnapshot", async (snapshot, fn) => {
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+    socket.on(
+      "teamspeak-deploysnapshot",
+      safeSocketHandler(async (snapshot, ack) => {
+        notReady();
 
-        let verifiedSnapshot = Buffer.from(
-          snapshot.toString(),
+        if (typeof snapshot !== "string") {
+          throw createClientError("无效的快照参数");
+        }
+
+        const verifiedSnapshot = Buffer.from(snapshot, "base64").toString(
           "base64"
-        ).toString("base64");
-        let response = await socket.data.serverQuery.deploySnapshot(
+        );
+        const response = await socket.data.serverQuery.deploySnapshot(
           verifiedSnapshot
         );
 
-        handleResponse(response, fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        handleResponse(response, ack);
+      })
+    );
 
     /**
      * Register TeamSpeak event notifications.
      */
-    socket.on("teamspeak-registerevents", async (fn) => {
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+    socket.on(
+      "teamspeak-registerevents",
+      safeSocketHandler(async (ack) => {
+        notReady();
 
         const serverQuery = socket.data.serverQuery;
 
@@ -221,56 +296,64 @@ socket.init = (server, corsOptions) => {
           initEventListeners(serverQuery);
         }
 
-        handleResponse("ok", fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        handleResponse("ok", ack);
+      })
+    );
 
     /**
      * Unregister TeamSpeak event notifications.
      */
-    socket.on("teamspeak-unregisterevent", async (fn) => {
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+    socket.on(
+      "teamspeak-unregisterevent",
+      safeSocketHandler(async (ack) => {
+        notReady();
 
-        let response = await socket.data.serverQuery.unregisterEvent();
+        const response = await socket.data.serverQuery.unregisterEvent();
 
-        handleResponse(response, fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        handleResponse(response, ack);
+      })
+    );
 
     /**
      * Download a small file (e.g. avatars) as base64.
      */
-    socket.on("teamspeak-downloadfile", async ({ path, cid, cpw }, fn) => {
-      try {
-        if (!socket.data.serverQuery) throw new Error("连接未就绪");
+    socket.on(
+      "teamspeak-downloadfile",
+      safeSocketHandler(async (payload, ack) => {
+        notReady();
 
-        let buffer = await socket.data.serverQuery.downloadFile(path, cid, cpw);
+        if (!payload || typeof payload !== "object") {
+          throw createClientError("无效的下载参数");
+        }
 
-        handleResponse(buffer.toString("base64"), fn);
-      } catch (err) {
-        handleServerQueryError(err, fn);
-      }
-    });
+        const { path, cid, cpw = "" } = payload;
+        if (typeof path !== "string" || !path) {
+          throw createClientError("缺少文件路径");
+        }
+
+        const buffer = await socket.data.serverQuery.downloadFile(path, cid, cpw);
+
+        handleResponse(buffer.toString("base64"), ack);
+      })
+    );
 
     /**
      * When the client disconnects, quit the ServerQuery connection.
      */
-    socket.on("disconnect", async () => {
+    socket.on("disconnect", () => {
+      sessionConnections.set(
+        session.id,
+        Math.max(0, (sessionConnections.get(session.id) || 1) - 1)
+      );
+
       log.info("Socket.io disconnected");
 
       const serverQuery = socket.data.serverQuery;
 
       if (serverQuery instanceof TeamSpeak) {
-        try {
-          await serverQuery.execute("quit");
-        } catch (err) {
+        serverQuery.execute("quit").catch((err) => {
           log.error(err.message);
-        }
+        });
       }
     });
   });

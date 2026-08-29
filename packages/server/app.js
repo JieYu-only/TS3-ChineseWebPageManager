@@ -4,6 +4,7 @@ require("dotenv").config();
 const config = require("./config");
 const path = require("path");
 const express = require("express");
+const helmet = require("helmet");
 const app = express();
 const socket = require("./socket");
 const cookieParser = require("cookie-parser");
@@ -12,8 +13,15 @@ const routes = require("./routes");
 const { sessionManager } = require("./session");
 
 // Trust the reverse proxy so Secure cookies and req.ip work correctly when the
-// app runs behind Nginx/Caddy or a Docker proxy.
-app.set("trust proxy", 1);
+// app runs behind Nginx/Caddy or a Docker proxy. This is intentionally off by
+// default so a directly-exposed server cannot be tricked by forged
+// X-Forwarded-* headers; enable it with TRUST_PROXY=1 (or a restrictive value)
+// only behind a known proxy.
+if (process.env.TRUST_PROXY === "1") {
+  app.set("trust proxy", 1);
+}
+
+app.disable("x-powered-by");
 
 // Enable cross-origin resource sharing for the frontend in development
 const corsOptions = {
@@ -23,15 +31,29 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use((req, res, next) => {
-  // Defense against XSS. Exclude googleapis for Service Worker script.
-  res.setHeader(
-    "Content-Security-Policy",
-    "script-src 'self' https://storage.googleapis.com",
-  );
-
-  return next();
-});
+// Full security response headers. A restrictive Content-Security-Policy is set
+// for the management page; the Service Worker migration script is served locally
+// so no third-party script-src is needed.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        fontSrc: ["'self'", "data:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+  })
+);
 
 app.use(cookieParser());
 
