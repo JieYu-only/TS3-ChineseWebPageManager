@@ -15,6 +15,12 @@ process.env.DATA_DIR = DATA_DIR;
 process.env.SESSION_FILE = path.join(DATA_DIR, "sessions.enc");
 process.env.NODE_ENV = ""; // secure cookie off over test HTTP
 process.env.SESSION_LOGIN_RATE_MAX = "1000";
+// Tight, deterministic transfer caps so the resource-limit tests are meaningful
+// and a normal (tiny) transfer still completes well inside the total timeout.
+process.env.FILE_TRANSFER_MAX_SIZE = "200";
+process.env.FILE_TRANSFER_TOTAL_TIMEOUT_MS = "1000";
+process.env.FILE_TRANSFER_SESSION_CONCURRENCY = "1";
+process.env.FILE_TRANSFER_GLOBAL_CONCURRENCY = "1";
 
 const { TeamSpeak } = require("ts3-nodejs-library");
 
@@ -298,5 +304,156 @@ test("file transfer tickets keep the client off the raw transfer port", async (t
     assert.strictEqual(res.status, 200);
     const body = await res.json();
     assert.strictEqual(body.status, "ok");
+  });
+
+  /**
+   * Upload a multipart body slowly (one byte at a time) so it exceeds the total
+   * transfer time limit; used to prove a slow trickle is terminated.
+   */
+  function startSlowUpload(cookie, ticket, declaredSize) {
+    return new Promise((resolve, reject) => {
+      let finished = false;
+      let status = 0;
+      let timer;
+      let guard;
+      const u = new URL(`${base}/api/file-transfers/${ticket}/upload`);
+      const req = http.request(u, {
+        method: "POST",
+        headers: {
+          ...cookieHeader(cookie),
+          "Content-Type": "multipart/form-data; boundary=slowboundary",
+          "Transfer-Encoding": "chunked",
+        },
+      });
+      const done = (err) => {
+        if (finished) return;
+        finished = true;
+        if (timer) clearInterval(timer);
+        if (guard) clearTimeout(guard);
+        resolve({ status, err: err && err.message });
+      };
+      req.on("response", (res) => {
+        status = res.statusCode;
+        res.on("data", () => {});
+        res.on("end", () => done());
+        res.on("error", (e) => done(e));
+      });
+      req.on("error", (e) => done(e));
+
+      req.write(
+        "--slowboundary\r\n" +
+          'Content-Disposition: form-data; name="file"; filename="s.bin"\r\n' +
+          "Content-Type: application/octet-stream\r\n\r\n"
+      );
+
+      let sent = 0;
+      timer = setInterval(() => {
+        if (finished) return;
+        if (sent >= declaredSize) {
+          clearInterval(timer);
+          try {
+            req.end("\r\n--slowboundary--\r\n");
+          } catch (_) {}
+          return;
+        }
+        try {
+          req.write("A");
+          sent++;
+        } catch (e) {
+          done(e);
+        }
+      }, 100);
+
+      guard = setTimeout(() => done(new Error("no response")), 8000);
+    });
+  }
+
+  await t.test("a zero-byte file can be uploaded successfully", async () => {
+    const { data } = await initUpload(sessionA, { size: 0 });
+
+    const formData = new FormData();
+    formData.append("file", new Blob([]), "empty.bin");
+
+    const res = await fetch(`${base}/api/file-transfers/${data.ticket}/upload`, {
+      method: "POST",
+      headers: cookieHeader(sessionA),
+      body: formData,
+    });
+    assert.strictEqual(res.status, 200, "an empty file should upload");
+  });
+
+  await t.test("upload init above the configured ceiling returns 413", async () => {
+    const res = await fetch(`${base}/api/file-transfers/upload`, {
+      method: "POST",
+      headers: { ...cookieHeader(sessionA), "Content-Type": "application/json" },
+      body: JSON.stringify({ cid: 10, path: "/big.bin", size: 1000, cpw: "" }),
+    });
+    assert.strictEqual(res.status, 413, "over-max init should be 413");
+  });
+
+  await t.test("actual data larger than the declared size is rejected (413)", async () => {
+    const { data } = await initUpload(sessionA, { size: 5 });
+
+    const formData = new FormData();
+    formData.append("file", new Blob([Buffer.alloc(20)]), "big.bin");
+
+    const res = await fetch(`${base}/api/file-transfers/${data.ticket}/upload`, {
+      method: "POST",
+      headers: cookieHeader(sessionA),
+      body: formData,
+    });
+    assert.strictEqual(res.status, 413, "over-sized data should be 413");
+  });
+
+  await t.test("upload smaller than the declared size is not accepted", async () => {
+    const { data } = await initUpload(sessionA, { size: 10 });
+
+    const formData = new FormData();
+    formData.append("file", new Blob([Buffer.from("abc")]), "small.bin");
+
+    const res = await fetch(`${base}/api/file-transfers/${data.ticket}/upload`, {
+      method: "POST",
+      headers: cookieHeader(sessionA),
+      body: formData,
+    });
+    assert.notStrictEqual(res.status, 200, "undersized upload must not succeed");
+  });
+
+  await t.test("a slow drip that exceeds the total time limit is terminated", async () => {
+    const { data } = await initUpload(sessionA, { size: 100 });
+
+    // Dribble one byte every 100ms; total timeout is 1000ms, so this can never
+    // reach the declared 100 bytes and must be cut off by the deadline.
+    const result = await startSlowUpload(sessionA, data.ticket, 100);
+    assert.notStrictEqual(result.status, 200, "slow drip must not succeed");
+    assert.ok(result.status >= 400 || result.status === 0, "must be terminated");
+  });
+
+  await t.test("a failed transfer releases the concurrency slot", async () => {
+    // Force a failure (overshoot) which holds the single concurrency slot.
+    const { data: bad } = await initUpload(sessionA, { size: 5 });
+    const badFormData = new FormData();
+    badFormData.append("file", new Blob([Buffer.alloc(20)]), "big.bin");
+    const badRes = await fetch(`${base}/api/file-transfers/${bad.ticket}/upload`, {
+      method: "POST",
+      headers: cookieHeader(sessionA),
+      body: badFormData,
+    });
+    assert.strictEqual(badRes.status, 413);
+
+    // The slot must have been released: a fresh success upload can start, and
+    // the service is still healthy.
+    const health = await fetch(`${base}/api/health`);
+    assert.strictEqual(health.status, 200);
+
+    const { data: good } = await initUpload(sessionA);
+    const formData = new FormData();
+    formData.append("file", new Blob([UPLOAD_BODY]), "out.zip");
+    const goodRes = await fetch(`${base}/api/file-transfers/${good.ticket}/upload`, {
+      method: "POST",
+      headers: cookieHeader(sessionA),
+      body: formData,
+    });
+    assert.strictEqual(goodRes.status, 200, "slot should be reusable after failure");
   });
 });

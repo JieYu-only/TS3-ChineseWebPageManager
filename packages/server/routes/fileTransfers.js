@@ -19,6 +19,10 @@ const router = express.Router();
 
 const SESSION_COOKIE = "ts3_session";
 
+// Default single-file ceiling: 2 GiB, so an attacker cannot force unbounded
+// memory/disk use with an oversized upload. Operators can lower it via env.
+const DEFAULT_MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024;
+
 /**
  * Every file-transfer route is behind the server-side session; the session is
  * the only source of the TeamSpeak host. Rejects any call with an invalid or
@@ -40,10 +44,14 @@ const ticketStore = new TicketStore({
   ttlMs: Number(process.env.FILE_TRANSFER_TICKET_TTL_MS) || 45 * 1000,
 });
 
-// Per-deployment transfer caps (env-tunable). `maxFileSize` is the single-file
-// ceiling in bytes (0 = unlimited); the rest are concurrency / time limits.
+// Per-deployment transfer caps (env-tunable). The defaults are safe: a non-zero
+// max file size and finite time/connection limits so slow or continuous traffic
+// cannot keep a transfer alive indefinitely.
 const transferLimits = {
-  maxFileSize: () => Number(process.env.FILE_TRANSFER_MAX_SIZE) || 0,
+  maxFileSize: () => {
+    const v = Number(process.env.FILE_TRANSFER_MAX_SIZE);
+    return Number.isSafeInteger(v) && v > 0 ? v : DEFAULT_MAX_FILE_SIZE;
+  },
   maxGlobal: () => Number(process.env.FILE_TRANSFER_GLOBAL_CONCURRENCY) || 20,
   maxPerSession: () =>
     Number(process.env.FILE_TRANSFER_SESSION_CONCURRENCY) || 2,
@@ -51,6 +59,10 @@ const transferLimits = {
     Number(process.env.FILE_TRANSFER_CONNECT_TIMEOUT_MS) || 5000,
   idleTimeoutMs: () =>
     Number(process.env.FILE_TRANSFER_IDLE_TIMEOUT_MS) || 30 * 1000,
+  // Wall-clock ceiling for a whole transfer, independent of trickle traffic, so
+  // a slow drip cannot hold a socket open forever.
+  totalTimeoutMs: () =>
+    Number(process.env.FILE_TRANSFER_TOTAL_TIMEOUT_MS) || 30 * 60 * 1000,
 
   active: 0,
   perSession: new Map(),
@@ -109,6 +121,17 @@ async function openServerQuery(session) {
   // ever returned a different host it would have to be re-validated here via the
   // whitelist and an IP-range check to prevent DNS re-binding.
   return serverQuery;
+}
+
+/**
+ * Start (or restart) the wall-clock transfer deadline. The returned handle is
+ * cleared on finish so a finished transfer never leaks a timer.
+ * @param {Function} onTimeout
+ * @returns {NodeJS.Timeout}
+ */
+function startTotalTimer(onTimeout) {
+  const timer = setTimeout(onTimeout, transferLimits.totalTimeoutMs());
+  return timer;
 }
 
 /**
@@ -179,7 +202,8 @@ router.post(
 /**
  * GET /api/file-transfers/:ticket/download
  * Stream the TeamSpeak file back to the browser. The ticket is consumed, so it
- * can only be used once and never outlives its short TTL.
+ * can only be used once and never outlives its short TTL. All timeouts and
+ * aborts release the socket, ticket and concurrency slot.
  */
 router.get(
   "/:ticket/download",
@@ -200,11 +224,13 @@ router.get(
 
     const socket = new Socket();
     let settled = false;
+    let totalTimer = null;
 
     const finish = (error) => {
       if (settled) return;
       settled = true;
 
+      if (totalTimer) clearTimeout(totalTimer);
       socket.destroy();
       transferLimits.release(session.id);
       ticketStore.delete(raw);
@@ -218,6 +244,10 @@ router.get(
 
       if (!res.headersSent) res.sendStatus(200);
     };
+
+    totalTimer = startTotalTimer(() =>
+      finish(createClientError("文件传输总时限超时", 408))
+    );
 
     socket.setTimeout(transferLimits.connectTimeoutMs());
 
@@ -248,8 +278,8 @@ router.get(
 
 /**
  * POST /api/file-transfers/upload
- * Initialise a TeamSpeak upload and return a one-time ticket. The browser never
- * supplies the raw port/ftkey.
+ * Initialise a TeamSpeak upload and return a one-time ticket. The declared size
+ * must be a safe, non-negative integer bounded by the configured maximum.
  */
 router.post(
   "/upload",
@@ -271,12 +301,14 @@ router.post(
     if (!Number.isInteger(cid) || cid < 0) {
       throw createClientError("无效的频道 ID");
     }
-    if (!Number.isFinite(size) || size < 0) {
+    // Must be a safe, non-negative integer. A zero-byte file is valid, but 0 is
+    // never treated as "unlimited".
+    if (!Number.isSafeInteger(size) || size < 0) {
       throw createClientError("无效的文件大小");
     }
 
     const maxSize = transferLimits.maxFileSize();
-    if (maxSize > 0 && size > maxSize) {
+    if (size > maxSize) {
       throw createClientError("文件超过大小限制", 413);
     }
 
@@ -326,7 +358,8 @@ router.post(
 /**
  * POST /api/file-transfers/:ticket/upload
  * Receive the multipart file bytes and forward them to the TeamSpeak transfer
- * port. The ticket supplies the only valid port/ftkey the backend will use.
+ * port. The ticket supplies the only valid port/ftkey the backend will use, and
+ * the exact number of bytes received must equal the declared size.
  */
 router.post(
   "/:ticket/upload",
@@ -349,11 +382,13 @@ router.post(
     let settled = false;
     let fileSeen = false;
     let receivedBytes = 0;
+    let totalTimer = null;
 
     const finish = (error) => {
       if (settled) return;
       settled = true;
 
+      if (totalTimer) clearTimeout(totalTimer);
       socket.destroy();
       transferLimits.release(session.id);
       ticketStore.delete(raw);
@@ -366,13 +401,23 @@ router.post(
       if (!res.headersSent) res.sendStatus(200);
     };
 
+    // A wall-clock deadline that cannot be beaten by a slow trickle of traffic.
+    totalTimer = startTotalTimer(() =>
+      finish(createClientError("文件传输总时限超时", 408))
+    );
+
+    const declaredSize = ticket.expectedSize;
+
     let busboy;
     try {
       busboy = Busboy({
         headers: req.headers,
         limits: {
           files: 1,
-          fileSize: ticket.expectedSize > 0 ? ticket.expectedSize : Infinity,
+          // Must always be finite (never Infinity). Busboy's fileSize limit is
+          // inclusive, so use declaredSize + 1: an exact-size file is not
+          // falsely truncated, while anything larger hits the limit handler.
+          fileSize: declaredSize + 1,
         },
       });
     } catch (_) {
@@ -387,11 +432,6 @@ router.post(
       }
       fileSeen = true;
 
-      // Write the ftkey and pipe the file body immediately: net.Socket buffers
-      // writes (and end()) until the connection is established, so a small file
-      // that has already ended before connect is still delivered, in order,
-      // after the ftkey. This is why we wait for `finish` rather than for
-      // Busboy parsing to decide success.
       socket.setTimeout(transferLimits.idleTimeoutMs());
 
       socket.once("error", finish);
@@ -401,9 +441,14 @@ router.post(
       file.once("error", finish);
       busboy.once("error", finish);
 
+      // Busboy truncates a file that exceeds the declared size and emits this.
+      file.on("limit", () =>
+        finish(createClientError("上传文件超过大小限制", 413))
+      );
+
       file.on("data", (chunk) => {
         receivedBytes += chunk.length;
-        if (ticket.expectedSize > 0 && receivedBytes > ticket.expectedSize) {
+        if (receivedBytes > declaredSize) {
           finish(createClientError("上传字节数超过声明大小", 413));
         }
       });
@@ -430,8 +475,16 @@ router.post(
     });
 
     // Wait for the write side to complete, not merely for Busboy to finish
-    // parsing the multipart body.
-    socket.once("finish", () => finish());
+    // parsing the multipart body. The exact byte count must match the declared
+    // size, otherwise the transfer is treated as corrupt rather than successful.
+    socket.once("finish", () => {
+      if (receivedBytes !== declaredSize) {
+        return finish(
+          createClientError("上传字节数与声明大小不一致", 400)
+        );
+      }
+      finish();
+    });
 
     req.once("aborted", () => finish(new Error("请求已中止")));
     req.once("error", finish);
