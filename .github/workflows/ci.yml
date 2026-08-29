@@ -35,6 +35,43 @@ jobs:
       - name: Build server executable
         run: npm run server:build
 
+  dependency-audit:
+    name: Dependency security audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Clean install dependencies
+        run: npm ci
+
+      - name: Run production dependency audit
+        run: npm audit --omit=dev --json > npm-audit-report.json || true
+
+      - name: Surface audit outcome
+        run: |
+          cat npm-audit-report.json || echo "(no audit report produced)"
+          echo "--------------------------------------------------------------"
+          echo "A non-zero npm audit --omit=dev result is a KNOWN / ACCEPTED risk"
+          echo "until the Vue 3 / Vuetify 3 migration. Review the report above"
+          echo "against docs/security-advisory-assessment.md (tracked in"
+          echo "docs/security-tracker.md). Do not treat it as clean until the"
+          echo "Vuetify 2 advisories are resolved."
+
+      - name: Upload audit report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          if-no-files-found: ignore
+
   windows-build:
     name: Windows x64 executable build validation
     runs-on: windows-latest
