@@ -166,16 +166,48 @@ test("get() refreshes lastUsedAt", () => {
   assert.ok(refreshed.lastUsedAt >= Date.now() - 1000);
 });
 
-test("remembered sessions also expire after 8 hours idle", () => {
+test("remembered session survives idling past the temp ttl but not past its own", () => {
   const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "idle.enc"));
   const manager = new SessionManager({ encryptedStore: store });
   const session = manager.create({ credentials, remember: true });
 
+  // 9h idle: inside the 30-day remembered idle TTL -> still recoverable.
   session.lastUsedAt = Date.now() - 9 * 60 * 60 * 1000;
   store.set(session);
   manager.memory.clear();
 
+  const recovered = manager.get(session.id);
+  assert.ok(recovered, "remembered session should be recoverable after 9h idle");
+
+  // 31d idle: past the remembered idle TTL -> expired.
+  session.lastUsedAt = Date.now() - 31 * 24 * 60 * 60 * 1000;
+  store.set(session);
+  manager.memory.clear();
+
   assert.strictEqual(manager.get(session.id), null);
+});
+
+test("get() does not re-persist a remembered session within the throttle window", () => {
+  const file = path.join(DATA_DIR, "throttle.enc");
+  const store = new EncryptedFileSessionStore(file);
+  const manager = new SessionManager({ encryptedStore: store });
+  const session = manager.create({ credentials, remember: true });
+
+  // Simulate an older on-disk state (lastUsedAt one hour ago), then persist it.
+  session.lastUsedAt = Date.now() - 60 * 60 * 1000;
+  store.set(session);
+  manager.memory.clear();
+
+  const inMemory = manager.get(session.id);
+  assert.ok(inMemory.lastUsedAt >= Date.now() - 1000, "in-memory lastUsedAt refreshed");
+
+  // A fresh store built from the file must NOT see the refreshed lastUsedAt,
+  // proving get() did not synchronously write to disk within the throttle window.
+  const fromDisk = new EncryptedFileSessionStore(file).get(session.id);
+  assert.ok(
+    fromDisk.lastUsedAt < Date.now() - 30 * 1000,
+    "disk copy kept the pre-read lastUsedAt"
+  );
 });
 
 test("remembered session activity and server selection persist to disk", () => {

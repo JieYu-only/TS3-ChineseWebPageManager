@@ -36,7 +36,8 @@ function getEncryptionKey() {
 
   const key = crypto.randomBytes(32).toString("base64");
   fs.mkdirSync(getDataDir(), { recursive: true });
-  fs.writeFileSync(keyFile, key, "utf8");
+  // Restrict the key file so only the service account can read it.
+  fs.writeFileSync(keyFile, key, { encoding: "utf8", mode: 0o600 });
   process.env.SESSION_ENCRYPTION_KEY = key;
   return key;
 }

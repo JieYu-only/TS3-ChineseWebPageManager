@@ -7,12 +7,26 @@ const EncryptedFileSessionStore = require("./EncryptedFileSessionStore");
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
-// Session lifetimes (tunable via env for operators who want different values).
+// Per-session-type lifetimes. Temporary logins use a short absolute TTL and a
+// short idle TTL; remembered logins may survive much longer and only expire
+// after their own (much longer) idle TTL. All are tunable via env.
 const TEMP_SESSION_TTL_MS =
   Number(process.env.SESSION_TEMP_TTL_MS) || 8 * HOUR; // 普通登录 8 小时
 const REMEMBER_SESSION_TTL_MS =
   Number(process.env.SESSION_REMEMBER_TTL_MS) || 30 * DAY; // 记住登录 30 天
-const IDLE_TTL_MS = Number(process.env.SESSION_IDLE_TTL_MS) || 8 * HOUR; // 空闲 8 小时
+const TEMP_IDLE_TTL_MS =
+  Number(process.env.SESSION_TEMP_IDLE_TTL_MS) || 8 * HOUR; // 普通会话空闲 8 小时
+const REMEMBER_IDLE_TTL_MS =
+  Number(process.env.SESSION_REMEMBER_IDLE_TTL_MS) || 30 * DAY; // 记住登录空闲 30 天
+
+// Only persist a remembered session to disk when last used more than this long
+// ago. Frequent reads still refresh lastUsedAt in memory without hammering disk.
+const PERSIST_THROTTLE_MS =
+  Number(process.env.SESSION_PERSIST_THROTTLE_MS) || 10 * 60 * 1000;
+
+// Ceiling on simultaneously active sessions for one account (host+username).
+const MAX_ACTIVE_PER_ACCOUNT =
+  Number(process.env.SESSION_MAX_ACTIVE_PER_ACCOUNT) || 50;
 
 /**
  * Create a cryptographically random session id.
@@ -31,10 +45,15 @@ function hashSessionId(sessionId) {
   return crypto.createHash("sha256").update(sessionId).digest("hex");
 }
 
+function accountKey(credentials) {
+  return `${credentials.host}:${credentials.username}`;
+}
+
 class SessionManager {
   constructor({ memoryStore, encryptedStore } = {}) {
     this.memory = memoryStore || new MemorySessionStore();
-    this.encrypted = encryptedStore || new EncryptedFileSessionStore(process.env.SESSION_FILE);
+    this.encrypted =
+      encryptedStore || new EncryptedFileSessionStore(process.env.SESSION_FILE);
     this._timer = null;
   }
 
@@ -54,8 +73,19 @@ class SessionManager {
       remember,
       createdAt: now,
       lastUsedAt: now,
+      lastPersistAt: now,
       expiresAt: now + ttl,
     };
+
+    // Limit the number of active sessions per account by evicting the oldest.
+    const account = accountKey(credentials);
+    const active = this._sessionsForAccount(account);
+    if (active.length >= MAX_ACTIVE_PER_ACCOUNT) {
+      const oldest = active.sort(
+        (a, b) => a.lastUsedAt - b.lastUsedAt || a.createdAt - b.createdAt
+      )[0];
+      this.delete(oldest.id);
+    }
 
     this.memory.set(session);
 
@@ -67,7 +97,9 @@ class SessionManager {
   }
 
   /**
-   * Read a session by id, refreshing its last-used timestamp.
+   * Read a session by id, refreshing its last-used timestamp in memory. Disk
+   * persistence for remembered sessions is throttled so reads do not hammer the
+   * filesystem.
    * @param {string} id
    * @returns {object|null}
    */
@@ -85,7 +117,15 @@ class SessionManager {
 
     session.lastUsedAt = Date.now();
     this.memory.set(session);
-    if (session.remember) this.encrypted.set(session);
+
+    if (session.remember) {
+      const lastPersist = session.lastPersistAt || session.createdAt || 0;
+      if (Date.now() - lastPersist > PERSIST_THROTTLE_MS) {
+        session.lastPersistAt = Date.now();
+        this.encrypted.set(session);
+      }
+    }
+
     return session;
   }
 
@@ -107,9 +147,24 @@ class SessionManager {
     const now = Date.now();
     if (session.expiresAt && now > session.expiresAt) return true;
 
-    if (now - session.lastUsedAt > IDLE_TTL_MS) return true;
+    const idleTtl = session.remember
+      ? REMEMBER_IDLE_TTL_MS
+      : TEMP_IDLE_TTL_MS;
+
+    if (now - session.lastUsedAt > idleTtl) return true;
 
     return false;
+  }
+
+  /**
+   * Collect every active session (memory + encrypted) for a given account key.
+   * @param {string} account
+   * @returns {object[]}
+   */
+  _sessionsForAccount(account) {
+    return [...this.memory.all(), ...this.encrypted.all()].filter(
+      (s) => accountKey(s.credentials) === account
+    );
   }
 
   /**
@@ -146,7 +201,13 @@ class SessionManager {
 
     session.serverId = serverId == null ? null : String(serverId);
     this.memory.set(session);
-    if (session.remember) this.encrypted.set(session);
+
+    // A server-selection change is worth persisting immediately.
+    if (session.remember) {
+      session.lastPersistAt = Date.now();
+      this.encrypted.set(session);
+    }
+
     return session;
   }
 

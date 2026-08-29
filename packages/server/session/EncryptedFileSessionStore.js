@@ -43,9 +43,10 @@ class EncryptedFileSessionStore {
 
     const map = Object.fromEntries(this.sessions.entries());
     const payload = encryptValue(map);
-    // Write atomically to avoid corrupting the file on crash.
+    // Write atomically to avoid corrupting the file on crash, and restrict the
+    // permissions so only the service account can read the encrypted sessions.
     const tmp = `${this.filePath}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(payload), "utf8");
+    fs.writeFileSync(tmp, JSON.stringify(payload), { encoding: "utf8", mode: 0o600 });
     fs.renameSync(tmp, this.filePath);
   }
 
