@@ -10,12 +10,16 @@
 | 项 | 值 |
 |----|----|
 | 应用版本 | v2.2.6 |
-| Git HEAD | `c1815bb34267dfebaefd02a21d50cf14237a4f00` |
-| 相关提交（本次） | valid: `4f6259a` share trust-proxy policy · `c1815bb` correct Vue/Vuetify advisory assessment · `677ef1a`/`20379c5`/`c801b5b`/`b4374c5`/`827108e`（上一批） |
-| 构建时主机 Node / npm | **v24.19.0** / 11.17.0（注：**非 Node 22**，见风险） |
-| EXE（server.exe）SHA256 | `71927FE1A643B3ACAEF6115D7104720C5AF6CD00C8472DA4AB39826A82DB30EB` |
-| EXE（server.exe）SHA1 | `7DC8264D11F10867E0B01CE9409F5FF67F4C10B0` |
-| EXE 大小 | 74,502,484 字节（≈71 MiB） |
+| Git HEAD | `ff6070ae5a0dad72b5cc1f40ead0b69c366d74ff` |
+| 相关提交（本次） | `60ae7f6` chore(ci): add dependency security audit job · `ff6070a` docs(security): add deployment config, dependency tracker and release record（上一批：`4f6259a`/`c1815bb` 等） |
+| 构建时主机 Node / npm | **v24.19.0** / 11.17.0（**非 Node 22**） |
+| 本地产物 EXE（server.exe）SHA256 | `71927FE1A643B3ACAEF6115D7104720C5AF6CD00C8472DA4AB39826A82DB30EB`（**本机 Node24 上下文、pkg 目标 node22 构建，非 CI 制品**） |
+| 本地产物 EXE（server.exe）SHA1 | `7DC8264D11F10867E0B01CE9409F5FF67F4C10B0` |
+| 本地产物 EXE 大小 | 74,502,484 字节（≈71 MiB） |
+| **CI 制品 EXE SHA256** | **待定**（本环境无法触发/读取 GitHub Actions 运行与下载产物，见 §6“环境验收状态”） |
+| Docker 版本 | **不可用**（本环境未安装 Docker） |
+
+> **重要**：发布候选提交**尚未推送到远程并触发 CI**（本环境无法执行 `git push` 或观测 GitHub Actions）。因此不存在“CI 运行链接、运行编号、CI 制品 EXE”。记录中的 EXE 哈希是本地 Node24 主机构建的制品，**不能作为发布候选的 CI 制品哈希**。正式发布必须用 CI 从同一发布候选提交构建的 EXE 哈希。
 
 ---
 
@@ -72,14 +76,27 @@
 
 ---
 
-## 5. 验收结论
+## 5. 环境级验收状态（本批任务）
 
-**静态/自动化可验证项全部通过**：服务端测试 87/87、前端 lint 0 问题、UI 生产构建通过、Node 22 EXE（pkg 目标）构建并独立启动通过 `/api/health`、Cookie/Origin/代理 IP 验证通过自动化测试。
+> 本批要求的环境级验证（Node 22 CI、Docker、真实 HTTPS 反向代理、真实 TeamSpeak）**未能在本环境执行**，因为这些基础设施在本沙箱中不可用。下表为**真实状态**，未做任何虚构。
 
-**待外部真实环境完成项**：
-1. 在 **Node 22** 主机/CI 上重新执行 Task 1 门禁（`npm ci`、`npm test`、`npm run lint --workspace=@ts3-manager/ui`、`npm run ui:build`、`npm run server:build`）。
-2. **Docker** 干净构建 + 运行 + 持久化卷 + remembered session 恢复 + 无敏感信息日志（本环境无 Docker）。
-3. **真实 Nginx/Caddy/HTTPS** + `TRUSTED_PROXY_HOPS` 匹配 + 伪造 XFF 验证 + 客户端 IP 一致性。
-4. **真实 TeamSpeak** 端到端与文件传输回归。
+| 任务 | 验收项 | 状态 | 原因 / 需在何处执行 |
+|------|--------|------|--------------------|
+| 1 | Node 22 CI 门禁（`npm ci`/`test`/`lint`/`ui:build`/`server:build` + Windows EXE） | **未执行** | 本机 Node 为 v24（非 22）；无法触及 GitHub Actions 运行/产物；需在 GitHub Actions 或独立 Node 22 主机运行并回填 CI 链接、运行号、提交 SHA、CI 制品 EXE SHA256 |
+| 2 | Docker 构建/运行/重启/持久化 | **未执行** | 本环境未安装 Docker（`docker` 命令不可用）；需在 Docker Engine/Desktop 测试主机执行 |
+| 3 | 真实 HTTPS 反向代理（Nginx/Caddy）+ WSS + Origin + 代理 IP | **未执行** | 无真实管理域名/反向代理；仅 Cookie 属性与 Origin 403 有自动化测试覆盖（§3.1） |
+| 4 | 真实 TeamSpeak 管理与文件传输端到端 | **未执行** | 无真实 TeamSpeak 实例/测试账号 |
 
-> 验收人：**待指派**（发布审批前落实）。日期：2026-08-29。**当前结论**：自动化门禁通过；真实环境验收项未完成，**不建议在完成上述真实环境项之前正式发布**。
+> 上述各项在 `docs/production-deployment.md` 给出配置清单。**必须由部署/运维在真实基础设施上执行、回填结果并签名确认**，本记录才能从红转绿。
+
+---
+
+## 6. 验收结论
+
+**本环境（自动可验证项）全部通过**：服务端测试 **87/87**、前端 lint **0 问题**、UI 生产构建通过、Node 22（pkg 目标）EXE 构建并独立启动通过 `/api/health`、Cookie 属性与 Origin 403 通过自动化测试。
+
+**发布验收状态：`NOT RELEASE READY`（红色）**。环境级验收项（Node 22 CI、Docker、真实 HTTPS/代理、真实 TeamSpeak）均**未执行**，且发布候选提交**尚未推送触发 CI、没有 CI 制品哈希**。这些必须先在真实基础设施上完成并回填本记录，形成可追溯证据（CI 链接/运行号/提交 SHA、CI EXE SHA256、镜像 ID/摘要、HTTPS/WSS/代理 IP 结果、TeamSpeak 回归结果）。
+
+- Vuetify High 风险：负责人/复核人已登记为团队/角色标识，**具名成员须在 `docs/security-tracker.md` 完成接受确认**（截止 **2026-11-27**）。
+- **未创建版本标签 / 发布**（按指引，在环境级验收完成前不创建正式发布）。
+- 验收人：**待指派**（发布审批前落实，并签名）。日期：2026-08-29。**最终结论：环境级验收未完成，不建议发布。**
