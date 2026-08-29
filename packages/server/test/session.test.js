@@ -12,6 +12,8 @@ const DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "ts3-session-"));
 process.env.SESSION_ENCRYPTION_KEY = TEST_KEY;
 process.env.DATA_DIR = DATA_DIR;
 process.env.SESSION_FILE = path.join(DATA_DIR, "sessions.enc");
+// Test the per-account cap with a small, deterministic ceiling.
+process.env.SESSION_MAX_ACTIVE_PER_ACCOUNT = "3";
 
 const { encryptValue, decryptValue } = require("../session/credentialCrypto");
 const SessionManager = require("../session/SessionManager");
@@ -247,4 +249,79 @@ test("startCleanup/stopCleanup manage the periodic timer", () => {
   const manager = new SessionManager({});
   assert.doesNotThrow(() => manager.startCleanup(60 * 60 * 1000));
   assert.doesNotThrow(() => manager.stopCleanup());
+});
+
+test("a remembered session present in both stores is counted once", () => {
+  const memory = new MemorySessionStore();
+  const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "dup.enc"));
+  const manager = new SessionManager({
+    memoryStore: memory,
+    encryptedStore: store,
+  });
+
+  const session = manager.create({ credentials, remember: true });
+  const account = `${credentials.host}:${credentials.username}`;
+
+  // The same session object is reachable from BOTH stores.
+  assert.ok(memory.has(session.id));
+  assert.ok(store.has(session.id));
+
+  // But _sessionsForAccount must only count it once.
+  assert.strictEqual(manager._sessionsForAccount(account).length, 1);
+});
+
+test("no eviction before the per-account cap is reached", () => {
+  const memory = new MemorySessionStore();
+  const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "noevict.enc"));
+  const manager = new SessionManager({ memoryStore: memory, encryptedStore: store });
+  const account = `${credentials.host}:${credentials.username}`;
+
+  const a = manager.create({ credentials, remember: false });
+  const b = manager.create({ credentials, remember: false });
+
+  assert.ok(memory.has(a.id));
+  assert.ok(memory.has(b.id));
+  assert.strictEqual(manager._sessionsForAccount(account).length, 2);
+});
+
+test("evicts only the oldest session when the account cap is reached", () => {
+  const memory = new MemorySessionStore();
+  const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "evict.enc"));
+  const manager = new SessionManager({ memoryStore: memory, encryptedStore: store });
+  const account = `${credentials.host}:${credentials.username}`;
+
+  const a = manager.create({ credentials, remember: false });
+  const b = manager.create({ credentials, remember: false });
+  const c = manager.create({ credentials, remember: false });
+
+  // Force `a` to be the oldest by last-used timestamp.
+  a.lastUsedAt = Date.now() - 60 * 1000;
+  memory.set(a);
+
+  // Creating a fourth session for the same account should evict exactly one.
+  const d = manager.create({ credentials, remember: false });
+
+  assert.strictEqual(memory.has(a.id), false, "oldest session evicted");
+  assert.ok(memory.has(b.id));
+  assert.ok(memory.has(c.id));
+  assert.ok(memory.has(d.id));
+  assert.strictEqual(manager._sessionsForAccount(account).length, 3);
+});
+
+test("accounts are separated by host and username", () => {
+  const memory = new MemorySessionStore();
+  const store = new EncryptedFileSessionStore(path.join(DATA_DIR, "accounts.enc"));
+  const manager = new SessionManager({ memoryStore: memory, encryptedStore: store });
+
+  manager.create({ credentials: { ...credentials, username: "userA" }, remember: false });
+  manager.create({ credentials: { ...credentials, username: "userB" }, remember: false });
+  manager.create({ credentials: { ...credentials, host: "other.example.com" }, remember: false });
+
+  // Same host, different usernames -> separate accounts.
+  assert.strictEqual(manager._sessionsForAccount(`${credentials.host}:userA`).length, 1);
+  assert.strictEqual(manager._sessionsForAccount(`${credentials.host}:userB`).length, 1);
+  // Different host, same username -> separate account.
+  assert.strictEqual(manager._sessionsForAccount("other.example.com:serveradmin").length, 1);
+  // No account should have mixed entries.
+  assert.strictEqual(manager._sessionsForAccount(`${credentials.host}:serveradmin`).length, 0);
 });

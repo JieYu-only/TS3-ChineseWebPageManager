@@ -158,13 +158,33 @@ class SessionManager {
 
   /**
    * Collect every active session (memory + encrypted) for a given account key.
+   * A remembered session exists in BOTH stores, so sessions are deduplicated by
+   * id; expired sessions are cleaned up and excluded; and temporary and
+   * remembered sessions are both counted. Returns unique, unexpired sessions.
    * @param {string} account
    * @returns {object[]}
    */
   _sessionsForAccount(account) {
-    return [...this.memory.all(), ...this.encrypted.all()].filter(
-      (s) => accountKey(s.credentials) === account
-    );
+    const seen = new Set();
+    const sessions = [];
+
+    for (const session of [...this.memory.all(), ...this.encrypted.all()]) {
+      if (accountKey(session.credentials) !== account) continue;
+
+      const id = session.id || session._id;
+      if (seen.has(id)) continue;
+      seen.add(id);
+
+      // Clean up expired sessions from both stores and exclude them.
+      if (this._isExpired(session)) {
+        this.delete(session.id);
+        continue;
+      }
+
+      sessions.push(session);
+    }
+
+    return sessions;
   }
 
   /**
