@@ -67,10 +67,7 @@ export default {
       this.$TeamSpeak.on("serveredit", this.setServerList);
     },
     removeServerLister() {
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "serveredit",
-        this.setServerList
-      );
+      this.$TeamSpeak.off("serveredit", this.setServerList);
     },
   },
   async created() {

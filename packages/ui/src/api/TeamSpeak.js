@@ -222,6 +222,10 @@ TeamSpeak.on = (name, fn) => {
   TeamSpeak.__proto__.addEventListener(name, fn);
 };
 
+TeamSpeak.off = (name, fn) => {
+  TeamSpeak.__proto__.removeEventListener(name, fn);
+};
+
 socket.on("teamspeak-textmessage", (data) => {
   TeamSpeak.__proto__.dispatchEvent(
     new CustomEvent("textmessage", {

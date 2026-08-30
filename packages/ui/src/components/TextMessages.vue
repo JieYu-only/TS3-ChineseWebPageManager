@@ -432,30 +432,12 @@ export default {
       this.$TeamSpeak.on("channeldelete", this.updateChannelList);
     },
     removeEventListeners() {
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientconnect",
-        this.updateClientList
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientconnect",
-        this.getSingleClientAvatar
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientdisconnect",
-        this.updateClientList
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "channeledit",
-        this.updateChannelList
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "channelcreate",
-        this.updateChannelList
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "channeldelete",
-        this.updateChannelList
-      );
+      this.$TeamSpeak.off("clientconnect", this.updateClientList);
+      this.$TeamSpeak.off("clientconnect", this.getSingleClientAvatar);
+      this.$TeamSpeak.off("clientdisconnect", this.updateClientList);
+      this.$TeamSpeak.off("channeledit", this.updateChannelList);
+      this.$TeamSpeak.off("channelcreate", this.updateChannelList);
+      this.$TeamSpeak.off("channeldelete", this.updateChannelList);
     },
     getSingleClientAvatar(e) {
       this.$store.dispatch("getClientAvatars", [

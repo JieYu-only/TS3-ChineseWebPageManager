@@ -136,26 +136,11 @@ export default {
       this.$TeamSpeak.on("channeldelete", this.loadChannelTree);
     },
     removeEventListeners() {
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientmoved",
-        this.loadChannelTree
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientconnect",
-        this.loadChannelTree
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientconnect",
-        this.getSingleClientAvatar
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "clientdisconnect",
-        this.loadChannelTree
-      );
-      this.$TeamSpeak.__proto__.removeEventListener(
-        "channeldelete",
-        this.loadChannelTree
-      );
+      this.$TeamSpeak.off("clientmoved", this.loadChannelTree);
+      this.$TeamSpeak.off("clientconnect", this.loadChannelTree);
+      this.$TeamSpeak.off("clientconnect", this.getSingleClientAvatar);
+      this.$TeamSpeak.off("clientdisconnect", this.loadChannelTree);
+      this.$TeamSpeak.off("channeldelete", this.loadChannelTree);
     },
     openAllChannels() {
       this.channelList.forEach((channel) =>
