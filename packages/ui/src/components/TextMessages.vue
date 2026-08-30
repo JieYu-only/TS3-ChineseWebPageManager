@@ -342,7 +342,7 @@ export default {
     getClientList() {
       return this.$TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);
     },
-    async updateClientList(_e) {
+    async updateClientList() {
       try {
         this.clientList = await this.getClientList();
       } catch (err) {
@@ -517,7 +517,7 @@ export default {
 
       this.$store.commit("markMessageAsRead", chat);
     },
-    "$store.state.chat.messages"(messages) {
+    "$store.state.chat.messages"() {
       this.$nextTick(() => {
         this.scrollBottom();
       });
@@ -526,7 +526,7 @@ export default {
     },
     "$vuetify.breakpoint.smAndDown": {
       immediate: true,
-      handler(smAndDown) {
+      handler() {
         this.hideChat = true;
 
         this.hideChatTargets = false;

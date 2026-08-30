@@ -29,7 +29,7 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-router.afterEach((to, from) => {
+router.afterEach(() => {
   store.commit("isLoading", false);
 
   setTimeout(() => {

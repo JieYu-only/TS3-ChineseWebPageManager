@@ -131,7 +131,7 @@ export default {
      * @param  {TreeItem}
      * @return {Array.<TreeItem>}
      */
-    getFileList({ cid, type, path, name, id }) {
+    getFileList({ cid, path, name, id }) {
       return this.$TeamSpeak
         .execute("ftgetfilelist", {
           cid,

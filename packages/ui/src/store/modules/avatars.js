@@ -74,7 +74,7 @@ const actions = {
       Vue.prototype.$toast.error(err.message);
     }
   },
-  async getClientAvatars({ dispatch, commit, state }, clientDbIdList) {
+  async getClientAvatars({ dispatch, state }, clientDbIdList) {
     await dispatch("initState");
 
     for (let clientDbId of clientDbIdList) {

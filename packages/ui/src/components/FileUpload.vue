@@ -26,7 +26,6 @@
 
 <script>
 import fileTransfer from "@/mixins/fileTransfer";
-import path from "path-browserify";
 
 export default {
   mixins: [fileTransfer],
