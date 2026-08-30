@@ -143,7 +143,7 @@ export default {
       this.dialog = true;
     },
     getBanList() {
-      return this.$TeamSpeak.execute("banlist");
+      return this.$TeamSpeak.getBanList();
     },
     calcExpiryDate(created, duration) {
       return new Date(created * 1000 + duration * 1000).toLocaleString();

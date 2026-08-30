@@ -165,6 +165,8 @@ TeamSpeak.getServerGroupList = () => TeamSpeak.execute("servergrouplist");
 
 TeamSpeak.getChannelGroupList = () => TeamSpeak.execute("channelgrouplist");
 
+TeamSpeak.getBanList = () => TeamSpeak.execute("banlist");
+
 TeamSpeak.whoAmI = () => TeamSpeak.execute("whoami").then((list) => list[0]);
 
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");

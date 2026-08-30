@@ -18,7 +18,7 @@ export default {
   },
   methods: {
     getBanList() {
-      return this.$TeamSpeak.execute("banlist");
+      return this.$TeamSpeak.getBanList();
     },
     getBan(banlist) {
       return banlist.find((ban) => ban.banid == this.banid);
