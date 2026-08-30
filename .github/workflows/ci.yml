@@ -64,6 +64,9 @@ jobs:
           echo "docs/security-tracker.md). Do not treat it as clean until the"
           echo "Vuetify 2 advisories are resolved."
 
+      - name: Reject new High or Critical vulnerabilities
+        run: node scripts/verify-audit-baseline.js npm-audit-report.json
+
       - name: Upload audit report artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,4 +103,24 @@ jobs:
           if (-not (Test-Path "packages/server/server.exe")) {
             throw "Expected server.exe was not produced"
           }
-          Write-Host "server.exe produced successfully"
+          $hash = (Get-FileHash "packages/server/server.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  server.exe" | Set-Content -Encoding ascii "packages/server/server.exe.sha256"
+          @(
+            "git_sha=${{ github.sha }}"
+            "node_version=$(node --version)"
+            "npm_version=$(npm --version)"
+            "sha256=$hash"
+            "size_bytes=$((Get-Item 'packages/server/server.exe').Length)"
+          ) | Set-Content -Encoding utf8 "packages/server/server.exe.metadata.txt"
+          Write-Host "server.exe produced successfully: SHA256=$hash"
+
+      - name: Upload Windows executable and provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: ts3-manager-windows-x64-${{ github.sha }}
+          path: |
+            packages/server/server.exe
+            packages/server/server.exe.sha256
+            packages/server/server.exe.metadata.txt
+          if-no-files-found: error
+          retention-days: 14

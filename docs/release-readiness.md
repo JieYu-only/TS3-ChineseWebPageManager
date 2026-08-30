@@ -1,7 +1,7 @@
 # 发布验收记录 (Release Readiness Record)
 
 > 针对近期发布的验收检查结果。本文件记录**在本环境实际验证**的项，以及**需要外部真实环境执行**的项（Docker、真实反向代理/HTTPS、真实 TeamSpeak）。
-> 验收日期：2026-08-30（本次 P0 复验，Node 22）
+> 验收日期：2026-08-30。Node 22 基线来自提交 `81b23cf`；当前候选基线为 `72ef2fa`，尚待推送后取得同提交 CI 证据。
 
 ---
 
@@ -10,20 +10,21 @@
 | 项 | 值 |
 |----|----|
 | 应用版本 | v2.2.6 |
-| Git HEAD | `81b23cf3c4338df75cb71bb07128033bc57aff41` |
-| 相关提交（本次） | `81b23cf` docs: update security deployment and release validation · `8b8427d` docs(security): assign risk owner and update release readiness to honest state · `ff6070a` docs(security): add deployment config, dependency tracker and release record · `60ae7f6` chore(ci): add dependency security audit job |
+| 当前候选基线 | `72ef2fa8c8404144c4bd3291a3a9cd8bce85bd31`（本次 CI/文档改动提交后须替换为最终提交 SHA） |
+| 已验证 Node 22 基线 | `81b23cf3c4338df75cb71bb07128033bc57aff41` |
+| 相关提交 | `72ef2fa` docs(security): fulfil P0 dependency risk governance and Node 22 revalidation · `81b23cf` docs: update security deployment and release validation |
 | 验收时 Node / npm | **v22.23.2** / **10.9.8**（Node.js 官方 portable 运行时，`D:\node22\node-v22.23.2-win-x64`） |
 | 分支 / 上游 | `master`，与 `origin/master` 同步（`git status -sb` 无 ahead/behind） |
 | 本地产物 EXE（server.exe）SHA256 | `97C64BEC5011E3A8F91C74B6DB748BA86A37D7839CD4561F47E68AD7BC4B42B9`（Node 22 干净依赖环境构建） |
 | 本地产物 EXE（server.exe）SHA1 | `DE9FD2F4CB05DFDCAF49C91109654A334AC19F00` |
 | 本地产物 EXE 大小 | 74,952,183 字节（≈71.5 MiB） |
-| CI 运行链接（CI 工作流） | **成功** https://github.com/JieYu-only/TS3-ChineseWebPageManager/actions/runs/33246561158 |
-| CI 运行链接（Build Executables） | **成功** https://github.com/JieYu-only/TS3-ChineseWebPageManager/actions/runs/33246752296 |
+| Node 22 基线 CI（提交 `81b23cf`） | **成功** https://github.com/JieYu-only/TS3-ChineseWebPageManager/actions/runs/33246561158 |
+| 当前候选 CI | **待执行**：推送最终候选提交后回填，旧提交的成功运行不得替代 |
 | CI 审计报告 artifact | `npm-audit-report`（id `9713028087`），digest `sha256:b984276476d89cf26a2ce19015e01ceabffee02442690301fee16d65783040ea` |
-| **CI 制品 EXE SHA256** | **未发布**：`build-exe` 工作流仅校验 `server.exe` 存在，**不上传** EXE 为 artifact，故无 CI 制品 EXE 哈希；下述 EXE 哈希为本地 Node 22 构建产物，证明 Node 22 门禁+制品可构建 |
+| **当前候选 CI 制品 EXE SHA256** | **待执行**：CI 已配置上传 `server.exe`、`server.exe.sha256` 和构建元数据；推送最终候选后下载并回填 |
 | Docker 版本 | **不可用**（本环境未安装 Docker） |
 
-> **说明**：本文件中的 Git HEAD 指向发布候选提交 `81b23cf`，其对应 CI 运行与审计报告 artifact 均已可追溯（见上表）。CI 审计报告 artifact（`npm-audit-report`）由 `dependency-audit` 作业生成，内容与本环境 `npm audit --omit=dev` 一致（见 §4）。
+> **证据边界**：`81b23cf` 的 Node 22 与 CI 结果只作为历史基线。当前候选包含其后的安全治理和 CI 改动，必须由最终提交自身的 CI 运行重新证明，不得沿用旧运行冒充当前证据。
 
 ---
 
@@ -39,7 +40,15 @@
 | EXE 烟雾测试（随机端口 + 测试密钥启动） | ✅ `/api/health` 返回 **200** `{"status":"ok","uptime":...}`，stderr 为空，停止后端口监听计数为 **0**、`server.exe` 进程残留为 **0** |
 | `npm audit --omit=dev` | ⚠️ **非零（已知/已接受）**：`5 vulnerabilities (4 low, 1 high, 0 critical)`，与 `docs/security-advisory-assessment.md` / `docs/security-tracker.md` 一致，**无既有清单之外的新 High/Critical**（见 §4） |
 
-> Node 主版本要求（Task 1）已在官方 Node.js v22.23.2 portable 运行时中完成：`npm ci`、测试、lint、UI 构建、服务端构建和 EXE 冒烟测试全部通过。CI 运行链接与审计报告 artifact 已回填（§1）。
+> Node 22 历史基线已在官方 Node.js v22.23.2 portable 运行时中完成；对应 CI 与审计 artifact 仅适用于提交 `81b23cf`。当前候选仍须取得同提交 CI 证据。
+
+### 2.1 当前候选本地复验（2026-08-30）
+
+- 宿主运行时为 Node v24.19.0 / npm 11.17.0，因此本节不能替代 Node 22 CI。
+- `npm test`：87/87 通过；UI lint：通过；UI 生产构建连续两次成功，先前 Windows `EPERM` 未复现。
+- `pkg --target node22` 成功；本地产物大小 74,952,199 字节，SHA-256 `59636A66E8BEFFA5B74BE602A1F130D8B15DA4A3A6307B9202959752E87C8BF7`。
+- `npm audit --omit=dev`：4 low + 1 high + 0 critical，与 §4 已接受清单一致。
+- 工作区在验收结束后保持干净。
 
 ---
 
@@ -89,20 +98,20 @@
 
 | 任务 | 验收项 | 状态 | 原因 / 需在何处执行 |
 |------|--------|------|--------------------|
-| 1 | Node 22 门禁（`npm ci`/`test`/`lint`/`ui:build`/`server:build` + Windows EXE） | **本地通过；CI 已回填** | Node v22.23.2 / npm 10.9.8 下全部通过；EXE SHA256 已记录；CI 运行链接 = `33246561158`（CI）/ `33246752296`（Build Executables），审计报告 artifact digest `sha256:b984…` |
+| 1 | Node 22 门禁（`npm ci`/`test`/`lint`/`ui:build`/`server:build` + Windows EXE） | **历史基线通过；当前候选 CI 待执行** | `81b23cf` 的 Node 22 基线通过；当前候选本地复验通过，但必须由最终提交自身的 Node 22 CI、审计报告和 Windows artifact 重新证明 |
 | 2 | Docker 构建/运行/重启/持久化 | **未执行** | 本环境未安装 Docker（`docker` 命令不可用）；需在 Docker Engine/Desktop 测试主机执行 |
 | 3 | 真实 HTTPS 反向代理（Nginx/Caddy）+ WSS + Origin + 代理 IP | **未执行** | 无真实管理域名/反向代理；仅 Cookie 属性与 Origin 403 有自动化测试覆盖（§3.1） |
 | 4 | 真实 TeamSpeak 管理与文件传输端到端 | **未执行** | 无真实 TeamSpeak 实例/测试账号 |
 
-> 上述各项在 `docs/production-deployment.md` 给出配置清单。**必须由部署/运维在真实基础设施上执行、回填结果并签名确认**，本记录才能“红转绿”。
+> 上述各项必须按 `docs/external-environment-validation.md` 在真实基础设施上执行、附证据并签名确认，本记录才能“红转绿”；部署参数说明见 `docs/production-deployment.md`。
 
 ---
 
 ## 6. 验收结论
 
-**本环境（自动可验证项）全部通过**：在 Node v22.23.2 的干净依赖环境中，`npm ci` 成功、服务端测试 **87/87**、前端 lint **0 问题**、UI 生产构建通过（连续两次成功）、Node 22 EXE 构建并独立启动通过 `/api/health`；`npm audit --omit=dev` 结果为已知/已接受（4 low + 1 high，与风险跟踪表一致，无新 High/Critical）。CI 运行：**成功**（`33246561158` CI、`33246752296` Build Executables），审计报告 artifact 已生成。
+**历史 Node 22 基线通过，当前候选本地门禁通过但 CI 待重跑**：提交 `81b23cf` 已有 Node 22 与 CI 证据；当前候选本地复验为服务端测试 **87/87**、前端 lint **0 问题**、UI 连续两次构建成功、Node 22 目标 EXE 成功生成，审计结果仍为已知/已接受。最终候选提交必须取得自身的 Node 22 CI、审计报告和 Windows EXE artifact 后，才能关闭当前候选 CI 项。
 
-**发布验收状态：`NOT RELEASE READY`（红色）——本环境门禁绿，真实环境项待执行**。Node 22 本地门禁与 CI 已通过；但 Docker、真实 HTTPS/代理、真实 TeamSpeak 仍未执行，须先在真实基础设施上完成并回填本记录，形成可追溯证据后，才能改为可发布。
+**发布验收状态：`NOT RELEASE READY`（红色）**。当前候选 CI 尚待推送后执行；Docker、真实 HTTPS/代理、真实 TeamSpeak 也仍未执行。须取得最终提交自身的 CI artifact，并在真实基础设施上完成和回填环境验收，才能改为可发布。
 
 - Vuetify High 风险：负责人/复核人已具名登记为 **jieyu**（`docs/security-tracker.md` §1.1，确认日期 **2026-08-30**），截止 **2026-11-27**；迁移已拆为 6 个带负责人与截止日期的独立任务（见 tracker §6）。
 - **未创建版本标签 / 发布**（按指引，在环境级验收完成前不创建正式发布）。
