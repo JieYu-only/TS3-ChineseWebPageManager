@@ -158,19 +158,10 @@ export default {
         };
       });
 
-      // Filter array by level#
-      return parsedLogView.filter((log) => {
-        switch (log.level.toLowerCase()) {
-          case "debug":
-            return this.level.debug;
-          case "error":
-            return this.level.error;
-          case "warning":
-            return this.level.warning;
-          case "info":
-            return this.level.info;
-        }
-      });
+      // Filter array by level# (unknown levels fall through to the toggle map)
+      return parsedLogView.filter(
+        (log) => this.level[log.level.toLowerCase()]
+      );
     },
   },
   methods: {
