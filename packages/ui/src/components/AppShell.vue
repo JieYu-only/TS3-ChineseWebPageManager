@@ -89,7 +89,6 @@ export default {
     BellIcon: () => import("@/components/BellIcon"),
     FileUploadIcon: () => import("@/components/FileUploadIcon"),
     Logo: () => import("@/components/Logo"),
-    ServerSelection: () => import("@/components/ServerSelection"),
   },
   data() {
     return {
