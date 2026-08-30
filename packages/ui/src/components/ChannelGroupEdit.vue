@@ -89,7 +89,7 @@ export default {
     },
     getChannelGroup() {
       return this.$TeamSpeak
-        .execute("channelgrouplist")
+        .getChannelGroupList()
         .then((list) =>
           list.find((group) => group.cgid == this.channelGroupId)
         ); // just double '==' cause this.$route.params.cgid is always a string

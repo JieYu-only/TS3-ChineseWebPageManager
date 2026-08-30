@@ -81,7 +81,7 @@ export default {
       });
     },
     getChannelGroupList() {
-      return this.$TeamSpeak.execute("channelgrouplist");
+      return this.$TeamSpeak.getChannelGroupList();
     },
     async savePermission(permission) {
       let { permid, permvalue } = permission;

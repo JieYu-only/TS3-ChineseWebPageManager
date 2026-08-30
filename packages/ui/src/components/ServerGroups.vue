@@ -20,7 +20,7 @@ export default {
   },
   methods: {
     getServerGroupList() {
-      return this.$TeamSpeak.execute("servergrouplist").then((list) => {
+      return this.$TeamSpeak.getServerGroupList().then((list) => {
         return list;
       });
     },

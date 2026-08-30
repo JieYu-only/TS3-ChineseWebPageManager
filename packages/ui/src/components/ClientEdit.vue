@@ -101,7 +101,7 @@ export default {
         .then((clientinfo) => clientinfo[0]);
     },
     getServergroupList() {
-      return this.$TeamSpeak.execute("servergrouplist");
+      return this.$TeamSpeak.getServerGroupList();
     },
     async save() {
       try {

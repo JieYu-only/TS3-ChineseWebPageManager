@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     getChannelGroupList() {
-      return this.$TeamSpeak.execute("channelgrouplist");
+      return this.$TeamSpeak.getChannelGroupList();
     },
     async addChannelGroup(name, type) {
       try {

@@ -520,12 +520,12 @@ export default {
     },
     getServerGroupList() {
       return this.$TeamSpeak
-        .execute("servergrouplist")
+        .getServerGroupList()
         .then((groups) => groups.filter((group) => group.type === 1));
     },
     getChannelGroupList() {
       return this.$TeamSpeak
-        .execute("channelgrouplist")
+        .getChannelGroupList()
         .then((groups) => groups.filter((group) => group.type === 1));
     },
     getChanges() {

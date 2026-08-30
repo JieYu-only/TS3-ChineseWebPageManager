@@ -81,7 +81,7 @@ export default {
       });
     },
     getServergrouplist() {
-      return this.$TeamSpeak.execute("servergrouplist");
+      return this.$TeamSpeak.getServerGroupList();
     },
     changeGroup(sgid) {
       this.$router.push({
