@@ -214,17 +214,12 @@ export default {
       }
     },
     headers() {
-      return this.availableHeaders.filter((header) => {
-        for (let value of this.editableContent) {
-          if (
-            header.value === value ||
-            header.value === "permname" ||
-            header.value === "actions"
-          ) {
-            return header;
-          }
-        }
-      });
+      return this.availableHeaders.filter(
+        (header) =>
+          this.editableContent.includes(header.value) ||
+          header.value === "permname" ||
+          header.value === "actions"
+      );
     },
   },
   methods: {
