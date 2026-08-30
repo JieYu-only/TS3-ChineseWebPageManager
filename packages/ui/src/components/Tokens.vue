@@ -79,6 +79,8 @@
 </template>
 
 <script>
+import copyToClipboard from "@/utils/clipboard";
+
 export default {
   data() {
     return {
@@ -126,7 +128,7 @@ export default {
       this.init();
     },
     copyToClipboard(token) {
-      this.$clipboard(token);
+      copyToClipboard(token);
 
       this.$toast.info("密钥已复制");
     },

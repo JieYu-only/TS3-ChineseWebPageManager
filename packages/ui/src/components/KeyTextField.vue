@@ -19,6 +19,8 @@
 </template>
 
 <script>
+import copyToClipboard from "@/utils/clipboard";
+
 export default {
   props: {
     value: String,
@@ -26,7 +28,7 @@ export default {
   },
   methods: {
     copyToClipboard() {
-      this.$clipboard(this.value);
+      copyToClipboard(this.value);
 
       this.$toast.info("已复制到剪贴板");
     },

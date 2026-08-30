@@ -57,6 +57,8 @@
 </template>
 
 <script>
+import copyToClipboard from "@/utils/clipboard";
+
 export default {
   components: {
     KeyTextField: () => import("@/components/KeyTextField"),
@@ -96,7 +98,7 @@ export default {
   },
   methods: {
     copyToClipboard() {
-      this.$clipboard(this.token);
+      copyToClipboard(this.token);
 
       this.$toast.info("权限密钥已复制到剪贴板");
     },

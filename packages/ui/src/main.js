@@ -13,7 +13,6 @@ import VueToast from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
 import "nprogress/nprogress.css";
 import NProgress from "nprogress";
-import Clipboard from "v-clipboard";
 
 import TeamSpeak from "./api/TeamSpeak";
 import { status as sessionStatus } from "./api/session";
@@ -28,7 +27,6 @@ import socket, { connectToSession } from "./socket";
     showSpinner: false,
   });
 
-  Vue.use(Clipboard);
   Vue.component("PageHeader", PageHeader);
 
   Vue.use(VueToast, {
