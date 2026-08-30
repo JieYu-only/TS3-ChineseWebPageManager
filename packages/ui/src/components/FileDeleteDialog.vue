@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import Path from "path-browserify";
 
 export default {
@@ -54,7 +55,7 @@ export default {
           name: Path.join(path, name),
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$emit("filedelete", this.item);

@@ -51,6 +51,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   data() {
     return {
@@ -124,7 +125,7 @@ export default {
 
         this.deleteDialog = false;
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       // v-model is not updating correctly when the content of the table changes.
@@ -139,7 +140,7 @@ export default {
         this.apiKeys = await this.getApiKeys();
         this.dbClients = await this.getDbClients();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

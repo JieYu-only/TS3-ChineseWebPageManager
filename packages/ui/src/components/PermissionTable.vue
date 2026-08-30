@@ -130,6 +130,7 @@
   </div>
 </template>
 <script>
+import notify from "@/notify";
 export default {
   props: {
     type: String, // e.g. Server Group, Client Channel etc...
@@ -263,7 +264,7 @@ export default {
       // Emit the "loaded" event on the parent component to prevent wrong responses
       this.$emit("loaded");
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

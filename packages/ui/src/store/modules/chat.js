@@ -1,4 +1,5 @@
 import Vue from "vue";
+import notify from "@/notify";
 
 const state = {
   messages: [],
@@ -53,7 +54,7 @@ const actions = {
         });
       }
     } catch (err) {
-      Vue.prototype.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   async saveTextMessage(
@@ -87,7 +88,7 @@ const actions = {
         serverId: rootState.query.serverId,
       });
     } catch (err) {
-      Vue.prototype.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

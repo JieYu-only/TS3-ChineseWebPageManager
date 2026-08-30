@@ -57,6 +57,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
 
 export default {
@@ -99,8 +100,8 @@ export default {
   methods: {
     copyToClipboard() {
       copyToClipboard(this.token).then((ok) => {
-        if (ok) this.$toast.info("权限密钥已复制到剪贴板");
-        else this.$toast.error("复制失败，请手动复制");
+        if (ok) notify.info("权限密钥已复制到剪贴板");
+        else notify.error("复制失败，请手动复制");
       });
     },
     async createToken() {
@@ -112,11 +113,11 @@ export default {
           tokendescription: this.tokenDescription,
         });
 
-        this.$toast.success("权限密钥创建成功");
+        notify.success("权限密钥创建成功");
 
         this.token = response.token;
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     getServerGroupList() {
@@ -149,7 +150,7 @@ export default {
           this.selectedChannel = this.channels[0].cid;
         }
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import packageInfo from "../../../../package.json";
 import { apiBase } from "@/api/base";
 
@@ -186,7 +187,7 @@ export default {
           });
         }
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -40,7 +41,7 @@ export default {
           time: data.time,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$router.go(-1);
@@ -53,7 +54,7 @@ export default {
       this.form.ip = this.clientDbInfo.clientLastip;
       this.form.uid = this.clientDbInfo.clientUniqueIdentifier;
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

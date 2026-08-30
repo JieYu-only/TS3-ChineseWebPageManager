@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import Path from "path-browserify";
 
 export default {
@@ -66,7 +67,7 @@ export default {
           newname: Path.join(path, this.newFileName),
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$emit("filerename", this.item);

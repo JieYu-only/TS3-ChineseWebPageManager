@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     KeyTextField: () => import("@/components/KeyTextField"),
@@ -92,11 +93,11 @@ export default {
 
         this.token = response.token;
 
-        this.$toast.success("服务器创建成功");
+        notify.success("服务器创建成功");
 
         await this.$TeamSpeak.selectServer(response.sid);
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -105,7 +106,7 @@ export default {
       this.servers = await this.getServerList();
       this.serverPort = this.getAvailablePort();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

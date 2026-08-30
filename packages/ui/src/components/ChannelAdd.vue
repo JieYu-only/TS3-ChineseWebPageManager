@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     ChannelForm: () => import("@/components/ChannelForm"),
@@ -20,7 +21,7 @@ export default {
 
         this.$router.go(-1);
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

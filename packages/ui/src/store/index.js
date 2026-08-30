@@ -6,6 +6,7 @@ import query from "./modules/query";
 import chat from "./modules/chat";
 import avatars from "./modules/avatars";
 import uploads from "./modules/uploads";
+import notifications from "./modules/notifications";
 
 import createPersistedState from "vuex-persistedstate";
 import SecureLS from "secure-ls";
@@ -29,6 +30,7 @@ const store = new Vuex.Store({
     chat,
     avatars,
     uploads,
+    notifications,
   },
   plugins: [
     createPersistedState({

@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import axios from "axios";
 import {
   getUploadUrl,
@@ -183,7 +184,7 @@ export default {
     handleUploadError(err) {
       // Hide error when upload got paused
       if (!axios.isCancel(err)) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$store.commit("resetUploadState");

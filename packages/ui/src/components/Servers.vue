@@ -138,6 +138,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -159,7 +160,7 @@ export default {
 
         vm.startUptimeCounters();
       } catch (err) {
-        vm.$toast.error(err.message);
+        notify.error(err.message);
       }
     });
   },
@@ -227,7 +228,7 @@ export default {
           await this.$TeamSpeak.selectServer(sid);
           this.queryUser = await this.getQueryUserData();
         } catch (err) {
-          this.$toast.error(err.message);
+          notify.error(err.message);
         }
       },
     },
@@ -244,7 +245,7 @@ export default {
         this.queryUser = await this.getQueryUserData();
         this.$router.push({ name: "serverviewer" });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     secondsToDHMS(seconds) {
@@ -265,7 +266,7 @@ export default {
       try {
         this.servers = await this.getServerList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.resetUptimeCounters();
@@ -290,7 +291,7 @@ export default {
 
         this.servers = await this.getServerList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     getQueryUserData() {
@@ -303,7 +304,7 @@ export default {
 
         this.queryUser = await this.getQueryUserData();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async stopServer() {
@@ -319,7 +320,7 @@ export default {
         if (this.joinedServerId === this.selectedServer.virtualserverId)
           this.$store.dispatch("removeServerId");
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     getServerList() {

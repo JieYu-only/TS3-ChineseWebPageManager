@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable"),
@@ -93,13 +94,13 @@ export default {
           permvalue: permvalue,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.permissions = await this.getChannelGroupPermList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async removePermission(permission) {
@@ -111,13 +112,13 @@ export default {
           permid: permid,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.permissions = await this.getChannelGroupPermList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     changeChannelGroup(cgid) {
@@ -143,7 +144,7 @@ export default {
 
         this.permissions = await this.getChannelGroupPermList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -152,7 +153,7 @@ export default {
       this.selectedGroupId = parseInt(to.params.cgid);
       this.permissions = await this.getChannelGroupPermList();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
 
     next();

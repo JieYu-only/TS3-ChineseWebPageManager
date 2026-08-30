@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable"),
@@ -81,13 +82,13 @@ export default {
           permvalue: permvalue,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.permissions = await this.getChannelPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async removePermission(permissionValues) {
@@ -99,13 +100,13 @@ export default {
           permid: permid,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.permissions = await this.getChannelPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     changeChannel(cid) {
@@ -131,7 +132,7 @@ export default {
 
         this.permissions = await this.getChannelPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -140,7 +141,7 @@ export default {
       this.channelId = to.params.cid;
       this.permissions = await this.getChannelPermissions();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
 
     next();

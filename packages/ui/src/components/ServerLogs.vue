@@ -75,6 +75,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   data() {
     return {
@@ -195,7 +196,7 @@ export default {
       try {
         this.logView = await this.getLogView();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
 
@@ -258,7 +259,7 @@ export default {
 
         this.addScrollEventListener();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     addScrollEventListener() {
@@ -276,7 +277,7 @@ export default {
 
       this.addScrollEventListener();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   watch: {

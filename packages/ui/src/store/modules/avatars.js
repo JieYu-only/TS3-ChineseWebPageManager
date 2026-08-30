@@ -1,6 +1,7 @@
 import TeamSpeak from "@/api/TeamSpeak";
 import Vue from "vue";
 import localForage from "localforage";
+import notify from "@/notify";
 
 /**
  * The avatar images are stored in IndexedDb because the local storage has a size limit of 5MB.
@@ -40,7 +41,7 @@ const actions = {
         }
       });
     } catch (err) {
-      Vue.prototype.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   getAvatarFileInfo(_context, name) {
@@ -62,7 +63,7 @@ const actions = {
       // IndexedDb key does not support numbers
       await db.setItem(avatar.clientDbId.toString(), avatar);
     } catch (err) {
-      Vue.prototype.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   async removeAvatar({ commit }, clientDbId) {
@@ -71,7 +72,7 @@ const actions = {
 
       await db.removeItem(clientDbId.toString());
     } catch (err) {
-      Vue.prototype.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   async getClientAvatars({ dispatch, state }, clientDbIdList) {
@@ -110,7 +111,7 @@ const actions = {
           }
         }
       } catch (err) {
-        Vue.prototype.$toast.error(err.message);
+        notify.error(err.message);
       }
     }
   },

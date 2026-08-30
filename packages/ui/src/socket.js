@@ -1,9 +1,8 @@
 import io from "socket.io-client";
-import Vue from "vue";
 import store from "./store";
 import router from "./router";
+import notify from "@/notify";
 
-let connectErrorToast = {};
 let connectErrorShown = false;
 let teamSpeakReady = false;
 
@@ -24,9 +23,7 @@ const handleLogout = () => {
 
 socket.on("connect_error", (err) => {
   if (!connectErrorShown) {
-    connectErrorToast = Vue.prototype.$toast.error(err.message, {
-      duration: 0,
-    });
+    notify.error(err.message);
 
     connectErrorShown = true;
 
@@ -36,9 +33,7 @@ socket.on("connect_error", (err) => {
 
 socket.on("connect", () => {
   if (connectErrorShown) {
-    connectErrorToast.dismiss();
-
-    Vue.prototype.$toast.success("已重新连接服务器");
+    notify.success("已重新连接服务器");
 
     connectErrorShown = false;
   }

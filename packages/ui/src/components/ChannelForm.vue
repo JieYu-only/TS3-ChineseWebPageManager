@@ -161,6 +161,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 // Dynamic importing the component will throw an error when used in the v-select component
 import SpacerSpecial from "@/components/SpacerSpecial";
 
@@ -396,7 +397,7 @@ export default {
       this.channels = await this.getChannelList();
       this.serverInfo = await this.getServerInfo();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

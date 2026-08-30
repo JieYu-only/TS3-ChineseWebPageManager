@@ -94,6 +94,7 @@
   </div>
 </template>
 <script>
+import notify from "@/notify";
 // Do not dynamically import this component !!!
 // Otherwise it will not be shown !!!
 import Spacer from "@/components/Spacer";
@@ -135,7 +136,7 @@ export default {
           force: force,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.deleteChannelDialog = false;
@@ -150,7 +151,7 @@ export default {
       try {
         await this.moveClient();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

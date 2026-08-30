@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable.vue"),
@@ -105,13 +106,13 @@ export default {
       try {
         await this.$TeamSpeak.execute("servergroupaddperm", params);
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.serverGroupPermissions = await this.getServergroupPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async removePermission(permissionValues) {
@@ -125,13 +126,13 @@ export default {
       try {
         await this.$TeamSpeak.execute("servergroupdelperm", params);
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.serverGroupPermissions = await this.getServergroupPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async init() {
@@ -149,7 +150,7 @@ export default {
 
         this.serverGroupPermissions = await this.getServergroupPermissions();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -158,7 +159,7 @@ export default {
       this.selectedGroupId = parseInt(to.params.sgid);
       this.serverGroupPermissions = await this.getServergroupPermissions();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
 
     next();

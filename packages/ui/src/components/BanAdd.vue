@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -33,7 +34,7 @@ export default {
           name: "bans",
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

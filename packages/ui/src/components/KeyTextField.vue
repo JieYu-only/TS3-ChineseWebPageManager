@@ -19,6 +19,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
 
 export default {
@@ -29,8 +30,8 @@ export default {
   methods: {
     copyToClipboard() {
       copyToClipboard(this.value).then((ok) => {
-        if (ok) this.$toast.info("已复制到剪贴板");
-        else this.$toast.error("复制失败，请手动复制");
+        if (ok) notify.info("已复制到剪贴板");
+        else notify.error("复制失败，请手动复制");
       });
     },
   },

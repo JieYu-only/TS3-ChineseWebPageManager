@@ -82,6 +82,7 @@
   </v-container>
 </template>
 <script>
+import notify from "@/notify";
 export default {
   components: {
     Channel: () => import("@/components/ServerViewerChannel"),
@@ -207,7 +208,7 @@ export default {
           this.queryUser
         );
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async loadChannelTree() {
@@ -221,7 +222,7 @@ export default {
 
         this.openAllChannels();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.updateCurrentChannel();
@@ -248,7 +249,7 @@ export default {
 
       this.getAllClientAvatars();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   beforeRouteLeave(from, to, next) {

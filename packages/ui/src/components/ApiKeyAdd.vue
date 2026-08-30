@@ -60,6 +60,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     KeyTextField: () => import("@/components/KeyTextField"),
@@ -98,7 +99,7 @@ export default {
           .execute("apikeyadd", options)
           .then((res) => res[0].apikey);
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -106,7 +107,7 @@ export default {
     try {
       this.dbClients = await this.getDbClients();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

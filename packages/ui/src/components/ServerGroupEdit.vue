@@ -46,6 +46,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     GroupClientList: () => import("@/components/GroupClientList"),
@@ -140,7 +141,7 @@ export default {
         await this.removeMembers();
         await this.addMembers();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       switch (action) {
@@ -160,7 +161,7 @@ export default {
 
         this.currentServerGroupClients = [...this.serverGroupClients];
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

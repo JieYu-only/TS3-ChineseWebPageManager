@@ -188,6 +188,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -207,7 +208,7 @@ export default {
           await vm.moveClient(vm.queryUser.clientId, to.params.cid);
         }
       } catch (err) {
-        vm.$toast.error(err.message);
+        notify.error(err.message);
       }
     });
   },
@@ -346,7 +347,7 @@ export default {
       try {
         this.clientList = await this.getClientList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     getChannelList() {
@@ -356,7 +357,7 @@ export default {
       try {
         this.channelList = await this.getChannelList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     getServerInfo() {
@@ -387,7 +388,7 @@ export default {
         // Focus tab
         this.selectedTab = 1;
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     closeTextPrivate(chat) {
@@ -481,7 +482,7 @@ export default {
 
         this.message = "";
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async init() {
@@ -502,7 +503,7 @@ export default {
 
         this.getAllClientAvatars();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

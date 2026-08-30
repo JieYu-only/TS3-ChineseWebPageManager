@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     GroupList: () => import("@/components/GroupList"),
@@ -27,13 +28,13 @@ export default {
       try {
         await this.$TeamSpeak.execute("channelgroupadd", { name, type });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.channelGroups = await this.getChannelGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async removeChannelGroup(group, force) {
@@ -43,13 +44,13 @@ export default {
           force: +force, // unary operator converts true => 1 and false => 0
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.channelGroups = await this.getChannelGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     editChannelGroup(group) {
@@ -75,13 +76,13 @@ export default {
           type: groupType,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.channelGroups = await this.getChannelGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -89,7 +90,7 @@ export default {
     try {
       this.channelGroups = await this.getChannelGroupList();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };

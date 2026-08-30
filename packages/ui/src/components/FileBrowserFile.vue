@@ -54,6 +54,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import {
   getDownloadUrl,
   initFileDownload as initDownloadRequest,
@@ -105,7 +106,7 @@ export default {
           (err.response && err.response.data && err.response.data.message) ||
           err.message ||
           "下载失败";
-        this.$toast.error(message);
+        notify.error(message);
       }
     },
     // Shamelessly copied from stackoverflow

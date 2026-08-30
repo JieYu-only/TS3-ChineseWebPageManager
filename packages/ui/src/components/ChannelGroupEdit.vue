@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     GroupClientList: () => import("@/components/GroupClientList"),
@@ -116,7 +117,7 @@ export default {
           });
         }
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async changeMembers(list, cgid) {
@@ -128,7 +129,7 @@ export default {
             cldbid: client.cldbid,
           });
         } catch (err) {
-          this.$toast.error(err.message);
+          notify.error(err.message);
         }
       }
     },
@@ -157,7 +158,7 @@ export default {
         await this.removeMembers();
         await this.addMembers();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       switch (action) {
@@ -168,7 +169,7 @@ export default {
           try {
             this.channelGroup = await this.getChannelGroup();
           } catch (err) {
-            this.$toast.error(err.message);
+            notify.error(err.message);
           }
 
           try {
@@ -178,7 +179,7 @@ export default {
               this.currentClients = [...this.selectedClients];
             }
           } catch (err) {
-            this.$toast.error(err.message);
+            notify.error(err.message);
           }
       }
     },
@@ -191,7 +192,7 @@ export default {
       this.channels = await this.getChannelList();
       this.clients = await this.getClientDbList();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
   watch: {

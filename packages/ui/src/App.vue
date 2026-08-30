@@ -8,14 +8,17 @@
       />
       <router-view></router-view>
     </v-main>
+    <global-notifications></global-notifications>
   </v-app>
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     AppShell: () => import("@/components/AppShell"),
     ServerManagementTabs: () => import("@/components/ServerManagementTabs"),
+    GlobalNotifications: () => import("@/components/GlobalNotifications"),
   },
   computed: {
     showServerManagement() {
@@ -38,7 +41,7 @@ export default {
           this.$store.commit("saveUserInfo", queryUser);
         }
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     addNotificationListeners() {

@@ -86,6 +86,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import Path from "path-browserify";
 
 export default {
@@ -127,7 +128,7 @@ export default {
 
         this.subfolderDialog = false;
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$emit("subfoldercreate", this.item);

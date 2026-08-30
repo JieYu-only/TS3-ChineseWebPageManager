@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import fileTransfer from "@/mixins/fileTransfer";
 
 export default {
@@ -51,7 +52,7 @@ export default {
           });
         }
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.$router.push({ name: "files" });

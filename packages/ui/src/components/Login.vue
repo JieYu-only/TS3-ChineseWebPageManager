@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import packageInfo from "../../../../package.json";
 import logo from "@/assets/ts3_manager_logo.svg";
 import { login as sessionLogin } from "@/api/session";
@@ -90,7 +91,7 @@ export default {
         const message =
           (err.response && err.response.data && err.response.data.message) ||
           "登录失败，请检查服务器地址与 ServerQuery 凭据";
-        this.$toast.error(message);
+        notify.error(message);
       }
 
       this.loading = false;

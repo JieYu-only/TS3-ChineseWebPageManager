@@ -46,6 +46,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   data() {
     return {
@@ -105,9 +106,9 @@ export default {
         await this.addServergroups();
         await this.removeServergroups();
 
-        this.$toast.success("用户信息已更新");
+        notify.success("用户信息已更新");
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.init();
@@ -169,7 +170,7 @@ export default {
         this.selectedGroups = this.getClientServergroups();
         this.description = this.getClientDescription();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

@@ -112,6 +112,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     ClientAvatar: () => import("@/components/ClientAvatar"),
@@ -148,7 +149,7 @@ export default {
           clid: this.client.clid,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
       this.pokeMessage = "";
       this.pokeClientDialog = false;
@@ -177,7 +178,7 @@ export default {
           clid: this.client.clid,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       this.kickClientDialog = false;

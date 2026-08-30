@@ -79,6 +79,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
 
 export default {
@@ -117,7 +118,7 @@ export default {
 
         this.dialog = false;
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       // v-model is not updating correctly when the content of the table changes.
@@ -129,15 +130,15 @@ export default {
     },
     copyToClipboard(token) {
       copyToClipboard(token).then((ok) => {
-        if (ok) this.$toast.info("密钥已复制");
-        else this.$toast.error("复制失败，请手动复制");
+        if (ok) notify.info("密钥已复制");
+        else notify.error("复制失败，请手动复制");
       });
     },
     async init() {
       try {
         this.tokens = await this.getTokenList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },

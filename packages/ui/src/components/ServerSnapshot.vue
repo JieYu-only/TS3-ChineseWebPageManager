@@ -28,26 +28,27 @@
 </template>
 
 <script>
+import notify from "@/notify";
 import { saveAs } from "file-saver";
 export default {
   data() { return { fileName: "", fileContent: {}, creating: false, restoring: false, restoreDialog: false }; },
   methods: {
     async createSnapshot() {
       this.creating = true;
-      try { const response = await this.$TeamSpeak.createSnapshot(); saveAs(new Blob([response[0].data]), `${new Date().toISOString().replace(/[:]/g, "-")}.backup`); this.$toast.success("快照已创建"); }
-      catch (err) { this.$toast.error(err.message); }
+      try { const response = await this.$TeamSpeak.createSnapshot(); saveAs(new Blob([response[0].data]), `${new Date().toISOString().replace(/[:]/g, "-")}.backup`); notify.success("快照已创建"); }
+      catch (err) { notify.error(err.message); }
       this.creating = false;
     },
     selectFile() { this.$refs.hiddenFileSelector.click(); },
     async readFile(e) {
       const file = e.target.files[0]; if (!file) return;
       this.fileName = file.name;
-      try { this.fileContent = new Blob([await file.text()]); } catch (err) { this.$toast.error(err.message); this.clearFileSelector(); }
+      try { this.fileContent = new Blob([await file.text()]); } catch (err) { notify.error(err.message); this.clearFileSelector(); }
     },
     async deploySnapshot() {
       this.restoreDialog = false; this.restoring = true;
-      try { await this.$TeamSpeak.deploySnapshot(this.fileContent); await this.$TeamSpeak.selectServer(this.$store.state.query.serverId); this.$toast.success("快照恢复成功"); this.clearFileSelector(); }
-      catch (err) { this.$toast.error(err.message); }
+      try { await this.$TeamSpeak.deploySnapshot(this.fileContent); await this.$TeamSpeak.selectServer(this.$store.state.query.serverId); notify.success("快照恢复成功"); this.clearFileSelector(); }
+      catch (err) { notify.error(err.message); }
       this.restoring = false;
     },
     clearFileSelector() { this.fileName = ""; this.fileContent = {}; this.$refs.hiddenFileSelector.value = ""; },

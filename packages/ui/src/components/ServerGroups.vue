@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import notify from "@/notify";
 export default {
   components: {
     GroupList: () => import("@/components/GroupList"),
@@ -30,7 +31,7 @@ export default {
 
         this.serverGroups = await this.getServerGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     async removeServerGroup(group, force) {
@@ -42,7 +43,7 @@ export default {
 
         this.serverGroups = await this.getServerGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
     editServerGroup(group) {
@@ -68,13 +69,13 @@ export default {
           type: groupType,
         });
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
 
       try {
         this.serverGroups = await this.getServerGroupList();
       } catch (err) {
-        this.$toast.error(err.message);
+        notify.error(err.message);
       }
     },
   },
@@ -82,7 +83,7 @@ export default {
     try {
       this.serverGroups = await this.getServerGroupList();
     } catch (err) {
-      this.$toast.error(err.message);
+      notify.error(err.message);
     }
   },
 };
