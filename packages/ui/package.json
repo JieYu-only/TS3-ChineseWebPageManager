@@ -9,7 +9,6 @@
   "dependencies": {
     "@ungap/event-target": "^0.2.2",
     "axios": "^1.20.0",
-    "chart.js": "^3.2.1",
     "file-saver": "^2.0.2",
     "js-cookie": "^3.0.8",
     "local-echo": "git+https://github.com/wavesoft/local-echo.git#8d0b7f55c5cf4b0b5f7c5132825dc5bd984bf017",
