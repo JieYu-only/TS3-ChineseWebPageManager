@@ -19,25 +19,17 @@ export default {
   },
   computed: {
     dashArray() {
-      switch (this.characterBlock) {
-        case "-..":
-          return "5 2 1 2 1 2";
-        case "___":
-          return "0";
-        case "-.-":
-          return "5 2 1 2";
-        case "...":
-          return "1 2";
-        case "---":
-          return "5 2";
-      }
+      const dashes = {
+        "-..": "5 2 1 2 1 2",
+        "___": "0",
+        "-.-": "5 2 1 2",
+        "...": "1 2",
+        "---": "5 2",
+      };
+      return dashes[this.characterBlock];
     },
     filter() {
-      if (this.$vuetify.theme.dark) {
-        return "invert(1)";
-      } else {
-        return "invert(0)";
-      }
+      return this.$vuetify.theme.dark ? "invert(1)" : "invert(0)";
     },
   },
 };
