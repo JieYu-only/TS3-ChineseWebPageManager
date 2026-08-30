@@ -69,12 +69,8 @@ export default {
   },
   methods: {
     getServerGroupTypeName(num) {
-      switch (num) {
-        case 1:
-          return "常规服务器组";
-        case 2:
-          return "ServerQuery 管理组";
-      }
+      const types = { 1: "常规服务器组", 2: "ServerQuery 管理组" };
+      return types[num];
     },
     /**
      * You can only add clients to regular server groups. Except the default guest group.
