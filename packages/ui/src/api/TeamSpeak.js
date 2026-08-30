@@ -45,6 +45,15 @@ let handleResponse = (response, resolve, reject) => {
   }
 };
 
+// Emit a socket event and normalize the ack through handleResponse.
+const emitAndHandle = (event, ...payload) => {
+  return new Promise((resolve, reject) => {
+    socket.emit(event, ...payload, (response) =>
+      handleResponse(response, resolve, reject)
+    );
+  });
+};
+
 // Just for debugging the progress bar (NProgress)
 const throttleSocketConnection = (time) => {
   return new Promise((resolve) => {
@@ -98,34 +107,13 @@ TeamSpeak.execute = (...args) => {
   let params = args[1] ? args[1] : {};
   let options = args[2] ? args[2] : [];
 
-  return new Promise((resolve, reject) => {
-    socket.emit(
-      "teamspeak-execute",
-      {
-        command,
-        params,
-        options,
-      },
-      (response) => handleResponse(response, resolve, reject)
-    );
-  });
+  return emitAndHandle("teamspeak-execute", { command, params, options });
 };
 
-TeamSpeak.createSnapshot = () => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-createsnapshot", (response) =>
-      handleResponse(response, resolve, reject)
-    );
-  });
-};
+TeamSpeak.createSnapshot = () => emitAndHandle("teamspeak-createsnapshot");
 
-TeamSpeak.deploySnapshot = (snapshot) => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-deploysnapshot", snapshot, (response) =>
-      handleResponse(response, resolve, reject)
-    );
-  });
-};
+TeamSpeak.deploySnapshot = (snapshot) =>
+  emitAndHandle("teamspeak-deploysnapshot", snapshot);
 
 // The ServerQuery returns maximum 200 entries in the clientdblist.
 // This function collects all available entries in the client database list.
@@ -134,27 +122,23 @@ TeamSpeak.fullClientDBList = async () => {
   let start = 0;
   let duration = 200;
 
-  try {
-    while (
-      (
-        await TeamSpeak.execute("clientdblist", {
-          start,
-          duration,
-        })
-      ).length
-    ) {
-      fullClientDbList.push(
-        ...(await TeamSpeak.execute("clientdblist", {
-          start,
-          duration,
-        }))
-      );
+  while (
+    (
+      await TeamSpeak.execute("clientdblist", {
+        start,
+        duration,
+      })
+    ).length
+  ) {
+    fullClientDbList.push(
+      ...(await TeamSpeak.execute("clientdblist", {
+        start,
+        duration,
+      }))
+    );
 
-      start += 200;
-      duration += 200;
-    }
-  } catch (err) {
-    throw err;
+    start += 200;
+    duration += 200;
   }
 
   return fullClientDbList;
@@ -165,41 +149,25 @@ TeamSpeak.fullLogView = async (instance = 0) => {
   let allLogs = [];
   let lastPosition = undefined;
 
-  try {
-    while (lastPosition !== 0) {
-      let logs = await TeamSpeak.execute("logview", {
-        instance,
-        reverse: 1,
-        lines: 100,
-        beginPos: lastPosition,
-      });
+  while (lastPosition !== 0) {
+    let logs = await TeamSpeak.execute("logview", {
+      instance,
+      reverse: 1,
+      lines: 100,
+      beginPos: lastPosition,
+    });
 
-      lastPosition = logs[0].lastPos;
+    lastPosition = logs[0].lastPos;
 
-      allLogs.push(...logs);
-    }
-  } catch (err) {
-    throw err;
+    allLogs.push(...logs);
   }
 
   return allLogs;
 };
 
-TeamSpeak.registerEvents = () => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-registerevents", (response) =>
-      handleResponse(response, resolve, reject)
-    );
-  });
-};
+TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
-TeamSpeak.unregisterEvent = () => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-unregisterevent", (response) =>
-      handleResponse(response, resolve, reject)
-    );
-  });
-};
+TeamSpeak.unregisterEvent = () => emitAndHandle("teamspeak-unregisterevent");
 
 TeamSpeak.selectServer = (sid) => {
   return TeamSpeak.execute("use", { sid })
@@ -210,13 +178,8 @@ TeamSpeak.selectServer = (sid) => {
     .then((userInfo) => store.commit("saveUserInfo", userInfo[0]));
 };
 
-TeamSpeak.downloadFile = (path, cid, cpw = "") => {
-  return new Promise((resolve, reject) => {
-    socket.emit("teamspeak-downloadfile", { path, cid, cpw }, (response) => {
-      handleResponse(response, resolve, reject);
-    });
-  });
-};
+TeamSpeak.downloadFile = (path, cid, cpw = "") =>
+  emitAndHandle("teamspeak-downloadfile", { path, cid, cpw });
 
 TeamSpeak.on = (name, fn) => {
   TeamSpeak.__proto__.addEventListener(name, fn);
