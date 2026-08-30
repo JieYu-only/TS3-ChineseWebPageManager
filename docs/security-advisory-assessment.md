@@ -77,6 +77,7 @@
 - `npm audit --omit=dev` 仍会因没有一个“非破坏性”修复而返回**非零**（Vuetify 2 公告无兼容修复；`npm audit fix --force` 会整体替换为 Vue 3，属破坏性）。
 - 不对该非零结果执行 `npm audit fix --force`。
 - 该非零结果**通过书面风险接受处理**，但**不能**被表述为“没有 High”——其中 **Vuetify 原型污染为 High / CVSS 8.6**，且尚未完全证明不可达，需按第 2.2 节的风险接受期限与升级要求执行。
+- **既有风险接受仅覆盖 §1 已列条目**：上述“已接受”表述只对本文档 §1 已登记的公告（Vue ReDoS、Vuetify 原型污染、Vuetify VDatePicker XSS、4 条低危传递项）生效。**任何新出现的 High/Critical**（即使与既有项同包同根因）**不在既有风险接受范围内**，必须按 `docs/security-tracker.md` §7 新增跟踪任务、登记负责人/截止日期并升级为 P0，不得被本节“已接受”表述自动覆盖。
 
 ---
 
