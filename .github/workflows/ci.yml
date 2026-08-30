@@ -29,6 +29,9 @@ jobs:
       - name: Lint management page
         run: npm run lint --workspace=@ts3-manager/ui
 
+      - name: Test persisted state validation
+        run: npm run test:ui:persist
+
       - name: Build management page
         run: npm run ui:build
 

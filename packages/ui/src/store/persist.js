@@ -1,4 +1,5 @@
 import SecureLS from "secure-ls";
+import { parsePersistedState } from "./persistValidation.cjs";
 
 const ls = new SecureLS({ isCompression: false });
 
@@ -42,13 +43,7 @@ function cleanupLegacy() {
 function readPayload() {
   try {
     const raw = storage.getItem(STORAGE_KEY);
-    if (raw == null) return null;
-
-    const data = typeof raw === "string" ? JSON.parse(raw) : raw;
-    if (!data || data.__version !== VERSION || typeof data.state !== "object") {
-      return null;
-    }
-    return data.state;
+    return parsePersistedState(raw, VERSION);
   } catch (err) {
     // Corrupt/unreadable payload → fall back to module defaults.
     return null;
@@ -81,9 +76,9 @@ const persistState = (store) => {
   if (saved) {
     const nextState = { ...store.state };
     for (const moduleName of WHITELIST) {
-      if (saved[moduleName] && typeof saved[moduleName] === "object") {
-        // Overlay onto the module defaults so missing/corrupt fields fall back
-        // to their initial value instead of turning undefined.
+      if (saved[moduleName]) {
+        // Only validated fields reach this merge. Missing or invalid fields
+        // retain the module defaults.
         nextState[moduleName] = {
           ...nextState[moduleName],
           ...saved[moduleName],

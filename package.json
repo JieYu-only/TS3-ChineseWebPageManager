@@ -16,6 +16,7 @@
     "server:build": "npm run build --workspace=@ts3-manager/server",
     "server:test": "npm run test --workspace=@ts3-manager/server",
     "test:ui:e2e": "playwright test",
+    "test:ui:persist": "npm run test:persist --workspace=@ts3-manager/ui",
     "test:ui:e2e:headed": "playwright test --headed",
     "ui:build": "npm run build --workspace=@ts3-manager/ui",
     "ui:serve": "npm run serve --workspace=@ts3-manager/ui",
