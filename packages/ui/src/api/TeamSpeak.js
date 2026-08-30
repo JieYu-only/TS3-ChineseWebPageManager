@@ -161,6 +161,8 @@ TeamSpeak.getServerInfo = () => TeamSpeak.execute("serverinfo");
 
 TeamSpeak.getServerList = () => TeamSpeak.execute("serverlist");
 
+TeamSpeak.whoAmI = () => TeamSpeak.execute("whoami").then((list) => list[0]);
+
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
 TeamSpeak.selectServer = (sid) => {
@@ -168,8 +170,8 @@ TeamSpeak.selectServer = (sid) => {
     .then(() => updateServer(sid))
     .then(() => store.dispatch("setServerIdAction", sid))
     .then(() => TeamSpeak.registerEvents())
-    .then(() => TeamSpeak.execute("whoami"))
-    .then((userInfo) => store.commit("saveUserInfo", userInfo[0]));
+    .then(() => TeamSpeak.whoAmI())
+    .then((userInfo) => store.commit("saveUserInfo", userInfo));
 };
 
 TeamSpeak.downloadFile = (path, cid, cpw = "") =>

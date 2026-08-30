@@ -294,7 +294,7 @@ export default {
       }
     },
     getQueryUserData() {
-      return this.$TeamSpeak.execute("whoami").then((list) => list[0]);
+      return this.$TeamSpeak.whoAmI();
     },
     async startServer(sid) {
       try {

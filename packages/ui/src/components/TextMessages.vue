@@ -363,7 +363,7 @@ export default {
       return this.$TeamSpeak.getServerInfo().then((list) => list[0]);
     },
     getQueryUserInfo() {
-      return this.$TeamSpeak.execute("whoami").then((list) => list[0]);
+      return this.$TeamSpeak.whoAmI();
     },
     moveClient(clid, cid) {
       return this.$TeamSpeak.execute("clientmove", {

@@ -170,7 +170,7 @@ export default {
       return this.$TeamSpeak.getClientList();
     },
     whoAmI() {
-      return this.$TeamSpeak.execute("whoami").then((list) => list[0]);
+      return this.$TeamSpeak.whoAmI();
     },
     mergedList(clientlist, channellist) {
       return [...clientlist, ...channellist].map((item) => {

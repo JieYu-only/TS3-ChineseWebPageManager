@@ -33,9 +33,7 @@ export default {
 
       try {
         if (client.clid === this.$store.state.query.queryUser.clientId) {
-          let queryUser = await this.$TeamSpeak
-            .execute("whoami")
-            .then((list) => list[0]);
+          let queryUser = await this.$TeamSpeak.whoAmI();
 
           this.$store.commit("saveUserInfo", queryUser);
         }
