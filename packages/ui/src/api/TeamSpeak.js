@@ -16,6 +16,16 @@ import EventTarget from "@ungap/event-target";
 
 const TeamSpeak = Object.create(new EventTarget());
 
+// A TeamSpeak / socket-level connection loss invalidates the current session.
+// Clear the client session state and send the user back to the login screen.
+const handleConnectionLost = () => {
+  store.dispatch("clearStorage");
+
+  if (router.currentRoute.name !== "login") {
+    router.push({ name: "login" });
+  }
+};
+
 const handleError = (error, resolve, reject) => {
   if (error.connected) {
     // Ignore empty result error e.g. an empty permissionlist
@@ -25,9 +35,7 @@ const handleError = (error, resolve, reject) => {
       reject(error);
     }
   } else {
-    store.dispatch("clearStorage");
-
-    router.push({ name: "login" });
+    handleConnectionLost();
 
     reject(error);
   }
@@ -272,9 +280,7 @@ socket.on("teamspeak-channeldelete", (data) => {
 // When the teamspeak connection is closed manually.
 // E.g. writing "quit" in the console
 socket.on("teamspeak-disconnect", () => {
-  store.dispatch("clearStorage");
-
-  router.push({ name: "login" });
+  handleConnectionLost();
 });
 
 setLoadingState([
