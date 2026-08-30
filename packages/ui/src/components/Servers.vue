@@ -323,7 +323,7 @@ export default {
       }
     },
     getServerList() {
-      return this.$TeamSpeak.execute("serverlist");
+      return this.$TeamSpeak.getServerList();
     },
     isOffline(status) {
       return status === "offline" ? true : false;

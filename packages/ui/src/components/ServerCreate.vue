@@ -75,7 +75,7 @@ export default {
   },
   methods: {
     getServerList() {
-      return this.$TeamSpeak.execute("serverlist");
+      return this.$TeamSpeak.getServerList();
     },
     getAvailablePort() {
       return (

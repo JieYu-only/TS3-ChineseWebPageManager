@@ -159,6 +159,8 @@ TeamSpeak.getClientList = () =>
 
 TeamSpeak.getServerInfo = () => TeamSpeak.execute("serverinfo");
 
+TeamSpeak.getServerList = () => TeamSpeak.execute("serverlist");
+
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
 TeamSpeak.selectServer = (sid) => {
