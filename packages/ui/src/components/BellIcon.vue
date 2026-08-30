@@ -48,6 +48,7 @@
 
 <script>
 import packageInfo from "../../../../package.json";
+import { apiBase } from "@/api/base";
 
 export default {
   data() {
@@ -93,10 +94,7 @@ export default {
         .then(([serverinfo]) => serverinfo.virtualserverPlatform);
     },
     getTeamSpeakVersionsUrl() {
-      let base = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-      let url = new URL("/api/teamspeak-versions", base);
-
-      return url.href;
+      return `${apiBase()}/api/teamspeak-versions`;
     },
     async getLatestTeamSpeakVersion() {
       let teamSpeakVersionUrl = this.getTeamSpeakVersionsUrl();

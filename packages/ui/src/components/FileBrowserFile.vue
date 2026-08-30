@@ -54,7 +54,10 @@
 </template>
 
 <script>
-import axios from "axios";
+import {
+  getDownloadUrl,
+  initFileDownload as initDownloadRequest,
+} from "@/api/fileTransfer";
 import fileTransfer from "@/mixins/fileTransfer";
 
 export default {
@@ -83,33 +86,18 @@ export default {
     },
   },
   methods: {
-    apiBase() {
-      let base = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-      return new URL(base).origin;
-    },
-    getDownloadUrl(ticket) {
-      return `${this.apiBase()}/api/file-transfers/${encodeURIComponent(
-        ticket
-      )}/download`;
-    },
     initFileDownload(cpw = "", seekpos = 0) {
-      return axios
-        .post(
-          `${this.apiBase()}/api/file-transfers/download`,
-          {
-            cid: this.item.cid,
-            path: this.getFilePath(this.item.path, this.item.name),
-            cpw,
-            seekpos,
-          },
-          { withCredentials: true }
-        )
-        .then((res) => res.data);
+      return initDownloadRequest({
+        cid: this.item.cid,
+        path: this.getFilePath(this.item.path, this.item.name),
+        cpw,
+        seekpos,
+      });
     },
     async downloadFile() {
       try {
         const { ticket } = await this.initFileDownload();
-        const url = this.getDownloadUrl(ticket);
+        const url = getDownloadUrl(ticket);
 
         window.open(url);
       } catch (err) {

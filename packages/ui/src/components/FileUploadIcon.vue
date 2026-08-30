@@ -59,6 +59,10 @@
 
 <script>
 import axios from "axios";
+import {
+  getUploadUrl,
+  initFileUpload as initUploadRequest,
+} from "@/api/fileTransfer";
 
 export default {
   data() {
@@ -74,35 +78,20 @@ export default {
     },
   },
   methods: {
-    apiBase() {
-      let base = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-      return new URL(base).origin;
-    },
-    getUploadUrl(ticket) {
-      return `${this.apiBase()}/api/file-transfers/${encodeURIComponent(
-        ticket
-      )}/upload`;
-    },
     getFileInfo(cid, name, cpw = "") {
       return this.$TeamSpeak
         .execute("ftgetfileinfo", { cid, name, cpw })
         .then((res) => res[0]);
     },
     initFileUpload(file, overwrite = 1, resume = 0, cpw = "") {
-      return axios
-        .post(
-          `${this.apiBase()}/api/file-transfers/upload`,
-          {
-            cid: file.cid,
-            path: file.filePath,
-            size: file.fileSize,
-            cpw,
-            overwrite,
-            resume,
-          },
-          { withCredentials: true }
-        )
-        .then((res) => res.data);
+      return initUploadRequest({
+        cid: file.cid,
+        path: file.filePath,
+        size: file.fileSize,
+        cpw,
+        overwrite,
+        resume,
+      });
     },
     watchQueue() {
       this.queueWatcher = this.$watch("$store.state.uploads.queue", () => {
@@ -122,7 +111,7 @@ export default {
 
       return axios({
         method: "POST",
-        url: this.getUploadUrl(ticket),
+        url: getUploadUrl(ticket),
         withCredentials: true,
         data: formData,
         onUploadProgress: (e) => {

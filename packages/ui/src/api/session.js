@@ -1,14 +1,5 @@
 import axios from "axios";
-
-/**
- * Base origin for API calls. In development this is the backend server
- * (VUE_APP_WEBSOCKET_URI); in production it is the same origin serving the SPA.
- * @returns {string}
- */
-function apiBase() {
-  const env = process.env.VUE_APP_WEBSOCKET_URI || window.location.origin;
-  return new URL(env).origin;
-}
+import { apiBase } from "./base";
 
 /**
  * Log in using ServerQuery credentials. On success the server sets an
