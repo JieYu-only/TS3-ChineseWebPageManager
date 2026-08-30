@@ -98,9 +98,10 @@ export default {
   },
   methods: {
     copyToClipboard() {
-      copyToClipboard(this.token);
-
-      this.$toast.info("权限密钥已复制到剪贴板");
+      copyToClipboard(this.token).then((ok) => {
+        if (ok) this.$toast.info("权限密钥已复制到剪贴板");
+        else this.$toast.error("复制失败，请手动复制");
+      });
     },
     async createToken() {
       try {

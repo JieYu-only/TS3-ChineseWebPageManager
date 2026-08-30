@@ -128,9 +128,10 @@ export default {
       this.init();
     },
     copyToClipboard(token) {
-      copyToClipboard(token);
-
-      this.$toast.info("密钥已复制");
+      copyToClipboard(token).then((ok) => {
+        if (ok) this.$toast.info("密钥已复制");
+        else this.$toast.error("复制失败，请手动复制");
+      });
     },
     async init() {
       try {

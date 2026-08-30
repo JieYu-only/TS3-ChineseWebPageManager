@@ -74,7 +74,7 @@
 
 | # | 迁移阶段任务 | 负责人 | 复核人 | 截止日期 | 产出 / 验收 |
 |---|-------------|--------|--------|---------|-------------|
-| 1 | 建立前端关键路径测试 | jieyu | jieyu | **2026-09-18** | 前端关键路径（登录/服务器列表/频道树/文件/日志等）自动化测试与 CI 绑定，作为迁移期回归基线 |
+| 1 | 建立前端关键路径测试（**completed 2026-08-31**） | jieyu | jieyu | **2026-09-18** | Playwright 已覆盖登录成功/失败、未登录拦截、会话恢复、服务器列表、频道树、文件入口、日志和移动端布局；已绑定 CI 并保留失败报告 artifact |
 | 2 | 替换 Vue 2-only 插件 | jieyu | jieyu | **2026-09-30** | 替换 `v-clipboard` / `vue-toast-notification` / `vuex-persistedstate` 三个 Vue 2-only 插件为 Vue 3 兼容方案，插件层先接近 Vue 3 生态 |
 | 3 | 将 API、Socket 通信从组件解耦 | jieyu | jieyu | **2026-10-10** | `src/api` 与 socket 通信层从组件解耦（见 `docs/vue3-migration-assessment.md` 阶段 1），迁移期少改业务逻辑 |
 | 4 | 创建 Vue 3 / Vite / Vuetify 3 迁移分支 | jieyu | jieyu | **2026-10-20** | 在独立分支/里程碑引入 Vue 3 + Vuetify 3 + Vite 构建链（`createApp`/`createVuetify`/`createRouter`），守护 `master` 与生产稳定 |

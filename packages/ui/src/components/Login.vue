@@ -21,7 +21,7 @@
         <label>ServerQuery 用户名</label>
         <v-text-field v-model="form.username" placeholder="例如 serveradmin" name="username" autocomplete="username" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-account-outline" />
         <label>密码</label>
-        <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" name="password" autocomplete="current-password" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-lock-outline" :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" @click:append="showPassword = !showPassword" />
+        <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" name="password" aria-label="密码" autocomplete="current-password" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-lock-outline" :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" @click:append="showPassword = !showPassword" />
         <div class="login-options">
           <div class="login-remember">
             <v-checkbox v-model="rememberLogin" label="在此设备保持登录 30 天" dense hide-details />
@@ -70,7 +70,7 @@ export default {
       this.loading = true;
 
       try {
-        const response = await sessionLogin({
+        await sessionLogin({
           host: this.form.host,
           queryport: this.form.queryport,
           protocol: this.form.ssh ? "ssh" : "raw",
@@ -83,7 +83,6 @@ export default {
 
         await this.$store.dispatch("saveConnection", {
           serverId: null,
-          sessionExpiresAt: response.expiresAt,
         });
 
         this.$router.push({ name: "servers" });

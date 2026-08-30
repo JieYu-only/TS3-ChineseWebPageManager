@@ -28,9 +28,10 @@ export default {
   },
   methods: {
     copyToClipboard() {
-      copyToClipboard(this.value);
-
-      this.$toast.info("已复制到剪贴板");
+      copyToClipboard(this.value).then((ok) => {
+        if (ok) this.$toast.info("已复制到剪贴板");
+        else this.$toast.error("复制失败，请手动复制");
+      });
     },
   },
 };

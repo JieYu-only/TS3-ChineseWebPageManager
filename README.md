@@ -301,6 +301,17 @@ npm run server:dev
 npm run build
 ```
 
+### 测试
+
+```powershell
+npm test
+npm run lint --workspace=@ts3-manager/ui
+npx playwright install chromium
+npm run test:ui:e2e
+```
+
+浏览器测试使用本地模拟服务，不需要连接真实 TeamSpeak 服务器；覆盖登录、会话恢复、服务器列表、频道树、文件、日志和移动端登录页。CI 会自动运行这些测试，并在失败时保留 Playwright 报告。
+
 根目录的 `package.json` 要求 Node.js 22 和 npm 10 或更高版本；Dockerfile 使用同一 Node.js 主版本并从锁文件安装依赖。
 
 ## 安全建议

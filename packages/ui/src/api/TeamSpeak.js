@@ -184,15 +184,15 @@ TeamSpeak.downloadFile = (path, cid, cpw = "") =>
   emitAndHandle("teamspeak-downloadfile", { path, cid, cpw });
 
 TeamSpeak.on = (name, fn) => {
-  TeamSpeak.__proto__.addEventListener(name, fn);
+  TeamSpeak.addEventListener(name, fn);
 };
 
 TeamSpeak.off = (name, fn) => {
-  TeamSpeak.__proto__.removeEventListener(name, fn);
+  TeamSpeak.removeEventListener(name, fn);
 };
 
 socket.on("teamspeak-textmessage", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("textmessage", {
       detail: data,
     })
@@ -200,7 +200,7 @@ socket.on("teamspeak-textmessage", (data) => {
 });
 
 socket.on("teamspeak-clientconnect", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("clientconnect", {
       detail: data,
     })
@@ -208,7 +208,7 @@ socket.on("teamspeak-clientconnect", (data) => {
 });
 
 socket.on("teamspeak-clientdisconnect", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("clientdisconnect", {
       detail: data,
     })
@@ -216,7 +216,7 @@ socket.on("teamspeak-clientdisconnect", (data) => {
 });
 
 socket.on("teamspeak-clientmoved", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("clientmoved", {
       detail: data,
     })
@@ -224,7 +224,7 @@ socket.on("teamspeak-clientmoved", (data) => {
 });
 
 socket.on("teamspeak-tokenused", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("tokenused", {
       detail: data,
     })
@@ -232,7 +232,7 @@ socket.on("teamspeak-tokenused", (data) => {
 });
 
 socket.on("teamspeak-serveredit", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("serveredit", {
       detail: data,
     })
@@ -240,7 +240,7 @@ socket.on("teamspeak-serveredit", (data) => {
 });
 
 socket.on("teamspeak-channeledit", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("channeledit", {
       detail: data,
     })
@@ -248,7 +248,7 @@ socket.on("teamspeak-channeledit", (data) => {
 });
 
 socket.on("teamspeak-channelcreate", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("channelcreate", {
       detail: data,
     })
@@ -256,7 +256,7 @@ socket.on("teamspeak-channelcreate", (data) => {
 });
 
 socket.on("teamspeak-channelmoved", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("channelmoved", {
       detail: data,
     })
@@ -264,7 +264,7 @@ socket.on("teamspeak-channelmoved", (data) => {
 });
 
 socket.on("teamspeak-channeldelete", (data) => {
-  TeamSpeak.__proto__.dispatchEvent(
+  TeamSpeak.dispatchEvent(
     new CustomEvent("channeldelete", {
       detail: data,
     })
