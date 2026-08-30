@@ -233,8 +233,6 @@ export default {
     },
     selectedChannelOrder: {
       get() {
-        console.log(this.channel.channelOrder);
-
         return this.channel.channelOrder && this.channel.channelOrder;
       },
       set(cid) {

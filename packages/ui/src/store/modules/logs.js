@@ -1,6 +1,5 @@
 import TeamSpeak from "@/api/TeamSpeak";
-import Vue from "vue";
-import localForage, { setItem } from "localforage";
+import localForage from "localforage";
 
 const db = localForage.createInstance({
   driver: localForage.INDEXEDDB,
@@ -57,64 +56,7 @@ const saveLogView = async (logView) => {
 };
 
 const actions = {
-  // async syncLogViewState({ commit }) {
-  //   console.log("start");
-
-  //   let keys = await db.keys();
-  //   let arr = [];
-
-  //   // IndexedDB data is saved from oldest to newest
-  //   for (let key of keys.reverse()) {
-  //     // Local Forage getItem is to slow
-  //     arr.push(db.getItem(key));
-  //   }
-
-  //   // This is faster
-  //   let res = await Promise.all(arr);
-
-  //   commit("setLogView", res);
-
-  //   console.log(state.logView);
-  //   console.log("fin");
-  // },
-
-  // // Die Position der bereits geladenen logs mit den aktuellen logs vergleichen und nachträglich laden
-  // async initLogView({ state, dispatch, commit }) {
-  //   try {
-  //     if (state.logView.length) {
-  //     }
-
-  //     let fileSize = state.logView.length ? state.logView[0].fileSize : 0;
-
-  //     await dispatch("syncLogViewState");
-
-  //     await dispatch("getLogView");
-  //   } catch (err) {
-  //     Vue.prototype.$toast.error(err.message);
-  //   }
-  // },
-
-  // async saveLogView({ commit }, logView) {
-  //   // commit("addLogView", logView);
-
-  //   for (let line of logView) {
-  //     await db.setItem(line.timestamp.getTime().toString(), line);
-  //   }
-  // },
-
-  // async clearLogView({ commit }) {
-  //   commit("setLogView", []);
-  //   commit("setLastPosition", undefined);
-
-  //   try {
-  //     await db.clear();
-  //   } catch (err) {
-  //     Vue.prototype.$toast.error(err.message);
-  //   }
-  // },
-
-  // hier noch als argument position übergeben, der den Wert 0 ersetzt
-  async getLogView({ dispatch, commit, state }) {
+  async getLogView() {
     let stop = false;
     let lastPosition = 0;
 
@@ -129,23 +71,6 @@ const actions = {
       lastPosition = logs[0].lastPos;
 
       let parsedLogs = getParsedLogs(logs);
-
-      // let index;
-
-      // if (state.logView.length) {
-      //   index = parsedLogs.findIndex(
-      //     (line) =>
-      //       state.logView[0].timestamp.getTime() > line.timestamp.getTime()
-      //   );
-      // }
-
-      // if (index !== -1) {
-      //   parsedLogs.splice(index);
-
-      //   stop = true;
-      // }
-
-      // await dispatch("saveLogView", parsedLogs);
 
       await saveLogView(parsedLogs);
 

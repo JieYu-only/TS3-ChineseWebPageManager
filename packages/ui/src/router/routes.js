@@ -292,14 +292,6 @@ export default [
     },
   },
   {
-    path: "/test",
-    component: () => import("@/components/Test"),
-    name: "test",
-    meta: {
-      requiresAuth: false,
-    },
-  },
-  {
     path: "*",
     component: () => import("@/components/NotFound"),
     name: "404",
