@@ -15,6 +15,8 @@
     "server:dev": "npm run dev --workspace=@ts3-manager/server",
     "server:build": "npm run build --workspace=@ts3-manager/server",
     "server:test": "npm run test --workspace=@ts3-manager/server",
+    "test:ui:e2e": "playwright test",
+    "test:ui:e2e:headed": "playwright test --headed",
     "ui:build": "npm run build --workspace=@ts3-manager/ui",
     "ui:serve": "npm run serve --workspace=@ts3-manager/ui",
     "ui:clean": "node -e \"require('fs').rmSync('packages/ui/dist', { recursive: true, force: true })\"",
@@ -27,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "concurrently": "^6.2.0"
   },
   "overrides": {
