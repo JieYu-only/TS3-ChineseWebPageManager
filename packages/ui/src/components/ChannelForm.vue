@@ -348,7 +348,7 @@ export default {
       return this.$TeamSpeak.execute("serverinfo").then((arr) => arr.pop());
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     getChanges() {
       let changes = {};

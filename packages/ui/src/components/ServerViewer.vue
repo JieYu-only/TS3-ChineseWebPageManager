@@ -164,7 +164,7 @@ export default {
         .then((serverinfo) => serverinfo[0]);
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     getClientList() {
       return this.$TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);

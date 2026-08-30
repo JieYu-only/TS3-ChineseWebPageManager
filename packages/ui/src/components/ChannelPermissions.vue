@@ -69,7 +69,7 @@ export default {
       });
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     async savePermission(permissionValues) {
       let { permid, permvalue } = permissionValues;

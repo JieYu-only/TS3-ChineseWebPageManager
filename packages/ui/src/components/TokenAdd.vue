@@ -129,7 +129,7 @@ export default {
         .then((groups) => groups.filter((group) => group.type === 1));
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
   },
   watch: {

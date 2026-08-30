@@ -98,7 +98,7 @@ export default {
      * @return {Array.<TreeItem>}
      */
     getFolderList() {
-      return this.$TeamSpeak.execute("channellist").then((channels) => {
+      return this.$TeamSpeak.getChannelList().then((channels) => {
         return channels.map((channel) => {
           return {
             id: channel.cid,

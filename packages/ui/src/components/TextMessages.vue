@@ -350,7 +350,7 @@ export default {
       }
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     async updateChannelList() {
       try {

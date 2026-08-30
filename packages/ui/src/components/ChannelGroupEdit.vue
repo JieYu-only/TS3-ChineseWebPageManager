@@ -95,7 +95,7 @@ export default {
         ); // just double '==' cause this.$route.params.cgid is always a string
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     getClientDbList() {
       return this.$TeamSpeak.fullClientDBList();

@@ -152,6 +152,8 @@ TeamSpeak.fullClientDBList = async () => {
   return fullClientDbList;
 };
 
+TeamSpeak.getChannelList = () => TeamSpeak.execute("channellist");
+
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
 TeamSpeak.selectServer = (sid) => {

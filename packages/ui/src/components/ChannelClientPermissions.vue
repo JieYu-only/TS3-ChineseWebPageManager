@@ -104,7 +104,7 @@ export default {
       return this.$TeamSpeak.fullClientDBList();
     },
     getChannelList() {
-      return this.$TeamSpeak.execute("channellist");
+      return this.$TeamSpeak.getChannelList();
     },
     async savePermission(permission) {
       let { permid, permvalue } = permission;
