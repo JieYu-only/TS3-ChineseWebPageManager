@@ -359,14 +359,8 @@ export default {
       this.$emit("edit", group);
     },
     getGroupType(type) {
-      switch (type) {
-        case 0:
-          return "模板组";
-        case 1:
-          return "常规组";
-        case 2:
-          return "ServerQuery 管理组";
-      }
+      const types = { 0: "模板组", 1: "常规组", 2: "ServerQuery 管理组" };
+      return types[type];
     },
   },
   watch: {
