@@ -8,13 +8,10 @@ import avatars from "./modules/avatars";
 import uploads from "./modules/uploads";
 import notifications from "./modules/notifications";
 
-import createPersistedState from "vuex-persistedstate";
-import SecureLS from "secure-ls";
+import persistState from "./persist";
 
-const ls = new SecureLS({ isCompression: false });
-
-// Vuex with VuexPersistence. The state gets saved as an json object inside localStorage.
-// See "https://www.npmjs.com/package/vuex-persistedstate"
+// Vuex store. Only user-retained runtime state is persisted (see store/persist.js),
+// which is restored at startup and written on mutation.
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -32,17 +29,7 @@ const store = new Vuex.Store({
     uploads,
     notifications,
   },
-  plugins: [
-    createPersistedState({
-      paths: ["chat", "settings", "query.connected", "query.queryUser"],
-      // Encrypt local storage
-      storage: process.env.NODE_ENV !== "development" && {
-        getItem: (key) => ls.get(key),
-        setItem: (key, value) => ls.set(key, value),
-        removeItem: (key) => ls.remove(key),
-      },
-    }),
-  ],
+  plugins: [persistState],
 });
 
 export default store;
