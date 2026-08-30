@@ -32,13 +32,7 @@ const store = new Vuex.Store({
   },
   plugins: [
     createPersistedState({
-      paths: [
-        "chat",
-        "settings",
-        "query.connected",
-        "query.queryUser",
-        "query.loggedOut",
-      ],
+      paths: ["chat", "settings", "query.connected", "query.queryUser"],
       // Encrypt local storage
       storage: process.env.NODE_ENV !== "development" && {
         getItem: (key) => ls.get(key),

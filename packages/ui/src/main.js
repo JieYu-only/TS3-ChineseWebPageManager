@@ -96,7 +96,6 @@ import socket, { connectToSession } from "./socket";
     if (sessionStatusResp.connected) {
       await connectToSession();
       await store.dispatch("saveConnection", {
-        sessionExpiresAt: sessionStatusResp.expiresAt,
         serverId: sessionStatusResp.serverId,
       });
     } else {
