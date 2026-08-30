@@ -142,9 +142,7 @@ export default {
       },
     },
     disabledButton() {
-      if (this.ip || this.name || this.uid) return false;
-
-      return true;
+      return !(this.ip || this.name || this.uid);
     },
   },
   methods: {
