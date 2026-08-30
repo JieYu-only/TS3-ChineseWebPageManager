@@ -90,7 +90,7 @@ export default {
     },
     getServerPlatform() {
       return this.$TeamSpeak
-        .execute("serverinfo")
+        .getServerInfo()
         .then(([serverinfo]) => serverinfo.virtualserverPlatform);
     },
     getTeamSpeakVersionsUrl() {

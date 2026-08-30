@@ -92,7 +92,7 @@ export default {
     },
     getDefaultServerGroupId() {
       return this.$TeamSpeak
-        .execute("serverinfo")
+        .getServerInfo()
         .then((info) => info[0].virtualserverDefaultServerGroup);
     },
     getClientInfo() {

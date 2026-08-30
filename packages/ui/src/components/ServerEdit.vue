@@ -516,7 +516,7 @@ export default {
   },
   methods: {
     getServerInfo() {
-      return this.$TeamSpeak.execute("serverinfo").then((arr) => arr[0]);
+      return this.$TeamSpeak.getServerInfo().then((arr) => arr[0]);
     },
     getServerGroupList() {
       return this.$TeamSpeak

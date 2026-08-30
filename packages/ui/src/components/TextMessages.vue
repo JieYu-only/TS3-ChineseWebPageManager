@@ -360,7 +360,7 @@ export default {
       }
     },
     getServerInfo() {
-      return this.$TeamSpeak.execute("serverinfo").then((list) => list[0]);
+      return this.$TeamSpeak.getServerInfo().then((list) => list[0]);
     },
     getQueryUserInfo() {
       return this.$TeamSpeak.execute("whoami").then((list) => list[0]);

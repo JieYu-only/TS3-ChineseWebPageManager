@@ -160,7 +160,7 @@ export default {
     },
     getServerInfo() {
       return this.$TeamSpeak
-        .execute("serverinfo")
+        .getServerInfo()
         .then((serverinfo) => serverinfo[0]);
     },
     getChannelList() {

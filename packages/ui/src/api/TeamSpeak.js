@@ -157,6 +157,8 @@ TeamSpeak.getChannelList = () => TeamSpeak.execute("channellist");
 TeamSpeak.getClientList = () =>
   TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);
 
+TeamSpeak.getServerInfo = () => TeamSpeak.execute("serverinfo");
+
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
 TeamSpeak.selectServer = (sid) => {
