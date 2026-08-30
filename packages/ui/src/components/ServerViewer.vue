@@ -167,7 +167,7 @@ export default {
       return this.$TeamSpeak.getChannelList();
     },
     getClientList() {
-      return this.$TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);
+      return this.$TeamSpeak.getClientList();
     },
     whoAmI() {
       return this.$TeamSpeak.execute("whoami").then((list) => list[0]);

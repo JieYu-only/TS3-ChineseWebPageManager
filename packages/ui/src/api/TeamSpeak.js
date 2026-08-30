@@ -154,6 +154,9 @@ TeamSpeak.fullClientDBList = async () => {
 
 TeamSpeak.getChannelList = () => TeamSpeak.execute("channellist");
 
+TeamSpeak.getClientList = () =>
+  TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);
+
 TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
 
 TeamSpeak.selectServer = (sid) => {

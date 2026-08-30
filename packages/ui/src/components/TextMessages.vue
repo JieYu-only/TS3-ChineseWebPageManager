@@ -340,7 +340,7 @@ export default {
       }).length;
     },
     getClientList() {
-      return this.$TeamSpeak.execute("clientlist", {}, ["-voice", "-away"]);
+      return this.$TeamSpeak.getClientList();
     },
     async updateClientList() {
       try {
