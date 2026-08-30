@@ -45,21 +45,9 @@ export default {
       }
     },
     setTextAlignment(alignment) {
-      // Only the first chracter is taken into account
-      // All other characters are ignored
-      switch (alignment[0]) {
-        case "l":
-          this.textAlign = "left";
-          break;
-        case "c":
-          this.textAlign = "center";
-          break;
-        case "r":
-          this.textAlign = "right";
-          break;
-        default:
-          this.textAlign = "left";
-      }
+      // Only the first character is taken into account; everything else is ignored
+      const alignments = { l: "left", c: "center", r: "right" };
+      this.textAlign = alignments[alignment[0]] || "left";
     },
   },
   watch: {
