@@ -60,8 +60,8 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 ## Migration checklist
 
 Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **4 component
-files** (5 calls); **9 src files** still use some `$TeamSpeak` method (of which
-the component files are 8, the remaining one being `App.vue`).
+files** (5 calls); **8 src files** still use some `$TeamSpeak` method (of which
+the component files are 7, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -104,6 +104,8 @@ the component files are 8, the remaining one being `App.vue`).
   (list/remove/removeAllForClient).
 - API-key domain: `ApiKeys.vue` and `ApiKeyAdd.vue` use `apikeyService.*`
   (list/create/remove).
+- Snapshot domain: `ServerSnapshot.vue` uses `snapshotService.*`
+  (create/restore; restore re-selects the server via `serverService.select`).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -112,7 +114,6 @@ the component files are 8, the remaining one being `App.vue`).
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
 | consoleService | Console |
-| snapshotService | (ServerSnapshot select done via serverService; create/restore remain) |
 
 ## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 
@@ -158,6 +159,9 @@ the component files are 8, the remaining one being `App.vue`).
   scope/`clientDbId`/lifetime mapping + key unwrap, omitted optional fields,
   missing scope / missing id `INVALID_ARGUMENT`, and `RESOURCE_CONFLICT`
   propagation.
+- `test/snapshotService.test.js` — createSnapshot delegation, restore
+  delegation, empty/missing content `INVALID_ARGUMENT` (nothing sent), and
+  `PERMISSION_DENIED` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

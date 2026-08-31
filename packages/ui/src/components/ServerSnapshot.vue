@@ -31,12 +31,13 @@
 import notify from "@/notify";
 import { saveAs } from "file-saver";
 import serverService from "@/services/serverService";
+import snapshotService from "@/services/snapshotService";
 export default {
   data() { return { fileName: "", fileContent: {}, creating: false, restoring: false, restoreDialog: false }; },
   methods: {
     async createSnapshot() {
       this.creating = true;
-      try { const response = await this.$TeamSpeak.createSnapshot(); saveAs(new Blob([response[0].data]), `${new Date().toISOString().replace(/[:]/g, "-")}.backup`); notify.success("快照已创建"); }
+      try { const response = await snapshotService.create(); saveAs(new Blob([response[0].data]), `${new Date().toISOString().replace(/[:]/g, "-")}.backup`); notify.success("快照已创建"); }
       catch (err) { notify.error(err.message); }
       this.creating = false;
     },
@@ -48,7 +49,7 @@ export default {
     },
     async deploySnapshot() {
       this.restoreDialog = false; this.restoring = true;
-      try { await this.$TeamSpeak.deploySnapshot(this.fileContent); await serverService.select(this.$store.state.query.serverId); notify.success("快照恢复成功"); this.clearFileSelector(); }
+      try { await snapshotService.restore(this.fileContent); await serverService.select(this.$store.state.query.serverId); notify.success("快照恢复成功"); this.clearFileSelector(); }
       catch (err) { notify.error(err.message); }
       this.restoring = false;
     },
