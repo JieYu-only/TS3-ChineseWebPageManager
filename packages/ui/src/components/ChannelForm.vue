@@ -162,6 +162,7 @@
 
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
 // Dynamic importing the component will throw an error when used in the v-select component
 import SpacerSpecial from "@/components/SpacerSpecial";
 
@@ -346,10 +347,10 @@ export default {
       }`;
     },
     getServerInfo() {
-      return this.$TeamSpeak.getServerInfo().then((arr) => arr.pop());
+      return channelService.serverInfo();
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
     getChanges() {
       let changes = {};

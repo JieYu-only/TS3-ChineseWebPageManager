@@ -27,6 +27,7 @@
 
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
 export default {
   components: {
     ChannelForm: () => import("@/components/ChannelForm"),
@@ -41,11 +42,7 @@ export default {
   },
   methods: {
     getChannelInfo() {
-      return this.$TeamSpeak
-        .execute("channelinfo", {
-          cid: this.channelId,
-        })
-        .then((channelinfo) => channelinfo[0]);
+      return channelService.info(this.channelId);
     },
     channelIsTemporary(channelProps) {
       let newChannelProps = { ...this.channel, ...channelProps };
@@ -60,13 +57,12 @@ export default {
       }
     },
     editChannel(channelProps) {
-      return (
-        Object.keys(channelProps).length &&
-        this.$TeamSpeak.execute("channeledit", {
-          cid: this.channelId,
-          ...channelProps,
-        })
-      );
+      if (!Object.keys(channelProps).length) return false;
+
+      return channelService.edit({
+        channelId: this.channelId,
+        ...channelProps,
+      });
     },
     async save(channelProps, e) {
       try {

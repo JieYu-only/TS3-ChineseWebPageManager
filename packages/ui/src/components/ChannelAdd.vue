@@ -4,13 +4,14 @@
 
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
 export default {
   components: {
     ChannelForm: () => import("@/components/ChannelForm"),
   },
   methods: {
     createChannel(props) {
-      return this.$TeamSpeak.execute("channelcreate", props);
+      return channelService.create(props);
     },
     async save(channelProps) {
       try {

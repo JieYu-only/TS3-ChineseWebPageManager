@@ -53,20 +53,25 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **35 component
-files** (65 calls); **41 src files** still use some `$TeamSpeak` method.
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **29 component
+files** (56 calls); **35 src files** still use some `$TeamSpeak` method.
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
-  (restore), virtual-server switch (`Service` layer via `sessionService.selectServer`).
+  (restore), virtual-server switch (`sessionService.selectServer`).
 - Realtime events: `ServerViewer.vue`, `TextMessages.vue` now use
   `eventService.onClient*`/`onChannel*` domain helpers.
+- Server domain: `Servers.vue`, `ServerCreate.vue`, `ServerSnapshot.vue` use
+  `serverService.*` (list/create/start/stop/remove/select/whoAmI).
+- Channel domain: `ChannelAdd.vue`, `ChannelEdit.vue`, `ChannelSpacerAdd.vue`,
+  `ServerViewerChannel.vue` and `ChannelForm.vue` use
+  `channelService.*` (list/create/edit/remove/moveClient/info/serverInfo).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
 |---|---|
-| serverService | Servers, ServerCreate, ServerEdit, ServerLogs |
-| channelService | ChannelAdd, ChannelEdit, ChannelForm, ChannelSpacerAdd, ServerViewerChannel, TextMessages |
+| serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
+| channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | Clients, ClientEdit, ClientBan, ServerViewerClient, TextMessages |
 | permissionService | PermissionTable, ClientPermissions, ChannelPermissions, ChannelClientPermissions, ChannelGroupPermissions, ServerGroupPermissions |
 | groupService | ServerGroups, ServerGroupEdit, ChannelGroups, ChannelGroupEdit |
@@ -76,7 +81,7 @@ files** (65 calls); **41 src files** still use some `$TeamSpeak` method.
 | fileService | FileBrowserFolder, FileDeleteButton, FileDeleteDialog, FileRenameDialog, (FileBrowser, FileUploadIcon, FileUpload) |
 | apikeyService | ApiKeys, ApiKeyAdd |
 | consoleService | Console |
-| snapshotService | ServerSnapshot |
+| snapshotService | (ServerSnapshot select done via serverService; create/restore remain) |
 
 ## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 

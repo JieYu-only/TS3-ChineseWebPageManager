@@ -95,6 +95,7 @@
 </template>
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
 // Do not dynamically import this component !!!
 // Otherwise it will not be shown !!!
 import Spacer from "@/components/Spacer";
@@ -131,10 +132,7 @@ export default {
       let force = +this.forceDeletion;
 
       try {
-        await this.$TeamSpeak.execute("channeldelete", {
-          cid: cid,
-          force: force,
-        });
+        await channelService.remove({ channelId: cid, force });
       } catch (err) {
         notify.error(err.message);
       }
@@ -142,9 +140,9 @@ export default {
       this.deleteChannelDialog = false;
     },
     moveClient() {
-      return this.$TeamSpeak.execute("clientmove", {
-        clid: this.queryUser.clientId,
-        cid: this.channel.cid,
+      return channelService.moveClient({
+        clientId: this.queryUser.clientId,
+        channelId: this.channel.cid,
       });
     },
     async enterChannel() {
