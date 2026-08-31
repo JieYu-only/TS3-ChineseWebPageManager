@@ -116,3 +116,37 @@ describe("channelService queries", () => {
     await expect(channelService.serverInfo()).resolves.toEqual({ b: 2 });
   });
 });
+
+describe("channelService invalid arguments", () => {
+  it("info() rejects a missing channelId with INVALID_ARGUMENT", async () => {
+    await expect(channelService.info()).rejects.toMatchObject({
+      code: ERROR_CODES.INVALID_ARGUMENT,
+    });
+    expect(TeamSpeak.execute).not.toHaveBeenCalled();
+  });
+
+  it("edit() rejects a missing channelId with INVALID_ARGUMENT", async () => {
+    await expect(channelService.edit({ channelName: "x" })).rejects.toMatchObject(
+      {
+        code: ERROR_CODES.INVALID_ARGUMENT,
+      }
+    );
+    expect(TeamSpeak.execute).not.toHaveBeenCalled();
+  });
+
+  it("remove() rejects a missing channelId with INVALID_ARGUMENT", async () => {
+    await expect(channelService.remove({ force: 1 })).rejects.toMatchObject({
+      code: ERROR_CODES.INVALID_ARGUMENT,
+    });
+    expect(TeamSpeak.execute).not.toHaveBeenCalled();
+  });
+
+  it("moveClient() rejects a missing channelId with INVALID_ARGUMENT", async () => {
+    await expect(
+      channelService.moveClient({ clientId: "7" })
+    ).rejects.toMatchObject({
+      code: ERROR_CODES.INVALID_ARGUMENT,
+    });
+    expect(TeamSpeak.execute).not.toHaveBeenCalled();
+  });
+});

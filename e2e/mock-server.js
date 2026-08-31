@@ -129,7 +129,15 @@ server.listen(port, '127.0.0.1', () => {
 })
 
 function shutdown() {
-  io.close(() => server.close(() => process.exit(0)))
+  // Gracefully disconnect socket.io clients, then close the HTTP server. A
+  // lingering keep-alive (or socket.io upgrade) connection would otherwise keep
+  // `server.close()`'s callback from firing and hang the Playwright process
+  // after all tests have passed, so force-close connections and fall back to a
+  // hard exit.
+  io.close()
+  server.closeAllConnections?.()
+  server.close(() => process.exit(0))
+  setTimeout(() => process.exit(0), 1000).unref()
 }
 
 process.on('SIGINT', shutdown)

@@ -18,7 +18,13 @@ transport                   packages/ui/src/transport/*  (socketRequest, httpCli
 
 Rules:
 - Components never call `$TeamSpeak.execute("command", ...)` or touch the socket.
-- Raw TeamSpeak command/event strings exist only in the protocol layer.
+- Raw TeamSpeak command/event strings exist only in the protocol layer **and in
+  the domain-service adapter layer** (`serverService`, `channelService`,
+  `clientService`, ... current transitional services still name
+  `execute("command")` directly). The long-term target is that these services
+  delegate to dedicated protocol clients so the adapter layer only passes
+  business-shaped arguments; until then the rule is enforced at the component
+  boundary (no service call leaks a command string upward).
 - Domain services expose business methods (`clientService.moveToChannel(...)`), not commands.
 - Realtime subscriptions go through `eventService` domain helpers
   (`eventService.onClientConnected(handler)`), never raw event names or
@@ -54,7 +60,8 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 ## Migration checklist
 
 Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **25 component
-files** (50 calls); **33 src files** still use some `$TeamSpeak` method.
+files** (50 calls); **34 src files** still use some `$TeamSpeak` method (of which
+the component files are 32).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -102,6 +109,9 @@ files** (50 calls); **33 src files** still use some `$TeamSpeak` method.
   first-row unwrap, remove/edit/moveToChannel/kick/poke/ban argument mapping,
   permission-denied propagation, and the server-group membership helpers
   (defaultServerGroupId/listServerGroups/addToServerGroup/removeFromServerGroup).
+- `test/channelService.test.js` also covers **invalid-argument** handling: a
+  missing `channelId` in `info`/`edit`/`remove`/`moveClient` rejects with
+  `INVALID_ARGUMENT` before any command is sent.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

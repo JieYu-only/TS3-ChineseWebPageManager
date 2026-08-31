@@ -1,4 +1,16 @@
 import TeamSpeak from "@/api/TeamSpeak";
+import { ServiceError, ERROR_CODES } from "@/transport/transportError";
+
+function requireChannelId(channelId) {
+  if (channelId === undefined || channelId === null || channelId === "") {
+    throw new ServiceError({
+      code: ERROR_CODES.INVALID_ARGUMENT,
+      message: "缺少频道 ID",
+      operation: "channel",
+    });
+  }
+  return channelId;
+}
 
 /**
  * Business operations over channels and the channel tree. Components call these
@@ -14,29 +26,29 @@ export default {
   },
   async info(channelId) {
     const [info] = await TeamSpeak.execute("channelinfo", {
-      cid: channelId,
+      cid: requireChannelId(channelId),
     });
     return info;
   },
   create(input) {
     return TeamSpeak.execute("channelcreate", input);
   },
-  edit({ channelId, ...props }) {
-    return TeamSpeak.execute("channeledit", {
-      cid: channelId,
+  async edit({ channelId, ...props }) {
+    await TeamSpeak.execute("channeledit", {
+      cid: requireChannelId(channelId),
       ...props,
     });
   },
-  remove({ channelId, force }) {
-    return TeamSpeak.execute("channeldelete", {
-      cid: channelId,
+  async remove({ channelId, force }) {
+    await TeamSpeak.execute("channeldelete", {
+      cid: requireChannelId(channelId),
       force,
     });
   },
-  moveClient({ clientId, channelId }) {
-    return TeamSpeak.execute("clientmove", {
+  async moveClient({ clientId, channelId }) {
+    await TeamSpeak.execute("clientmove", {
       clid: clientId,
-      cid: channelId,
+      cid: requireChannelId(channelId),
     });
   },
 };
