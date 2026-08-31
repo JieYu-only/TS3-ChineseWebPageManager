@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **3 component
-files** (4 calls); **7 src files** still use some `$TeamSpeak` method (of which
-the component files are 6, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **2 component
+files** (3 calls); **6 src files** still use some `$TeamSpeak` method (of which
+the component files are 5, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -108,6 +108,12 @@ the component files are 6, the remaining one being `App.vue`).
   (create/restore; restore re-selects the server via `serverService.select`).
 - Log domain: `ServerLogs.vue` uses `logService.list` (instance/reverse/lines/
   beginPosition mapping and validation).
+- Console domain (allowed exception): `Console.vue` uses
+  `consoleService.execute(command, parameters, options)`. This is the only
+  domain that lets a user type raw TeamSpeak commands, but the component still
+  never calls `$TeamSpeak.execute` directly; the service validates the command
+  string, rejects empty commands and invalid parameter/option structures, and
+  does not log sensitive values.
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -115,7 +121,6 @@ the component files are 6, the remaining one being `App.vue`).
 | serverService | ServerEdit (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| consoleService | Console |
 
 ## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 
@@ -167,6 +172,9 @@ the component files are 6, the remaining one being `App.vue`).
 - `test/logService.test.js` — logview instance/reverse/lines/beginPosition
   mapping, beginPos omission, non-positive lines `INVALID_ARGUMENT`, and
   `PERMISSION_DENIED` propagation.
+- `test/consoleService.test.js` — execute delegation with defaults, empty/non
+  string command `INVALID_ARGUMENT`, invalid parameters/options structure, and
+  `SESSION_EXPIRED` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

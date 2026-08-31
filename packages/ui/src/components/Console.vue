@@ -18,6 +18,7 @@
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import LocalEchoController from "local-echo";
+import consoleService from "@/services/consoleService";
 
 export default {
   data() {
@@ -76,7 +77,7 @@ export default {
     sendData(input) {
       let { command, parameters, options } = this.parseQueryRequest(input);
 
-      return this.$TeamSpeak.execute(command, parameters, options);
+      return consoleService.execute(command, parameters, options);
     },
     parseQueryRequest(input) {
       let command = input.split(" ")[0];
