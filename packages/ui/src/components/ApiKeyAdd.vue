@@ -61,6 +61,8 @@
 
 <script>
 import notify from "@/notify";
+import apikeyService from "@/services/apikeyService";
+import clientService from "@/services/clientService";
 export default {
   components: {
     KeyTextField: () => import("@/components/KeyTextField"),
@@ -81,23 +83,15 @@ export default {
   },
   methods: {
     getDbClients() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     async addApiKey() {
       try {
-        let options = {
+        this.apiKey = await apikeyService.create({
           scope: this.selectedScope,
-        };
-
-        // the invoker (the query user) by default
-        if (this.selectedClient) options.cldbid = this.selectedClient;
-
-        // 14 days by default
-        if (this.lifetime) options.lifetime = this.lifetime;
-
-        this.apiKey = await this.$TeamSpeak
-          .execute("apikeyadd", options)
-          .then((res) => res[0].apikey);
+          clientDbId: this.selectedClient || undefined,
+          lifetime: this.lifetime || undefined,
+        });
       } catch (err) {
         notify.error(err.message);
       }

@@ -52,6 +52,8 @@
 
 <script>
 import notify from "@/notify";
+import apikeyService from "@/services/apikeyService";
+import clientService from "@/services/clientService";
 export default {
   data() {
     return {
@@ -110,17 +112,15 @@ export default {
       this.$router.push({ name: "apikey-add" });
     },
     getApiKeys() {
-      return this.$TeamSpeak.execute("apikeylist", {
-        cldbid: "*",
-      });
+      return apikeyService.list();
     },
     getDbClients() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     async removeApiKeys() {
       try {
         for (let key of this.selectedKeys) {
-          await this.$TeamSpeak.execute("apikeydel", { id: key.id });
+          await apikeyService.remove(key.id);
         }
 
         this.deleteDialog = false;

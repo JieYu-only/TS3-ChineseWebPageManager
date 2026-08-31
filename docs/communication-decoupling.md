@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **5 component
-files** (7 calls); **11 src files** still use some `$TeamSpeak` method (of which
-the component files are 10, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **4 component
+files** (5 calls); **9 src files** still use some `$TeamSpeak` method (of which
+the component files are 8, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -102,6 +102,8 @@ the component files are 10, the remaining one being `App.vue`).
   `banService.*` (list/create/update/remove/createFromClient).
 - Complaint domain: `Complaints.vue` uses `complaintService.*`
   (list/remove/removeAllForClient).
+- API-key domain: `ApiKeys.vue` and `ApiKeyAdd.vue` use `apikeyService.*`
+  (list/create/remove).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -109,7 +111,6 @@ the component files are 10, the remaining one being `App.vue`).
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| apikeyService | ApiKeys, ApiKeyAdd |
 | consoleService | Console |
 | snapshotService | (ServerSnapshot select done via serverService; create/restore remain) |
 
@@ -153,6 +154,10 @@ the component files are 10, the remaining one being `App.vue`).
 - `test/complaintService.test.js` — complainlist delegation, remove
   target/client id mapping, missing-target `INVALID_ARGUMENT`, and
   removeAllForClient filtering + batch removal.
+- `test/apikeyService.test.js` — apikeylist default/`clientDbId`, create
+  scope/`clientDbId`/lifetime mapping + key unwrap, omitted optional fields,
+  missing scope / missing id `INVALID_ARGUMENT`, and `RESOURCE_CONFLICT`
+  propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.
