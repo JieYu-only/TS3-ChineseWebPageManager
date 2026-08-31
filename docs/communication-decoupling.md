@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **4 component
-files** (5 calls); **8 src files** still use some `$TeamSpeak` method (of which
-the component files are 7, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **3 component
+files** (4 calls); **7 src files** still use some `$TeamSpeak` method (of which
+the component files are 6, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -106,11 +106,13 @@ the component files are 7, the remaining one being `App.vue`).
   (list/create/remove).
 - Snapshot domain: `ServerSnapshot.vue` uses `snapshotService.*`
   (create/restore; restore re-selects the server via `serverService.select`).
+- Log domain: `ServerLogs.vue` uses `logService.list` (instance/reverse/lines/
+  beginPosition mapping and validation).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
 |---|---|
-| serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
+| serverService | ServerEdit (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
 | consoleService | Console |
@@ -161,6 +163,9 @@ the component files are 7, the remaining one being `App.vue`).
   propagation.
 - `test/snapshotService.test.js` — createSnapshot delegation, restore
   delegation, empty/missing content `INVALID_ARGUMENT` (nothing sent), and
+  `PERMISSION_DENIED` propagation.
+- `test/logService.test.js` — logview instance/reverse/lines/beginPosition
+  mapping, beginPos omission, non-positive lines `INVALID_ARGUMENT`, and
   `PERMISSION_DENIED` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are

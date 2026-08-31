@@ -76,6 +76,7 @@
 
 <script>
 import notify from "@/notify";
+import logService from "@/services/logService";
 export default {
   data() {
     return {
@@ -171,11 +172,11 @@ export default {
      * @return {Array} 100 log lines
      */
     async getLogView(beginPosition) {
-      return this.$TeamSpeak.execute("logview", {
+      return logService.list({
         instance: 0,
         reverse: 1,
         lines: 100,
-        beginPos: beginPosition,
+        beginPosition,
       });
     },
 
