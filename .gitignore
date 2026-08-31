@@ -49,3 +49,6 @@ test-results/
 *.exe
 .ts3-manager.pid
 console-error.log
+
+# Local dual-agent handoff state
+/.ai/

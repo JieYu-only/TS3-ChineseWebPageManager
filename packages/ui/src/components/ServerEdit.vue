@@ -432,6 +432,8 @@
 
 <script>
 import notify from "@/notify";
+import groupService from "@/services/groupService";
+import serverService from "@/services/serverService";
 export default {
   data() {
     return {
@@ -517,17 +519,15 @@ export default {
   },
   methods: {
     getServerInfo() {
-      return this.$TeamSpeak.getServerInfo().then((arr) => arr[0]);
+      return serverService.info();
     },
-    getServerGroupList() {
-      return this.$TeamSpeak
-        .getServerGroupList()
-        .then((groups) => groups.filter((group) => group.type === 1));
+    async getServerGroupList() {
+      const groups = await groupService.listServerGroups();
+      return groups.filter((group) => group.type === 1);
     },
-    getChannelGroupList() {
-      return this.$TeamSpeak
-        .getChannelGroupList()
-        .then((groups) => groups.filter((group) => group.type === 1));
+    async getChannelGroupList() {
+      const groups = await groupService.listChannelGroups();
+      return groups.filter((group) => group.type === 1);
     },
     getChanges() {
       let changes = {};
@@ -541,7 +541,7 @@ export default {
       return changes;
     },
     serverEdit() {
-      return this.$TeamSpeak.execute("serveredit", this.getChanges());
+      return serverService.changeName(this.getChanges());
     },
     async saveChanges() {
       try {

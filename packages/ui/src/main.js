@@ -1,7 +1,8 @@
 /****************************************************
-  !!! THE ORDER OF THE IMPORTED MODULES MATTERS !!! *
-      The TeamSpeak instance needs to be imported   *
-      before the store, router and socket.          *
+  The TeamSpeak instance is imported by the domain
+  services directly; no global instance property is
+  exposed on Vue (the legacy prototype injection was
+  removed during the communication-layer decoupling).
  ****************************************************/
 import "./assets/css/style.css";
 
@@ -12,7 +13,6 @@ import vuetify from "./plugins/vuetify";
 import "nprogress/nprogress.css";
 import NProgress from "nprogress";
 
-import TeamSpeak from "./api/TeamSpeak";
 import sessionService from "./services/sessionService";
 import "./registerServiceWorker";
 
@@ -45,9 +45,6 @@ import router from "./router";
   } catch (err) {
     store.dispatch("clearConnection");
   }
-
-  // Adding instance properties which are often used in components
-  Vue.prototype.$TeamSpeak = TeamSpeak;
 
   // Render app
   new Vue({

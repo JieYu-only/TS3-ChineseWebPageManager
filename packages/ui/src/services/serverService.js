@@ -1,4 +1,16 @@
 import TeamSpeak from "@/api/TeamSpeak";
+import { ServiceError, ERROR_CODES } from "@/transport/transportError";
+
+function requireServerId(serverId, operation) {
+  if (serverId === undefined || serverId === null || serverId === "") {
+    throw new ServiceError({
+      code: ERROR_CODES.INVALID_ARGUMENT,
+      message: "缺少服务器 ID",
+      operation,
+    });
+  }
+  return serverId;
+}
 
 /**
  * Business operations over virtual servers. Components call these methods and
@@ -15,21 +27,31 @@ export default {
     const [info] = await TeamSpeak.getServerInfo();
     return info;
   },
+  async version() {
+    const [result] = await TeamSpeak.execute("version");
+    return result.version;
+  },
   async create(input) {
     const [response] = await TeamSpeak.execute("servercreate", input);
     return response;
   },
   async start(serverId) {
-    await TeamSpeak.execute("serverstart", { sid: serverId });
+    await TeamSpeak.execute("serverstart", {
+      sid: requireServerId(serverId, "server.start"),
+    });
   },
   async stop(serverId) {
-    await TeamSpeak.execute("serverstop", { sid: serverId });
+    await TeamSpeak.execute("serverstop", {
+      sid: requireServerId(serverId, "server.stop"),
+    });
   },
   async remove(serverId) {
-    await TeamSpeak.execute("serverdelete", { sid: serverId });
+    await TeamSpeak.execute("serverdelete", {
+      sid: requireServerId(serverId, "server.remove"),
+    });
   },
-  select(serverId) {
-    return TeamSpeak.selectServer(serverId);
+  async select(serverId) {
+    return TeamSpeak.selectServer(requireServerId(serverId, "server.select"));
   },
   async changeName(input) {
     await TeamSpeak.execute("serveredit", input);

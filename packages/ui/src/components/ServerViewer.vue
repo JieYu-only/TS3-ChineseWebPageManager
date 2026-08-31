@@ -84,6 +84,9 @@
 <script>
 import notify from "@/notify";
 import eventService from "@/services/eventService";
+import channelService from "@/services/channelService";
+import clientService from "@/services/clientService";
+import serverService from "@/services/serverService";
 export default {
   components: {
     Channel: () => import("@/components/ServerViewerChannel"),
@@ -162,18 +165,16 @@ export default {
       );
     },
     getServerInfo() {
-      return this.$TeamSpeak
-        .getServerInfo()
-        .then((serverinfo) => serverinfo[0]);
+      return serverService.info();
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
     getClientList() {
-      return this.$TeamSpeak.getClientList();
+      return clientService.listOnline();
     },
     whoAmI() {
-      return this.$TeamSpeak.whoAmI();
+      return serverService.whoAmI();
     },
     mergedList(clientlist, channellist) {
       return [...clientlist, ...channellist].map((item) => {

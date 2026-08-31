@@ -6,6 +6,10 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 
 ## 最新更新
 
+- 完成前端业务通信层解耦：Vue 组件与 Vuex 模块统一通过领域服务访问 TeamSpeak，移除 `$TeamSpeak`/`$socket` 全局注入和组件内原始命令调用
+- 建立统一的通信错误模型、Socket 请求超时/取消/断线处理及幂等实时事件订阅，并加入通信边界静态检查
+- 通信层 UI 单元测试基线达到 177 项，服务端测试 87 项，Playwright 核心回归 18 项
+- 已创建 `codex/vue3-migration` 独立迁移分支并完成 Vue 3、Vite、Vuetify 3、vue-router 4、Pinia 和新 PWA 方案设计；实际框架迁移仍在进行中
 - 升级到 Vue CLI 5 与 Webpack 5，并统一使用 Node.js 22、npm workspace 锁文件和可复现构建流程
 - 同步 Docker 构建/运行环境、Windows x64 可执行文件及 GitHub Release 跨平台构建配置
 - 完善浅色/深色主题手动切换、系统主题初始化和本地偏好保存，修复深色主题文字对比度问题
@@ -272,6 +276,8 @@ docker compose logs -f ts3-manager
 
 项目仍采用 Vue 2 与 Vuetify 2 技术栈，开发、Docker 构建/运行和 Windows 可执行文件统一使用 Node.js 22。项目已升级到 Vue CLI 5 与 Webpack 5，不再需要 `NODE_OPTIONS=--openssl-legacy-provider`。
 
+Vue 3/Vite 正式升级在独立的 `codex/vue3-migration` 分支推进，当前生产基线尚未切换到新框架。迁移计划见 [Vue 3 / Vite 迁移方案](docs/vue3-migration.md)。
+
 PWA 使用自定义 Workbox Service Worker：静态构建资源支持离线访问，API 与 Socket.IO 始终走网络。新版本安装完成后会自动接管并刷新一次，同时清理旧版 Workbox 预缓存。
 
 生产构建默认关闭 source map，并复用单一 WOFF2 图标字体；Webpack 运行时代码独立分块，以减少发布体积并提高长期缓存命中率。
@@ -306,6 +312,8 @@ npm run build
 ```powershell
 npm test
 npm run lint --workspace=@ts3-manager/ui
+npm run test:unit --workspace=@ts3-manager/ui
+npm run check:decoupling
 npx playwright install chromium
 npm run test:ui:e2e
 ```
@@ -334,6 +342,20 @@ packages/
 ├── server/    Node.js 后端与 ServerQuery/WebSocket 通信
 └── ui/        Vue 2 + Vuetify 管理控制台
 ```
+
+前端业务通信采用分层结构：
+
+```text
+Vue 组件 / Vuex 模块
+        ↓
+领域服务（packages/ui/src/services）
+        ↓
+TeamSpeak 协议客户端（packages/ui/src/api）
+        ↓
+传输层 / Socket.IO / HTTP
+```
+
+组件不得直接访问 TeamSpeak 或 Socket，也不得包含原始 TeamSpeak 命令和 Socket 事件名。`npm run check:decoupling` 用于检查该边界；详细设计和测试基线见 [通信层解耦文档](docs/communication-decoupling.md)。
 
 主要界面文件位于：
 

@@ -14,6 +14,8 @@
 
 <script>
 import notify from "@/notify";
+import eventService from "@/services/eventService";
+import serverService from "@/services/serverService";
 export default {
   components: {
     AppShell: () => import("@/components/AppShell"),
@@ -36,7 +38,7 @@ export default {
 
       try {
         if (client.clid === this.$store.state.query.queryUser.clientId) {
-          let queryUser = await this.$TeamSpeak.whoAmI();
+          let queryUser = await serverService.whoAmI();
 
           this.$store.commit("saveUserInfo", queryUser);
         }
@@ -45,8 +47,8 @@ export default {
       }
     },
     addNotificationListeners() {
-      this.$TeamSpeak.on("textmessage", this.handleReceivedMessages);
-      this.$TeamSpeak.on("clientmoved", this.updateQueryUserData);
+      eventService.onTextMessage(this.handleReceivedMessages);
+      eventService.onClientMoved(this.updateQueryUserData);
     },
   },
   created() {

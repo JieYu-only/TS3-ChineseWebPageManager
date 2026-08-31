@@ -1,6 +1,6 @@
 # Frontend Communication Decoupling
 
-Status: in progress (foundation + first core-path migrations accepted conditionally).
+Status: completed (all domain services migrated, final cleanup and static gate in place).
 Goal: isolate Vue components from TeamSpeak, HTTP and Socket.IO so a Vue 3 / Vite /
 Vuetify 3 migration only needs to adjust service injection, not page behaviour.
 
@@ -59,17 +59,20 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **1 component
-file** (1 call); **5 src files** still use some `$TeamSpeak` method (of which
-the component files are 4, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **0 component
+files** (0 calls); **0 src files** still use some `$TeamSpeak` method. The static
+gate `npm run check:decoupling` enforces this (scans components for `$TeamSpeak`,
+a direct `TeamSpeak` import/API call, `$socket`, `socket.js` and any `.execute`
+other than the `consoleService` exception).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
   (restore), virtual-server switch (`sessionService.selectServer`).
 - Realtime events: `ServerViewer.vue`, `TextMessages.vue` now use
   `eventService.onClient*`/`onChannel*` domain helpers.
-- Server domain: `Servers.vue`, `ServerCreate.vue`, `ServerSnapshot.vue` use
-  `serverService.*` (list/create/start/stop/remove/select/whoAmI).
+- Server domain: `Servers.vue`, `ServerCreate.vue`, `ServerSnapshot.vue`,
+  `ServerEdit.vue`, `ServerViewer.vue` and `BellIcon.vue` use `serverService.*`
+  (list/create/start/stop/remove/select/whoAmI/info/version/changeName).
 - Channel domain: `ChannelAdd.vue`, `ChannelEdit.vue`, `ChannelSpacerAdd.vue`,
   `ServerViewerChannel.vue` and `ChannelForm.vue` use
   `channelService.*` (list/create/edit/remove/moveClient/info/serverInfo).
@@ -120,12 +123,25 @@ the component files are 4, the remaining one being `App.vue`).
   client/channel/server services). Realtime subscriptions stay in
   `eventService`.
 
-### Per-domain remaining migration
-| Domain service | Components to migrate |
-|---|---|
-| serverService | ServerEdit, ServerViewer (list/create/start/stop/select done) |
-| channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); ServerViewer (tree) |
-| clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); BellIcon (avatar) |
+### Migration state
+All component domains are migrated to domain services, and the Vuex
+`avatars` module now delegates to `clientService.dbInfo`/`fileService.getInfo`/
+`fileService.downloadFileData` instead of importing `@/api/TeamSpeak` directly.
+No component, `App.vue`, `main.js` or Vuex module uses `$TeamSpeak`, `$socket`,
+`socket.js` or a direct `TeamSpeak` API call; the only allowed raw-command path is
+the console exception (`consoleService.execute` in `Console.vue`).
+
+The `npm run check:decoupling` gate scans the whole business layer
+(`packages/ui/src` excluding the `services`/`api`/`transport` layers and
+`socket.js`), flags `$TeamSpeak`, a direct `TeamSpeak` import/API call (including
+alias imports by path), `$socket`, a `socket.js` import and any `.execute(` other
+than the `consoleService` exception, and returns non-zero on a violation. It also
+catches `Vue.prototype.$TeamSpeak`/`$socket` regression via the `$TeamSpeak`/
+`$socket` patterns, so the removed global injection is guarded.
+
+`Vue.prototype.$TeamSpeak` was removed from `main.js` (no remaining consumer);
+the `TeamSpeak` singleton is imported only by the domain services, the protocol
+layer and the transport layer.
 
 ## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 
@@ -138,8 +154,12 @@ the component files are 4, the remaining one being `App.vue`).
   per-event split, `clear()`, `unsubscribe(handle)` (TeamSpeak mocked).
 - `test/persist.test.cjs` — persisted-state payload validation (node:test).
 - `test/clientService.test.js` — listOnline/listDatabase delegation, info/dbInfo
-  first-row unwrap, remove/edit/moveToChannel/kick/poke/ban argument mapping,
+  first-row unwrap, remove/edit/moveToChannel/kick/poke argument mapping,
   permission-denied propagation.
+- `test/serverService.test.js` — getServerList/whoAmI delegation, `info()` and
+  `version()` unwrapping, create/start/stop/remove/select/changeName mapping,
+  invalid `serverId` `INVALID_ARGUMENT` (nothing sent), and `PERMISSION_DENIED`
+  propagation.
 - `test/channelService.test.js` also covers **invalid-argument** handling: a
   missing `channelId` in `info`/`edit`/`remove`/`moveClient` rejects with
   `INVALID_ARGUMENT` before any command is sent.
@@ -155,7 +175,12 @@ the component files are 4, the remaining one being `App.vue`).
 - `test/fileService.test.js` — `ftgetfilelist`/`ftcreatedir`/`ftrenamefile`/
   `ftdeletefile`/`ftgetfileinfo` mapping and first-row unwrap, `INVALID_ARGUMENT`
   for missing paths, initUpload/initDownload delegation, upload streaming with
-  progress, `FILE_TOO_LARGE` mapping, and in-flight cancel -> `REQUEST_CANCELLED`.
+  progress, `FILE_TOO_LARGE` mapping, in-flight cancel -> `REQUEST_CANCELLED`, and
+  `downloadFileData` delegation to the socket download.
+- `test/avatars.test.js` — the Vuex `avatars` module delegates avatar
+  `ftgetfileinfo`/`clientdbinfo`/download to `fileService.getInfo`/
+  `clientService.dbInfo`/`fileService.downloadFileData` and never imports or
+  calls `TeamSpeak`; also covers the serveradmin skip and save/remove flow.
 - `test/tokenService.test.js` — tokenlist delegation, server-group vs
   channel-group token creation (`tokenid2`=0 vs channel id), description,
   invalid token type / missing groupId `INVALID_ARGUMENT`, remove mapping, and

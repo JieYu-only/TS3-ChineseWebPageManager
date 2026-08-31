@@ -122,6 +122,13 @@ export default {
       cpw: channelPassword,
     }).then((res) => res[0]);
   },
+  async downloadFileData({ name, channelId = 0, channelPassword = "" }) {
+    return TeamSpeak.downloadFile(
+      requirePath(name, "file.downloadFileData"),
+      channelId,
+      channelPassword
+    );
+  },
   async createDirectory({ channelId, dirname, channelPassword = "" }) {
     return TeamSpeak.execute("ftcreatedir", {
       cid: channelId,

@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/api/TeamSpeak", () => ({
-  default: { execute: vi.fn() },
+  default: {
+    execute: vi.fn(),
+    downloadFile: vi.fn(),
+  },
 }));
 
 vi.mock("@/api/fileTransfer", () => ({
@@ -104,6 +107,22 @@ describe("fileService command mappings", () => {
       name: "/a/b.txt",
       cpw: "",
     });
+  });
+
+  it("downloadFileData delegates to TeamSpeak.downloadFile with path/cid/cpw", async () => {
+    TeamSpeak.downloadFile.mockResolvedValue("base64data");
+
+    await expect(
+      fileService.downloadFileData({ name: "/avatar_x", channelId: 0 })
+    ).resolves.toEqual("base64data");
+    expect(TeamSpeak.downloadFile).toHaveBeenCalledWith("/avatar_x", 0, "");
+  });
+
+  it("downloadFileData rejects an empty name without sending", async () => {
+    await expect(
+      fileService.downloadFileData({ name: "" })
+    ).rejects.toMatchObject({ code: ERROR_CODES.INVALID_ARGUMENT });
+    expect(TeamSpeak.downloadFile).not.toHaveBeenCalled();
   });
 });
 

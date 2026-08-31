@@ -50,6 +50,7 @@
 import notify from "@/notify";
 import packageInfo from "../../../../package.json";
 import { apiBase } from "@/api/base";
+import serverService from "@/services/serverService";
 
 export default {
   data() {
@@ -83,16 +84,12 @@ export default {
   },
   methods: {
     getCurrentTeamSpeakVersion() {
-      // Command "serverinfo" would not work here, because after login the
+      // The "serverinfo" command would not work here, because after login the
       // returned object does not contain the property "virtualserverVersion"
-      return this.$TeamSpeak
-        .execute("version")
-        .then((version) => version[0].version);
+      return serverService.version();
     },
     getServerPlatform() {
-      return this.$TeamSpeak
-        .getServerInfo()
-        .then(([serverinfo]) => serverinfo.virtualserverPlatform);
+      return serverService.info().then((info) => info.virtualserverPlatform);
     },
     getTeamSpeakVersionsUrl() {
       return `${apiBase()}/api/teamspeak-versions`;

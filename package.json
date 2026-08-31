@@ -15,6 +15,7 @@
     "server:dev": "npm run dev --workspace=@ts3-manager/server",
     "server:build": "npm run build --workspace=@ts3-manager/server",
     "server:test": "npm run test --workspace=@ts3-manager/server",
+    "check:decoupling": "node scripts/check-decoupling.js",
     "test:ui:e2e": "npm run ui:build && node scripts/run-ui-e2e.js",
     "test:ui:persist": "npm run test:persist --workspace=@ts3-manager/ui",
     "test:ui:e2e:headed": "npm run ui:build && node scripts/run-ui-e2e.js --headed",

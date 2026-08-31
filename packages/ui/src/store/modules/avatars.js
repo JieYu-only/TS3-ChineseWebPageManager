@@ -1,7 +1,8 @@
-import TeamSpeak from "@/api/TeamSpeak";
 import Vue from "vue";
 import localForage from "localforage";
 import notify from "@/notify";
+import clientService from "@/services/clientService";
+import fileService from "@/services/fileService";
 
 /**
  * The avatar images are stored in IndexedDb because the local storage has a size limit of 5MB.
@@ -45,16 +46,10 @@ const actions = {
     }
   },
   getAvatarFileInfo(_context, name) {
-    return TeamSpeak.execute("ftgetfileinfo", {
-      cid: 0,
-      cpw: "", // maybe check if the server has a password is needed in this case
-      name,
-    }).then((info) => info[0]);
+    return fileService.getInfo({ channelId: 0, name });
   },
   getClientDbInfo(_context, clientDbId) {
-    return TeamSpeak.execute("clientdbinfo", {
-      cldbid: clientDbId,
-    }).then((info) => info[0]);
+    return clientService.dbInfo(clientDbId);
   },
   async saveAvatar({ commit }, avatar) {
     try {
@@ -97,7 +92,10 @@ const actions = {
               !currentAvatar ||
               currentAvatar.datetime !== avatarFileInfo.datetime
             ) {
-              let base64 = await TeamSpeak.downloadFile(fileName, 0, "");
+              let base64 = await fileService.downloadFileData({
+                name: fileName,
+                channelId: 0,
+              });
 
               dispatch("removeAvatar", clientDbId);
               dispatch("saveAvatar", {
