@@ -30,6 +30,7 @@
 <script>
 import notify from "@/notify";
 import { saveAs } from "file-saver";
+import serverService from "@/services/serverService";
 export default {
   data() { return { fileName: "", fileContent: {}, creating: false, restoring: false, restoreDialog: false }; },
   methods: {
@@ -47,7 +48,7 @@ export default {
     },
     async deploySnapshot() {
       this.restoreDialog = false; this.restoring = true;
-      try { await this.$TeamSpeak.deploySnapshot(this.fileContent); await this.$TeamSpeak.selectServer(this.$store.state.query.serverId); notify.success("快照恢复成功"); this.clearFileSelector(); }
+      try { await this.$TeamSpeak.deploySnapshot(this.fileContent); await serverService.select(this.$store.state.query.serverId); notify.success("快照恢复成功"); this.clearFileSelector(); }
       catch (err) { notify.error(err.message); }
       this.restoring = false;
     },

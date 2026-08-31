@@ -139,6 +139,7 @@
 
 <script>
 import notify from "@/notify";
+import serverService from "@/services/serverService";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -152,7 +153,7 @@ export default {
           );
 
           if (onlineServer)
-            await vm.$TeamSpeak.selectServer(onlineServer.virtualserverId);
+            await serverService.select(onlineServer.virtualserverId);
         }
 
         // Is primary needed to get the used server id
@@ -225,7 +226,7 @@ export default {
       },
       async set(sid) {
         try {
-          await this.$TeamSpeak.selectServer(sid);
+          await serverService.select(sid);
           this.queryUser = await this.getQueryUserData();
         } catch (err) {
           notify.error(err.message);
@@ -241,7 +242,7 @@ export default {
     },
     async manageServer(server) {
       try {
-        await this.$TeamSpeak.selectServer(server.virtualserverId);
+        await serverService.select(server.virtualserverId);
         this.queryUser = await this.getQueryUserData();
         this.$router.push({ name: "serverviewer" });
       } catch (err) {
@@ -283,9 +284,7 @@ export default {
     },
     async deleteServer() {
       try {
-        await this.$TeamSpeak.execute("serverdelete", {
-          sid: this.selectedServer.virtualserverId,
-        });
+        await serverService.remove(this.selectedServer.virtualserverId);
 
         this.deleteDialog = false;
 
@@ -295,12 +294,12 @@ export default {
       }
     },
     getQueryUserData() {
-      return this.$TeamSpeak.whoAmI();
+      return serverService.whoAmI();
     },
     async startServer(sid) {
       try {
-        await this.$TeamSpeak.execute("serverstart", { sid });
-        await this.$TeamSpeak.selectServer(sid);
+        await serverService.start(sid);
+        await serverService.select(sid);
 
         this.queryUser = await this.getQueryUserData();
       } catch (err) {
@@ -309,9 +308,7 @@ export default {
     },
     async stopServer() {
       try {
-        await this.$TeamSpeak.execute("serverstop", {
-          sid: this.selectedServer.virtualserverId,
-        });
+        await serverService.stop(this.selectedServer.virtualserverId);
 
         this.stopDialog = false;
 
@@ -324,7 +321,7 @@ export default {
       }
     },
     getServerList() {
-      return this.$TeamSpeak.getServerList();
+      return serverService.list();
     },
     isOffline(status) {
       return status === "offline" ? true : false;

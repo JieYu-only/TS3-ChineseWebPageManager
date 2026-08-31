@@ -57,6 +57,7 @@
 
 <script>
 import notify from "@/notify";
+import serverService from "@/services/serverService";
 export default {
   components: {
     KeyTextField: () => import("@/components/KeyTextField"),
@@ -85,7 +86,7 @@ export default {
     },
     async createServer() {
       try {
-        let [response] = await this.$TeamSpeak.execute("servercreate", {
+        let response = await serverService.create({
           virtualserverName: this.serverName,
           virtualserverPort: this.serverPort,
           virtualserverMaxclients: this.maxClients,
@@ -95,7 +96,7 @@ export default {
 
         notify.success("服务器创建成功");
 
-        await this.$TeamSpeak.selectServer(response.sid);
+        await serverService.select(response.sid);
       } catch (err) {
         notify.error(err.message);
       }
