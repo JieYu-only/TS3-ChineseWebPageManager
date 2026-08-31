@@ -10,7 +10,6 @@ vi.mock("@/api/TeamSpeak", () => ({
 
 import TeamSpeak from "@/api/TeamSpeak";
 import clientService from "@/services/clientService";
-import { ServiceError, ERROR_CODES } from "@/transport/transportError";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -111,42 +110,6 @@ describe("clientService.kick / poke", () => {
     expect(TeamSpeak.execute).toHaveBeenCalledWith("clientpoke", {
       clid: "2",
       msg: "hi",
-    });
-  });
-});
-
-describe("clientService.ban", () => {
-  it("passes ban input through to banadd", async () => {
-    TeamSpeak.execute.mockResolvedValue([]);
-
-    await clientService.ban({
-      ip: "1.2.3.4",
-      name: "n",
-      uid: "u",
-      banreason: "spam",
-      time: 86400,
-    });
-
-    expect(TeamSpeak.execute).toHaveBeenCalledWith("banadd", {
-      ip: "1.2.3.4",
-      name: "n",
-      uid: "u",
-      banreason: "spam",
-      time: 86400,
-    });
-  });
-
-  it("propagates a permission-denied ServiceError", async () => {
-    TeamSpeak.execute.mockRejectedValue(
-      new ServiceError({
-        code: ERROR_CODES.PERMISSION_DENIED,
-        message: "没有权限",
-        operation: "client.ban",
-      })
-    );
-
-    await expect(clientService.ban({})).rejects.toMatchObject({
-      code: ERROR_CODES.PERMISSION_DENIED,
     });
   });
 });

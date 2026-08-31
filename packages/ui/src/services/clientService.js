@@ -42,7 +42,4 @@ export default {
   async poke({ clientId, message }) {
     await TeamSpeak.execute("clientpoke", { clid: clientId, msg: message });
   },
-  async ban(input) {
-    await TeamSpeak.execute("banadd", input);
-  },
 };

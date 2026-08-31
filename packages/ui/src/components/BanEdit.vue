@@ -4,6 +4,7 @@
 
 <script>
 import notify from "@/notify";
+import banService from "@/services/banService";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -19,29 +20,21 @@ export default {
   },
   methods: {
     getBanList() {
-      return this.$TeamSpeak.getBanList();
+      return banService.list();
     },
     getBan(banlist) {
       return banlist.find((ban) => ban.banid == this.banid);
     },
-    addBan(currentBan) {
-      return this.$TeamSpeak.execute("banadd", {
-        ip: currentBan.ip,
-        name: currentBan.name,
-        uid: currentBan.uid,
-        banreason: currentBan.reason,
-        time: currentBan.time,
-      });
-    },
-    removeBan() {
-      return this.$TeamSpeak.execute("bandel", {
-        banid: this.banid,
-      });
-    },
     async save(data) {
       try {
-        await this.addBan(data);
-        await this.removeBan();
+        await banService.update({
+          banId: this.banid,
+          ip: data.ip,
+          name: data.name,
+          uid: data.uid,
+          reason: data.reason,
+          time: data.time,
+        });
       } catch (err) {
         notify.error(err.message);
       }

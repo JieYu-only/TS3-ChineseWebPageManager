@@ -96,6 +96,7 @@
 
 <script>
 import notify from "@/notify";
+import banService from "@/services/banService";
 export default {
   data() {
     return {
@@ -144,7 +145,7 @@ export default {
       this.dialog = true;
     },
     getBanList() {
-      return this.$TeamSpeak.getBanList();
+      return banService.list();
     },
     calcExpiryDate(created, duration) {
       return new Date(created * 1000 + duration * 1000).toLocaleString();
@@ -157,9 +158,7 @@ export default {
     async deleteBans() {
       try {
         for (let ban of this.banRemoveList) {
-          await this.$TeamSpeak.execute("bandel", {
-            banid: ban.banid,
-          });
+          await banService.remove(ban.banid);
         }
       } catch (err) {
         notify.error(err.message);

@@ -4,6 +4,7 @@
 
 <script>
 import notify from "@/notify";
+import banService from "@/services/banService";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -22,11 +23,11 @@ export default {
   methods: {
     async addBan(data) {
       try {
-        await this.$TeamSpeak.execute("banadd", {
+        await banService.create({
           ip: data.ip,
           name: data.name,
           uid: data.uid,
-          banreason: data.reason,
+          reason: data.reason,
           time: data.time,
         });
 

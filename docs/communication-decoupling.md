@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **9 component
-files** (13 calls); **15 src files** still use some `$TeamSpeak` method (of which
-the component files are 14, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **6 component
+files** (9 calls); **12 src files** still use some `$TeamSpeak` method (of which
+the component files are 11, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -75,8 +75,9 @@ the component files are 14, the remaining one being `App.vue`).
   `channelService.*` (list/create/edit/remove/moveClient/info/serverInfo).
 - Client domain: `ServerViewerClient.vue`, `Clients.vue`, `ClientEdit.vue` and
   `ClientBan.vue` use `clientService.*`
-  (listOnline/listDatabase/info/dbInfo/remove/edit/moveToChannel/kick/poke/ban;
-  a client's server-group memberships live in `groupService`).
+  (listOnline/listDatabase/info/dbInfo/remove/edit/moveToChannel/kick/poke;
+  a client's server-group memberships live in `groupService`, and banning a
+  client lives in `banService.createFromClient`).
 - Permission domain: `PermissionTable.vue`, `ClientPermissions.vue`,
   `ChannelPermissions.vue`, `ChannelClientPermissions.vue`,
   `ChannelGroupPermissions.vue` and `ServerGroupPermissions.vue` use
@@ -97,6 +98,8 @@ the component files are 14, the remaining one being `App.vue`).
   cancellation, timeout, concurrency-slot and resource release).
 - Token domain: `Tokens.vue` and `TokenAdd.vue` use `tokenService.*`
   (list/create/remove).
+- Ban domain: `Bans.vue`, `BanAdd.vue`, `BanEdit.vue` and `ClientBan.vue` use
+  `banService.*` (list/create/update/remove/createFromClient).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -104,7 +107,6 @@ the component files are 14, the remaining one being `App.vue`).
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| banService | Bans, BanAdd, BanEdit, ClientBan |
 | complaintService | Complaints |
 | apikeyService | ApiKeys, ApiKeyAdd |
 | consoleService | Console |
@@ -143,6 +145,10 @@ the component files are 14, the remaining one being `App.vue`).
   channel-group token creation (`tokenid2`=0 vs channel id), description,
   invalid token type / missing groupId `INVALID_ARGUMENT`, remove mapping, and
   `PERMISSION_DENIED` propagation.
+- `test/banService.test.js` — banlist delegation, banadd ip/name/uid/reason/time
+  mapping, missing-target and missing-banId `INVALID_ARGUMENT`, update
+  (create-then-remove) order, createFromClient delegation, and
+  `RESOURCE_NOT_FOUND` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

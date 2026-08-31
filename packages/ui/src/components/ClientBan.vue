@@ -5,6 +5,7 @@
 <script>
 import notify from "@/notify";
 import clientService from "@/services/clientService";
+import banService from "@/services/banService";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -28,11 +29,11 @@ export default {
     },
     async banClient(data) {
       try {
-        await clientService.ban({
+        await banService.createFromClient({
           ip: data.ip,
           name: data.name,
           uid: data.uid,
-          banreason: data.reason,
+          reason: data.reason,
           time: data.time,
         });
       } catch (err) {
