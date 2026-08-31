@@ -22,10 +22,10 @@ module.exports = defineConfig({
       use: { ...devices['Desktop Chrome'] }
     }
   ],
-  webServer: {
-    command: process.env.CI
-      ? 'node e2e/mock-server.js'
-      : 'npm run ui:build && node e2e/mock-server.js',
+  webServer: process.env.E2E_EXTERNAL_SERVER ? undefined : {
+    // Keep the managed process to one direct Node command. The npm scripts
+    // build the UI before Playwright starts.
+    command: 'node e2e/mock-server.js',
     url: 'http://127.0.0.1:4173/api/health',
     reuseExistingServer: !process.env.CI,
     timeout: 180000,
