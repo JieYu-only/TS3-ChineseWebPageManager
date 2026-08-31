@@ -39,6 +39,9 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
+import channelService from "@/services/channelService";
+import permissionService from "@/services/permissionService";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable"),
@@ -96,26 +99,24 @@ export default {
   },
   methods: {
     getChannelClientPermList() {
-      return this.$TeamSpeak.execute("channelclientpermlist", {
-        cid: this.channelId,
-        cldbid: this.clientDbId,
+      return permissionService.listChannelClientPermissions({
+        channelId: this.channelId,
+        clientDbId: this.clientDbId,
       });
     },
     getClientDbList() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
-    async savePermission(permission) {
-      let { permid, permvalue } = permission;
-
+    async savePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channelclientaddperm", {
-          cid: this.channelId,
-          cldbid: this.clientDbId,
-          permid: permid,
-          permvalue: permvalue,
+        await permissionService.addChannelClientPermission({
+          channelId: this.channelId,
+          clientDbId: this.clientDbId,
+          permissionId: input.permissionId,
+          value: input.value,
         });
       } catch (err) {
         notify.error(err.message);
@@ -127,14 +128,12 @@ export default {
         notify.error(err.message);
       }
     },
-    async removePermission(permission) {
-      let { permid } = permission;
-
+    async removePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channelclientdelperm", {
-          cid: this.channelId,
-          cldbid: this.clientDbId,
-          permid: permid,
+        await permissionService.removeChannelClientPermission({
+          channelId: this.channelId,
+          clientDbId: this.clientDbId,
+          permissionId: input.permissionId,
         });
       } catch (err) {
         notify.error(err.message);

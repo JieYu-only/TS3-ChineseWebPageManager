@@ -30,6 +30,8 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
+import permissionService from "@/services/permissionService";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable.vue"),
@@ -70,12 +72,10 @@ export default {
   },
   methods: {
     getClientPermissions() {
-      return this.$TeamSpeak.execute("clientpermlist", {
-        cldbid: this.clientDbId,
-      });
+      return permissionService.listClientPermissions(this.clientDbId);
     },
     getClientdblist() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     changeClient(cldbid) {
       this.$router.push({
@@ -85,15 +85,13 @@ export default {
         },
       });
     },
-    async savePermission(permissionValues) {
-      let { permid, permskip, permvalue } = permissionValues;
-
+    async savePermission(input) {
       try {
-        await this.$TeamSpeak.execute("clientaddperm", {
-          cldbid: this.clientDbId,
-          permid: permid,
-          permskip: +permskip,
-          permvalue: permvalue,
+        await permissionService.addClientPermission({
+          clientDbId: this.clientDbId,
+          permissionId: input.permissionId,
+          value: input.value,
+          skip: input.skip,
         });
       } catch (err) {
         notify.error(err.message);
@@ -105,13 +103,11 @@ export default {
         notify.error(err.message);
       }
     },
-    async removePermission(permissionValues) {
-      let { permid } = permissionValues;
-
+    async removePermission(input) {
       try {
-        await this.$TeamSpeak.execute("clientdelperm", {
-          cldbid: this.clientDbId,
-          permid: permid,
+        await permissionService.removeClientPermission({
+          clientDbId: this.clientDbId,
+          permissionId: input.permissionId,
         });
       } catch (err) {
         notify.error(err.message);

@@ -30,6 +30,8 @@
 
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
+import permissionService from "@/services/permissionService";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable"),
@@ -65,21 +67,17 @@ export default {
   },
   methods: {
     getChannelPermissions() {
-      return this.$TeamSpeak.execute("channelpermlist", {
-        cid: this.channelId,
-      });
+      return permissionService.listChannelPermissions(this.channelId);
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
-    async savePermission(permissionValues) {
-      let { permid, permvalue } = permissionValues;
-
+    async savePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channeladdperm", {
-          cid: this.channelId,
-          permid: permid,
-          permvalue: permvalue,
+        await permissionService.addChannelPermission({
+          channelId: this.channelId,
+          permissionId: input.permissionId,
+          value: input.value,
         });
       } catch (err) {
         notify.error(err.message);
@@ -91,13 +89,11 @@ export default {
         notify.error(err.message);
       }
     },
-    async removePermission(permissionValues) {
-      let { permid } = permissionValues;
-
+    async removePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channeldelperm", {
-          cid: this.channelId,
-          permid: permid,
+        await permissionService.removeChannelPermission({
+          channelId: this.channelId,
+          permissionId: input.permissionId,
         });
       } catch (err) {
         notify.error(err.message);

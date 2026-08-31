@@ -41,6 +41,8 @@
 
 <script>
 import notify from "@/notify";
+import groupService from "@/services/groupService";
+import permissionService from "@/services/permissionService";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable"),
@@ -77,21 +79,17 @@ export default {
   },
   methods: {
     getChannelGroupPermList() {
-      return this.$TeamSpeak.execute("channelgrouppermlist", {
-        cgid: this.selectedGroupId,
-      });
+      return permissionService.listChannelGroupPermissions(this.selectedGroupId);
     },
     getChannelGroupList() {
-      return this.$TeamSpeak.getChannelGroupList();
+      return groupService.listChannelGroups();
     },
-    async savePermission(permission) {
-      let { permid, permvalue } = permission;
-
+    async savePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channelgroupaddperm", {
-          cgid: this.selectedGroupId,
-          permid: permid,
-          permvalue: permvalue,
+        await permissionService.addChannelGroupPermission({
+          channelGroupId: this.selectedGroupId,
+          permissionId: input.permissionId,
+          value: input.value,
         });
       } catch (err) {
         notify.error(err.message);
@@ -103,13 +101,11 @@ export default {
         notify.error(err.message);
       }
     },
-    async removePermission(permission) {
-      let { permid } = permission;
-
+    async removePermission(input) {
       try {
-        await this.$TeamSpeak.execute("channelgroupdelperm", {
-          cgid: this.selectedGroupId,
-          permid: permid,
+        await permissionService.removeChannelGroupPermission({
+          channelGroupId: this.selectedGroupId,
+          permissionId: input.permissionId,
         });
       } catch (err) {
         notify.error(err.message);

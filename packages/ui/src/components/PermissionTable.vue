@@ -131,6 +131,7 @@
 </template>
 <script>
 import notify from "@/notify";
+import permissionService from "@/services/permissionService";
 export default {
   props: {
     type: String, // e.g. Server Group, Client Channel etc...
@@ -225,7 +226,7 @@ export default {
   },
   methods: {
     getPermissionlist() {
-      return this.$TeamSpeak.execute("permissionlist");
+      return permissionService.listDefinitions();
     },
     editPermission(permissionValues) {
       this.editedPermission = {
@@ -241,7 +242,13 @@ export default {
       this.dialog = true;
     },
     savePermission() {
-      this.$emit("save", this.editedPermission);
+      this.$emit("save", {
+        permissionId: this.editedPermission.permid,
+        name: this.editedPermission.permname,
+        value: this.editedPermission.permvalue,
+        skip: this.editedPermission.permskip,
+        negated: this.editedPermission.permnegated,
+      });
       this.dialog = false;
     },
     confirmDeletion(permissionValues) {
@@ -252,7 +259,7 @@ export default {
       this.deleteDialog = true;
     },
     removePermission() {
-      this.$emit("remove", this.editedPermission);
+      this.$emit("remove", { permissionId: this.editedPermission.permid });
 
       this.deleteDialog = false;
     },

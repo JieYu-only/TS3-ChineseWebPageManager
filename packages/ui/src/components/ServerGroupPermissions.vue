@@ -41,6 +41,8 @@
 
 <script>
 import notify from "@/notify";
+import groupService from "@/services/groupService";
+import permissionService from "@/services/permissionService";
 export default {
   components: {
     PermissionTable: () => import("@/components/PermissionTable.vue"),
@@ -77,12 +79,10 @@ export default {
   },
   methods: {
     getServergroupPermissions() {
-      return this.$TeamSpeak.execute("servergrouppermlist", {
-        sgid: this.selectedGroupId,
-      });
+      return permissionService.listServerGroupPermissions(this.selectedGroupId);
     },
     getServergrouplist() {
-      return this.$TeamSpeak.getServerGroupList();
+      return groupService.listServerGroups();
     },
     changeGroup(sgid) {
       this.$router.push({
@@ -92,19 +92,15 @@ export default {
         },
       });
     },
-    async savePermission(permissionValues) {
-      let { permid, permnegated, permskip, permvalue } = permissionValues;
-
-      let params = {
-        sgid: this.selectedGroupId,
-        permid: permid,
-        permnegated: +permnegated, // unary + operator to convert boolean into number
-        permskip: +permskip,
-        permvalue: permvalue,
-      };
-
+    async savePermission(input) {
       try {
-        await this.$TeamSpeak.execute("servergroupaddperm", params);
+        await permissionService.addServerGroupPermission({
+          serverGroupId: this.selectedGroupId,
+          permissionId: input.permissionId,
+          value: input.value,
+          skip: input.skip,
+          negated: input.negated,
+        });
       } catch (err) {
         notify.error(err.message);
       }
@@ -115,16 +111,12 @@ export default {
         notify.error(err.message);
       }
     },
-    async removePermission(permissionValues) {
-      let { permid } = permissionValues;
-
-      let params = {
-        sgid: this.selectedGroupId,
-        permid: permid,
-      };
-
+    async removePermission(input) {
       try {
-        await this.$TeamSpeak.execute("servergroupdelperm", params);
+        await permissionService.removeServerGroupPermission({
+          serverGroupId: this.selectedGroupId,
+          permissionId: input.permissionId,
+        });
       } catch (err) {
         notify.error(err.message);
       }
