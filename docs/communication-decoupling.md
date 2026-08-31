@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **11 component
-files** (16 calls); **17 src files** still use some `$TeamSpeak` method (of which
-the component files are 16, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **9 component
+files** (13 calls); **15 src files** still use some `$TeamSpeak` method (of which
+the component files are 14, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -95,6 +95,8 @@ the component files are 16, the remaining one being `App.vue`).
   (list/getInfo/createDirectory/rename/remove plus the HTTP transfer primitives
   initUpload/initDownload/upload/download/cancel that keep progress,
   cancellation, timeout, concurrency-slot and resource release).
+- Token domain: `Tokens.vue` and `TokenAdd.vue` use `tokenService.*`
+  (list/create/remove).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -102,7 +104,6 @@ the component files are 16, the remaining one being `App.vue`).
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| tokenService | Tokens, TokenAdd |
 | banService | Bans, BanAdd, BanEdit, ClientBan |
 | complaintService | Complaints |
 | apikeyService | ApiKeys, ApiKeyAdd |
@@ -138,6 +139,10 @@ the component files are 16, the remaining one being `App.vue`).
   `ftdeletefile`/`ftgetfileinfo` mapping and first-row unwrap, `INVALID_ARGUMENT`
   for missing paths, initUpload/initDownload delegation, upload streaming with
   progress, `FILE_TOO_LARGE` mapping, and in-flight cancel -> `REQUEST_CANCELLED`.
+- `test/tokenService.test.js` — tokenlist delegation, server-group vs
+  channel-group token creation (`tokenid2`=0 vs channel id), description,
+  invalid token type / missing groupId `INVALID_ARGUMENT`, remove mapping, and
+  `PERMISSION_DENIED` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

@@ -81,6 +81,7 @@
 <script>
 import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
+import tokenService from "@/services/tokenService";
 
 export default {
   data() {
@@ -103,7 +104,7 @@ export default {
   },
   methods: {
     getTokenList() {
-      return this.$TeamSpeak.execute("tokenlist");
+      return tokenService.list();
     },
     openDeleteDialog(tokens) {
       this.tokenRemoveList = tokens;
@@ -113,7 +114,7 @@ export default {
     async deleteToken() {
       try {
         for (let token of this.tokenRemoveList) {
-          await this.$TeamSpeak.execute("tokendelete", { token: token.token });
+          await tokenService.remove(token.token);
         }
 
         this.dialog = false;

@@ -59,6 +59,9 @@
 <script>
 import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
+import channelService from "@/services/channelService";
+import groupService from "@/services/groupService";
+import tokenService from "@/services/tokenService";
 
 export default {
   components: {
@@ -106,11 +109,12 @@ export default {
     },
     async createToken() {
       try {
-        let [response] = await this.$TeamSpeak.execute("tokenadd", {
-          tokentype: this.selectedType,
-          tokenid1: this.selectedGroup,
-          tokenid2: this.selectedType === 1 ? this.selectedChannel : 0,
-          tokendescription: this.tokenDescription,
+        let [response] = await tokenService.create({
+          tokenType: this.selectedType,
+          groupId: this.selectedGroup,
+          channelId:
+            this.selectedType === 1 ? this.selectedChannel : undefined,
+          description: this.tokenDescription,
         });
 
         notify.success("权限密钥创建成功");
@@ -120,18 +124,16 @@ export default {
         notify.error(err.message);
       }
     },
-    getServerGroupList() {
-      return this.$TeamSpeak
-        .getServerGroupList()
-        .then((groups) => groups.filter((group) => group.type === 1));
+    async getServerGroupList() {
+      const groups = await groupService.listServerGroups();
+      return groups.filter((group) => group.type === 1);
     },
-    getChannelGroupList() {
-      return this.$TeamSpeak
-        .getChannelGroupList()
-        .then((groups) => groups.filter((group) => group.type === 1));
+    async getChannelGroupList() {
+      const groups = await groupService.listChannelGroups();
+      return groups.filter((group) => group.type === 1);
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
   },
   watch: {
