@@ -1,0 +1,195 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+vi.mock("@/api/TeamSpeak", () => ({
+  default: {
+    getClientList: vi.fn(),
+    fullClientDBList: vi.fn(),
+    getServerInfo: vi.fn(),
+    getServerGroupList: vi.fn(),
+    execute: vi.fn(),
+  },
+}));
+
+import TeamSpeak from "@/api/TeamSpeak";
+import clientService from "@/services/clientService";
+import { ServiceError, ERROR_CODES } from "@/transport/transportError";
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe("clientService.listOnline / listDatabase", () => {
+  it("listOnline delegates to getClientList", async () => {
+    TeamSpeak.getClientList.mockResolvedValue([{ clid: "1" }]);
+
+    await expect(clientService.listOnline()).resolves.toEqual([{ clid: "1" }]);
+    expect(TeamSpeak.getClientList).toHaveBeenCalled();
+  });
+
+  it("listDatabase delegates to fullClientDBList", async () => {
+    TeamSpeak.fullClientDBList.mockResolvedValue([{ cldbid: "5" }]);
+
+    await expect(clientService.listDatabase()).resolves.toEqual([{ cldbid: "5" }]);
+    expect(TeamSpeak.fullClientDBList).toHaveBeenCalled();
+  });
+});
+
+describe("clientService.info / dbInfo", () => {
+  it("info maps clid and returns the first row", async () => {
+    TeamSpeak.execute.mockResolvedValue([{ clid: "2", clientNickname: "n" }]);
+
+    await expect(clientService.info("2")).resolves.toMatchObject({ clid: "2" });
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientinfo", { clid: "2" });
+  });
+
+  it("dbInfo maps cldbid and returns the first row", async () => {
+    TeamSpeak.execute.mockResolvedValue([{ cldbid: "5", clientLastip: "1.2.3.4" }]);
+
+    await expect(clientService.dbInfo("5")).resolves.toMatchObject({
+      cldbid: "5",
+    });
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientdbinfo", { cldbid: "5" });
+  });
+});
+
+describe("clientService.remove / edit", () => {
+  it("remove maps cldbid in clientdbdelete", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.remove("5");
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientdbdelete", {
+      cldbid: "5",
+    });
+  });
+
+  it("edit maps clid and spreads props in clientedit", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.edit("2", { clientDescription: "hello" });
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientedit", {
+      clid: "2",
+      clientDescription: "hello",
+    });
+  });
+});
+
+describe("clientService.moveToChannel", () => {
+  it("maps clientId/channelId -> clid/cid in clientmove", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.moveToChannel({ clientId: "7", channelId: "3" });
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientmove", {
+      clid: "7",
+      cid: "3",
+    });
+  });
+});
+
+describe("clientService.kick / poke", () => {
+  it("kick maps reasonid/reasonmsg/clid in clientkick", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.kick({
+      clientId: "2",
+      reasonId: 5,
+      reasonMessage: "bye",
+    });
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientkick", {
+      clid: "2",
+      reasonid: 5,
+      reasonmsg: "bye",
+    });
+  });
+
+  it("poke maps msg/clid in clientpoke", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.poke({ clientId: "2", message: "hi" });
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("clientpoke", {
+      clid: "2",
+      msg: "hi",
+    });
+  });
+});
+
+describe("clientService.ban", () => {
+  it("passes ban input through to banadd", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.ban({
+      ip: "1.2.3.4",
+      name: "n",
+      uid: "u",
+      banreason: "spam",
+      time: 86400,
+    });
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("banadd", {
+      ip: "1.2.3.4",
+      name: "n",
+      uid: "u",
+      banreason: "spam",
+      time: 86400,
+    });
+  });
+
+  it("propagates a permission-denied ServiceError", async () => {
+    TeamSpeak.execute.mockRejectedValue(
+      new ServiceError({
+        code: ERROR_CODES.PERMISSION_DENIED,
+        message: "没有权限",
+        operation: "client.ban",
+      })
+    );
+
+    await expect(clientService.ban({})).rejects.toMatchObject({
+      code: ERROR_CODES.PERMISSION_DENIED,
+    });
+  });
+});
+
+describe("clientService server-group memberships", () => {
+  it("defaultServerGroupId reads virtualserverDefaultServerGroup from serverinfo", async () => {
+    TeamSpeak.getServerInfo.mockResolvedValue([
+      { virtualserverDefaultServerGroup: "15" },
+    ]);
+
+    await expect(clientService.defaultServerGroupId()).resolves.toEqual("15");
+    expect(TeamSpeak.getServerInfo).toHaveBeenCalled();
+  });
+
+  it("listServerGroups delegates to getServerGroupList", async () => {
+    TeamSpeak.getServerGroupList.mockResolvedValue([{ sgid: "1", name: "g" }]);
+
+    await expect(clientService.listServerGroups()).resolves.toEqual([
+      { sgid: "1", name: "g" },
+    ]);
+  });
+
+  it("addToServerGroup maps sgid/cldbid in servergroupaddclient", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.addToServerGroup("6", "5");
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("servergroupaddclient", {
+      sgid: "6",
+      cldbid: "5",
+    });
+  });
+
+  it("removeFromServerGroup maps sgid/cldbid in servergroupdelclient", async () => {
+    TeamSpeak.execute.mockResolvedValue([]);
+
+    await clientService.removeFromServerGroup("6", "5");
+
+    expect(TeamSpeak.execute).toHaveBeenCalledWith("servergroupdelclient", {
+      sgid: "6",
+      cldbid: "5",
+    });
+  });
+});

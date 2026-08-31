@@ -113,6 +113,7 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
 export default {
   components: {
     ClientAvatar: () => import("@/components/ClientAvatar"),
@@ -144,9 +145,9 @@ export default {
   methods: {
     async poke() {
       try {
-        await this.$TeamSpeak.execute("clientpoke", {
-          msg: this.pokeMessage,
-          clid: this.client.clid,
+        await clientService.poke({
+          message: this.pokeMessage,
+          clientId: this.client.clid,
         });
       } catch (err) {
         notify.error(err.message);
@@ -172,10 +173,10 @@ export default {
     },
     async kick() {
       try {
-        await this.$TeamSpeak.execute("clientkick", {
-          reasonid: this.reasonid,
-          reasonmsg: this.reason,
-          clid: this.client.clid,
+        await clientService.kick({
+          reasonId: this.reasonid,
+          reasonMessage: this.reason,
+          clientId: this.client.clid,
         });
       } catch (err) {
         notify.error(err.message);

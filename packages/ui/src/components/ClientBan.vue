@@ -4,6 +4,7 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
 export default {
   components: {
     BanForm: () => import("@/components/BanForm"),
@@ -23,17 +24,11 @@ export default {
   },
   methods: {
     getClientDbInfo() {
-      return this.$TeamSpeak
-        .execute("clientdbinfo", {
-          cldbid: this.clientDbId,
-        })
-        .then((clientdbinfo) => {
-          return clientdbinfo[0];
-        });
+      return clientService.dbInfo(this.clientDbId);
     },
     async banClient(data) {
       try {
-        await this.$TeamSpeak.execute("banadd", {
+        await clientService.ban({
           ip: data.ip,
           name: data.name,
           uid: data.uid,

@@ -47,6 +47,7 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
 export default {
   data() {
     return {
@@ -88,17 +89,13 @@ export default {
       }
     },
     getDefaultServerGroupId() {
-      return this.$TeamSpeak
-        .getServerInfo()
-        .then((info) => info[0].virtualserverDefaultServerGroup);
+      return clientService.defaultServerGroupId();
     },
     getClientInfo() {
-      return this.$TeamSpeak
-        .execute("clientinfo", { clid: this.clientId })
-        .then((clientinfo) => clientinfo[0]);
+      return clientService.info(this.clientId);
     },
     getServergroupList() {
-      return this.$TeamSpeak.getServerGroupList();
+      return clientService.listServerGroups();
     },
     async save() {
       try {
@@ -137,26 +134,16 @@ export default {
       return this.changeMemberships("remove", groupRemoveList);
     },
     async changeMemberships(type, list) {
-      let command = "";
-
-      switch (type) {
-        case "add":
-          command = "servergroupaddclient";
-          break;
-        case "remove":
-          command = "servergroupdelclient";
-      }
-
       for (let sgid of list) {
-        await this.$TeamSpeak.execute(command, {
-          sgid: sgid,
-          cldbid: this.client.clientDatabaseId,
-        });
+        if (type === "add") {
+          await clientService.addToServerGroup(sgid, this.client.clientDatabaseId);
+        } else {
+          await clientService.removeFromServerGroup(sgid, this.client.clientDatabaseId);
+        }
       }
     },
     async changeDescription() {
-      await this.$TeamSpeak.execute("clientedit", {
-        clid: this.clientId,
+      await clientService.edit(this.clientId, {
         clientDescription: this.description,
       });
     },

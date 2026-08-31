@@ -90,6 +90,7 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
 export default {
   data() {
     return {
@@ -145,14 +146,12 @@ export default {
       this.dialog = true;
     },
     getClientDbList() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     async deleteClient() {
       try {
         for (let client of this.clientRemoveList) {
-          await this.$TeamSpeak.execute("clientdbdelete", {
-            cldbid: client.cldbid,
-          });
+          await clientService.remove(client.cldbid);
         }
       } catch (err) {
         notify.error(err.message);

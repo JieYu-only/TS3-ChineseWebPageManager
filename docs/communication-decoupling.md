@@ -53,8 +53,8 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **29 component
-files** (56 calls); **35 src files** still use some `$TeamSpeak` method.
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **25 component
+files** (50 calls); **33 src files** still use some `$TeamSpeak` method.
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -66,13 +66,18 @@ files** (56 calls); **35 src files** still use some `$TeamSpeak` method.
 - Channel domain: `ChannelAdd.vue`, `ChannelEdit.vue`, `ChannelSpacerAdd.vue`,
   `ServerViewerChannel.vue` and `ChannelForm.vue` use
   `channelService.*` (list/create/edit/remove/moveClient/info/serverInfo).
+- Client domain: `ServerViewerClient.vue`, `Clients.vue`, `ClientEdit.vue` and
+  `ClientBan.vue` use `clientService.*`
+  (listOnline/listDatabase/info/dbInfo/remove/edit/moveToChannel/kick/poke/ban
+  plus a client's server-group memberships: defaultServerGroupId/listServerGroups/
+  addToServerGroup/removeFromServerGroup).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
 |---|---|
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
-| clientService | Clients, ClientEdit, ClientBan, ServerViewerClient, TextMessages |
+| clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
 | permissionService | PermissionTable, ClientPermissions, ChannelPermissions, ChannelClientPermissions, ChannelGroupPermissions, ServerGroupPermissions |
 | groupService | ServerGroups, ServerGroupEdit, ChannelGroups, ChannelGroupEdit |
 | tokenService | Tokens, TokenAdd |
@@ -93,6 +98,10 @@ files** (56 calls); **35 src files** still use some `$TeamSpeak` method.
 - `test/eventService.test.js` — subscribe, duplicate add, unsubscribe,
   per-event split, `clear()`, `unsubscribe(handle)` (TeamSpeak mocked).
 - `test/persist.test.cjs` — persisted-state payload validation (node:test).
+- `test/clientService.test.js` — listOnline/listDatabase delegation, info/dbInfo
+  first-row unwrap, remove/edit/moveToChannel/kick/poke/ban argument mapping,
+  permission-denied propagation, and the server-group membership helpers
+  (defaultServerGroupId/listServerGroups/addToServerGroup/removeFromServerGroup).
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.
