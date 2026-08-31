@@ -47,6 +47,8 @@
 
 <script>
 import notify from "@/notify";
+import clientService from "@/services/clientService";
+import groupService from "@/services/groupService";
 export default {
   components: {
     GroupClientList: () => import("@/components/GroupClientList"),
@@ -83,24 +85,21 @@ export default {
     },
   },
   methods: {
-    getServerGroup() {
-      return this.$TeamSpeak
-        .getServerGroupList()
-        .then((list) => list.find((group) => group.sgid == this.serverGroupId));
+    async getServerGroup() {
+      const list = await groupService.listServerGroups();
+      return list.find((group) => group.sgid == this.serverGroupId);
     },
     getServerGroupClientList() {
-      return this.$TeamSpeak.execute("servergroupclientlist", {
-        sgid: this.serverGroupId,
-      });
+      return groupService.listServerGroupClients(this.serverGroupId);
     },
     getClientDbList() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     async renameServerGroup() {
       /** @see {@link https://github.com/joni1802/ts3-manager/issues/27} */
       if (this.serverGroup.name !== this.initServerGroupName) {
-        await this.$TeamSpeak.execute("servergrouprename", {
-          sgid: this.serverGroupId,
+        await groupService.renameServerGroup({
+          serverGroupId: this.serverGroupId,
           name: this.serverGroup.name,
         });
       }
@@ -115,9 +114,9 @@ export default {
       );
 
       for (let client of clientRemoveList) {
-        await this.$TeamSpeak.execute("servergroupdelclient", {
-          sgid: this.serverGroupId,
-          cldbid: client.cldbid,
+        await groupService.removeClientFromServerGroup({
+          serverGroupId: this.serverGroupId,
+          clientDbId: client.cldbid,
         });
       }
     },
@@ -129,9 +128,9 @@ export default {
       });
 
       for (let client of clientAddList) {
-        await this.$TeamSpeak.execute("servergroupaddclient", {
-          sgid: this.serverGroupId,
-          cldbid: client.cldbid,
+        await groupService.addClientToServerGroup({
+          serverGroupId: this.serverGroupId,
+          clientDbId: client.cldbid,
         });
       }
     },

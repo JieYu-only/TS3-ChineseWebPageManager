@@ -48,6 +48,7 @@
 <script>
 import notify from "@/notify";
 import clientService from "@/services/clientService";
+import groupService from "@/services/groupService";
 export default {
   data() {
     return {
@@ -89,13 +90,13 @@ export default {
       }
     },
     getDefaultServerGroupId() {
-      return clientService.defaultServerGroupId();
+      return groupService.defaultServerGroupId();
     },
     getClientInfo() {
       return clientService.info(this.clientId);
     },
     getServergroupList() {
-      return clientService.listServerGroups();
+      return groupService.listServerGroups();
     },
     async save() {
       try {
@@ -136,9 +137,15 @@ export default {
     async changeMemberships(type, list) {
       for (let sgid of list) {
         if (type === "add") {
-          await clientService.addToServerGroup(sgid, this.client.clientDatabaseId);
+          await groupService.addClientToServerGroup({
+            serverGroupId: sgid,
+            clientDbId: this.client.clientDatabaseId,
+          });
         } else {
-          await clientService.removeFromServerGroup(sgid, this.client.clientDatabaseId);
+          await groupService.removeClientFromServerGroup({
+            serverGroupId: sgid,
+            clientDbId: this.client.clientDatabaseId,
+          });
         }
       }
     },

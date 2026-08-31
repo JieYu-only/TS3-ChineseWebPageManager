@@ -45,23 +45,4 @@ export default {
   async ban(input) {
     await TeamSpeak.execute("banadd", input);
   },
-  async defaultServerGroupId() {
-    const [info] = await TeamSpeak.getServerInfo();
-    return info.virtualserverDefaultServerGroup;
-  },
-  listServerGroups() {
-    return TeamSpeak.getServerGroupList();
-  },
-  async addToServerGroup(serverGroupId, clientDbId) {
-    await TeamSpeak.execute("servergroupaddclient", {
-      sgid: serverGroupId,
-      cldbid: clientDbId,
-    });
-  },
-  async removeFromServerGroup(serverGroupId, clientDbId) {
-    await TeamSpeak.execute("servergroupdelclient", {
-      sgid: serverGroupId,
-      cldbid: clientDbId,
-    });
-  },
 };

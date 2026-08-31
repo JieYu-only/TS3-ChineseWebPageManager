@@ -36,6 +36,9 @@
 
 <script>
 import notify from "@/notify";
+import channelService from "@/services/channelService";
+import clientService from "@/services/clientService";
+import groupService from "@/services/groupService";
 export default {
   components: {
     GroupClientList: () => import("@/components/GroupClientList"),
@@ -84,35 +87,30 @@ export default {
   },
   methods: {
     getDefaultChannelGroup() {
-      return this.$TeamSpeak
-        .getServerInfo()
-        .then((info) => info[0].virtualserverDefaultChannelGroup);
+      return groupService.defaultChannelGroupId();
     },
-    getChannelGroup() {
-      return this.$TeamSpeak
-        .getChannelGroupList()
-        .then((list) =>
-          list.find((group) => group.cgid == this.channelGroupId)
-        ); // just double '==' cause this.$route.params.cgid is always a string
+    async getChannelGroup() {
+      const list = await groupService.listChannelGroups();
+      return list.find((group) => group.cgid == this.channelGroupId); // just double '==' cause this.$route.params.cgid is always a string
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return channelService.list();
     },
     getClientDbList() {
-      return this.$TeamSpeak.fullClientDBList();
+      return clientService.listDatabase();
     },
     getChannelGroupClientList() {
-      return this.$TeamSpeak.execute("channelgroupclientlist", {
-        cgid: this.channelGroupId,
-        cid: this.selectedChannel,
+      return groupService.listChannelGroupClients({
+        channelGroupId: this.channelGroupId,
+        channelId: this.selectedChannel,
       });
     },
     async renameChannelGroupName() {
       try {
         /** @see {@link https://github.com/joni1802/ts3-manager/issues/27} */
         if (this.channelGroupName !== this.initChannelGroupName) {
-          await this.$TeamSpeak.execute("channelgrouprename", {
-            cgid: this.channelGroupId,
+          await groupService.renameChannelGroup({
+            channelGroupId: this.channelGroupId,
             name: this.channelGroupName,
           });
         }
@@ -123,10 +121,10 @@ export default {
     async changeMembers(list, cgid) {
       for (let client of list) {
         try {
-          await this.$TeamSpeak.execute("setclientchannelgroup", {
-            cgid: cgid,
-            cid: this.selectedChannel,
-            cldbid: client.cldbid,
+          await groupService.assignClientChannelGroup({
+            channelGroupId: cgid,
+            channelId: this.selectedChannel,
+            clientDbId: client.cldbid,
           });
         } catch (err) {
           notify.error(err.message);

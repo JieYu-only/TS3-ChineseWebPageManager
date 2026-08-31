@@ -4,8 +4,6 @@ vi.mock("@/api/TeamSpeak", () => ({
   default: {
     getClientList: vi.fn(),
     fullClientDBList: vi.fn(),
-    getServerInfo: vi.fn(),
-    getServerGroupList: vi.fn(),
     execute: vi.fn(),
   },
 }));
@@ -149,47 +147,6 @@ describe("clientService.ban", () => {
 
     await expect(clientService.ban({})).rejects.toMatchObject({
       code: ERROR_CODES.PERMISSION_DENIED,
-    });
-  });
-});
-
-describe("clientService server-group memberships", () => {
-  it("defaultServerGroupId reads virtualserverDefaultServerGroup from serverinfo", async () => {
-    TeamSpeak.getServerInfo.mockResolvedValue([
-      { virtualserverDefaultServerGroup: "15" },
-    ]);
-
-    await expect(clientService.defaultServerGroupId()).resolves.toEqual("15");
-    expect(TeamSpeak.getServerInfo).toHaveBeenCalled();
-  });
-
-  it("listServerGroups delegates to getServerGroupList", async () => {
-    TeamSpeak.getServerGroupList.mockResolvedValue([{ sgid: "1", name: "g" }]);
-
-    await expect(clientService.listServerGroups()).resolves.toEqual([
-      { sgid: "1", name: "g" },
-    ]);
-  });
-
-  it("addToServerGroup maps sgid/cldbid in servergroupaddclient", async () => {
-    TeamSpeak.execute.mockResolvedValue([]);
-
-    await clientService.addToServerGroup("6", "5");
-
-    expect(TeamSpeak.execute).toHaveBeenCalledWith("servergroupaddclient", {
-      sgid: "6",
-      cldbid: "5",
-    });
-  });
-
-  it("removeFromServerGroup maps sgid/cldbid in servergroupdelclient", async () => {
-    TeamSpeak.execute.mockResolvedValue([]);
-
-    await clientService.removeFromServerGroup("6", "5");
-
-    expect(TeamSpeak.execute).toHaveBeenCalledWith("servergroupdelclient", {
-      sgid: "6",
-      cldbid: "5",
     });
   });
 });

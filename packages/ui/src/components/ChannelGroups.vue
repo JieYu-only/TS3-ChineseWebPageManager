@@ -11,6 +11,7 @@
 
 <script>
 import notify from "@/notify";
+import groupService from "@/services/groupService";
 export default {
   components: {
     GroupList: () => import("@/components/GroupList"),
@@ -22,11 +23,11 @@ export default {
   },
   methods: {
     getChannelGroupList() {
-      return this.$TeamSpeak.getChannelGroupList();
+      return groupService.listChannelGroups();
     },
     async addChannelGroup(name, type) {
       try {
-        await this.$TeamSpeak.execute("channelgroupadd", { name, type });
+        await groupService.createChannelGroup({ name, type });
       } catch (err) {
         notify.error(err.message);
       }
@@ -39,9 +40,9 @@ export default {
     },
     async removeChannelGroup(group, force) {
       try {
-        await this.$TeamSpeak.execute("channelgroupdel", {
-          cgid: group.cgid,
-          force: +force, // unary operator converts true => 1 and false => 0
+        await groupService.removeChannelGroup({
+          channelGroupId: group.cgid,
+          force,
         });
       } catch (err) {
         notify.error(err.message);
@@ -67,11 +68,9 @@ export default {
       groupType
     ) {
       try {
-        await this.$TeamSpeak.execute("channelgroupcopy", {
-          scgid: sourceGroup.cgid,
-          tcgid: overwriteGroup ? targetGroup.cgid : 0,
-          // Even though the parameter "name" is ignored, when a target group is selected, it needs a value.
-          // Otherwise the ServerQuery will throw an error.
+        await groupService.copyChannelGroup({
+          sourceGroupId: sourceGroup.cgid,
+          targetGroupId: overwriteGroup ? targetGroup.cgid : 0,
           name: targetGroupName,
           type: groupType,
         });
