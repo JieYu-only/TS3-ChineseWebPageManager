@@ -13,12 +13,11 @@ import "nprogress/nprogress.css";
 import NProgress from "nprogress";
 
 import TeamSpeak from "./api/TeamSpeak";
-import { status as sessionStatus } from "./api/session";
+import sessionService from "./services/sessionService";
 import "./registerServiceWorker";
 
 import store from "./store";
 import router from "./router";
-import socket, { connectToSession } from "./socket";
 
 (async () => {
   NProgress.configure({
@@ -34,10 +33,9 @@ import socket, { connectToSession } from "./socket";
   // are never present on the browser; the socket is connected and the server
   // re-establishes the TeamSpeak connection from the stored session.
   try {
-    const sessionStatusResp = await sessionStatus();
+    const sessionStatusResp = await sessionService.restore();
 
     if (sessionStatusResp.connected) {
-      await connectToSession();
       await store.dispatch("saveConnection", {
         serverId: sessionStatusResp.serverId,
       });
@@ -49,7 +47,6 @@ import socket, { connectToSession } from "./socket";
   }
 
   // Adding instance properties which are often used in components
-  Vue.prototype.$socket = socket;
   Vue.prototype.$TeamSpeak = TeamSpeak;
 
   // Render app

@@ -83,6 +83,7 @@
 </template>
 <script>
 import notify from "@/notify";
+import eventService from "@/services/eventService";
 export default {
   components: {
     Channel: () => import("@/components/ServerViewerChannel"),
@@ -130,18 +131,19 @@ export default {
       return out;
     },
     addEventListeners() {
-      this.$TeamSpeak.on("clientmoved", this.loadChannelTree);
-      this.$TeamSpeak.on("clientconnect", this.loadChannelTree);
-      this.$TeamSpeak.on("clientconnect", this.getSingleClientAvatar);
-      this.$TeamSpeak.on("clientdisconnect", this.loadChannelTree);
-      this.$TeamSpeak.on("channeldelete", this.loadChannelTree);
+      this.eventSubscriptions = [
+        eventService.subscribe("clientmoved", this.loadChannelTree),
+        eventService.subscribe("clientconnect", this.loadChannelTree),
+        eventService.subscribe("clientconnect", this.getSingleClientAvatar),
+        eventService.subscribe("clientdisconnect", this.loadChannelTree),
+        eventService.subscribe("channeldelete", this.loadChannelTree),
+      ];
     },
     removeEventListeners() {
-      this.$TeamSpeak.off("clientmoved", this.loadChannelTree);
-      this.$TeamSpeak.off("clientconnect", this.loadChannelTree);
-      this.$TeamSpeak.off("clientconnect", this.getSingleClientAvatar);
-      this.$TeamSpeak.off("clientdisconnect", this.loadChannelTree);
-      this.$TeamSpeak.off("channeldelete", this.loadChannelTree);
+      (this.eventSubscriptions || []).forEach((subscription) =>
+        eventService.unsubscribe(subscription)
+      );
+      this.eventSubscriptions = [];
     },
     openAllChannels() {
       this.channelList.forEach((channel) =>

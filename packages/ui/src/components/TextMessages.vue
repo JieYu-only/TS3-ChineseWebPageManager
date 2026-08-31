@@ -189,6 +189,7 @@
 
 <script>
 import notify from "@/notify";
+import eventService from "@/services/eventService";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -425,20 +426,20 @@ export default {
       }, 100);
     },
     addEventListeners() {
-      this.$TeamSpeak.on("clientconnect", this.updateClientList);
-      this.$TeamSpeak.on("clientconnect", this.getSingleClientAvatar);
-      this.$TeamSpeak.on("clientdisconnect", this.updateClientList);
-      this.$TeamSpeak.on("channeledit", this.updateChannelList);
-      this.$TeamSpeak.on("channelcreate", this.updateChannelList);
-      this.$TeamSpeak.on("channeldelete", this.updateChannelList);
+      this.eventSubscriptions = [
+        eventService.subscribe("clientconnect", this.updateClientList),
+        eventService.subscribe("clientconnect", this.getSingleClientAvatar),
+        eventService.subscribe("clientdisconnect", this.updateClientList),
+        eventService.subscribe("channeledit", this.updateChannelList),
+        eventService.subscribe("channelcreate", this.updateChannelList),
+        eventService.subscribe("channeldelete", this.updateChannelList),
+      ];
     },
     removeEventListeners() {
-      this.$TeamSpeak.off("clientconnect", this.updateClientList);
-      this.$TeamSpeak.off("clientconnect", this.getSingleClientAvatar);
-      this.$TeamSpeak.off("clientdisconnect", this.updateClientList);
-      this.$TeamSpeak.off("channeledit", this.updateChannelList);
-      this.$TeamSpeak.off("channelcreate", this.updateChannelList);
-      this.$TeamSpeak.off("channeldelete", this.updateChannelList);
+      (this.eventSubscriptions || []).forEach((subscription) =>
+        eventService.unsubscribe(subscription)
+      );
+      this.eventSubscriptions = [];
     },
     getSingleClientAvatar(e) {
       this.$store.dispatch("getClientAvatars", [

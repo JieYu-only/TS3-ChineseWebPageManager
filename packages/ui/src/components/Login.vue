@@ -41,8 +41,7 @@
 import notify from "@/notify";
 import packageInfo from "../../../../package.json";
 import logo from "@/assets/ts3_manager_logo.svg";
-import { login as sessionLogin } from "@/api/session";
-import { connectToSession } from "@/socket";
+import sessionService from "@/services/sessionService";
 
 export default {
   data() {
@@ -71,7 +70,7 @@ export default {
       this.loading = true;
 
       try {
-        await sessionLogin({
+        await sessionService.login({
           host: this.form.host,
           queryport: this.form.queryport,
           protocol: this.form.ssh ? "ssh" : "raw",
@@ -79,8 +78,6 @@ export default {
           password: this.form.password,
           remember: this.rememberLogin,
         });
-
-        await connectToSession();
 
         await this.$store.dispatch("saveConnection", {
           serverId: null,
