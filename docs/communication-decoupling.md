@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **6 component
-files** (9 calls); **12 src files** still use some `$TeamSpeak` method (of which
-the component files are 11, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **5 component
+files** (7 calls); **11 src files** still use some `$TeamSpeak` method (of which
+the component files are 10, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -100,6 +100,8 @@ the component files are 11, the remaining one being `App.vue`).
   (list/create/remove).
 - Ban domain: `Bans.vue`, `BanAdd.vue`, `BanEdit.vue` and `ClientBan.vue` use
   `banService.*` (list/create/update/remove/createFromClient).
+- Complaint domain: `Complaints.vue` uses `complaintService.*`
+  (list/remove/removeAllForClient).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -107,7 +109,6 @@ the component files are 11, the remaining one being `App.vue`).
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| complaintService | Complaints |
 | apikeyService | ApiKeys, ApiKeyAdd |
 | consoleService | Console |
 | snapshotService | (ServerSnapshot select done via serverService; create/restore remain) |
@@ -149,6 +150,9 @@ the component files are 11, the remaining one being `App.vue`).
   mapping, missing-target and missing-banId `INVALID_ARGUMENT`, update
   (create-then-remove) order, createFromClient delegation, and
   `RESOURCE_NOT_FOUND` propagation.
+- `test/complaintService.test.js` — complainlist delegation, remove
+  target/client id mapping, missing-target `INVALID_ARGUMENT`, and
+  removeAllForClient filtering + batch removal.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

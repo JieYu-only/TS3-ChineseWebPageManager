@@ -76,6 +76,7 @@
 
 <script>
 import notify from "@/notify";
+import complaintService from "@/services/complaintService";
 export default {
   data() {
     return {
@@ -107,7 +108,7 @@ export default {
   },
   methods: {
     getComplainList() {
-      return this.$TeamSpeak.execute("complainlist");
+      return complaintService.list();
     },
     openDialog(complaints) {
       this.selectedComplaints = complaints;
@@ -116,9 +117,9 @@ export default {
     async removeComplaints() {
       try {
         for (let complaint of this.selectedComplaints) {
-          await this.$TeamSpeak.execute("complaindel", {
-            tcldbid: complaint.tcldbid,
-            fcldbid: complaint.fcldbid,
+          await complaintService.remove({
+            targetClientDbId: complaint.tcldbid,
+            clientDbId: complaint.fcldbid,
           });
         }
       } catch (err) {
