@@ -1,8 +1,8 @@
 <template>
-  <v-menu offset-y :close-on-content-click="false">
-    <template #activator="{ on }">
-      <v-btn icon v-on="on">
-        <v-badge color="error" :value="countNotifications">
+  <v-menu :offset="true" :close-on-content-click="false">
+    <template #activator="{ props }">
+      <v-btn icon v-bind="props">
+        <v-badge color="error" :content="countNotifications">
           <template #badge v-if="countNotifications">
             <span>{{ countNotifications }}</span>
           </template>
@@ -13,20 +13,20 @@
     <v-card>
       <v-list>
         <v-list-item>
-          <v-list-item-action>
+
             <v-switch v-model="showNotifications"></v-switch>
-          </v-list-item-action>
-          <v-list-item-content>
+
+
             <v-list-item-title>启用更新通知</v-list-item-title>
-          </v-list-item-content>
+
         </v-list-item>
       </v-list>
       <v-divider></v-divider>
       <v-list v-if="showNotifications">
         <v-list-item v-if="!countNotifications">
-          <v-list-item-content>
+
             <v-list-item-title>暂无通知</v-list-item-title>
-          </v-list-item-content>
+
         </v-list-item>
         <v-list-item
           v-for="notification in notifications"
@@ -34,12 +34,12 @@
           target="_blank"
           :key="notification.title"
         >
-          <v-list-item-action>
+
             <v-icon>{{ notification.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
+
+
             <v-list-item-title>{{ notification.title }}</v-list-item-title>
-          </v-list-item-content>
+
         </v-list-item>
       </v-list>
     </v-card>
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import notify from "@/notify";
+import { defineAsyncComponent } from "vue";
 import packageInfo from "../../../../package.json";
 import { apiBase } from "@/api/base";
 import serverService from "@/services/serverService";
@@ -86,7 +86,7 @@ export default {
     getCurrentTeamSpeakVersion() {
       // The "serverinfo" command would not work here, because after login the
       // returned object does not contain the property "virtualserverVersion"
-      return serverService.version();
+      return serverService.version().catch(() => undefined);
     },
     getServerPlatform() {
       return serverService.info().then((info) => info.virtualserverPlatform);
@@ -95,32 +95,41 @@ export default {
       return `${apiBase()}/api/teamspeak-versions`;
     },
     async getLatestTeamSpeakVersion() {
-      let teamSpeakVersionUrl = this.getTeamSpeakVersionsUrl();
-      let teamSpeakVersions = await fetch(teamSpeakVersionUrl, {
-        credentials: "include",
-      }).then((data) => data.json());
-      let serverPlatform = await this.getServerPlatform();
+      try {
+        let teamSpeakVersionUrl = this.getTeamSpeakVersionsUrl();
+        let teamSpeakVersions = await fetch(teamSpeakVersionUrl, {
+          credentials: "include",
+        }).then((data) => data.json());
+        let serverPlatform = await this.getServerPlatform();
 
-      // Use the linux version as a fallback if the platform is not listed in the response
-      let platformVersion = !serverPlatform
-        ? teamSpeakVersions["linux"]
-        : teamSpeakVersions[serverPlatform.toLowerCase()];
+        // Use the linux version as a fallback if the platform is not listed in the response
+        let platformVersion = !serverPlatform
+          ? teamSpeakVersions["linux"]
+          : teamSpeakVersions[serverPlatform.toLowerCase()];
 
-      // Return the 64 bit version number by default if it is available for the platform
-      return platformVersion["x86_64"]
-        ? platformVersion["x86_64"].version
-        : platformVersion[Object.keys(platformVersion)[0]].version;
+        if (!platformVersion) return undefined;
+
+        // Return the 64 bit version number by default if it is available for the platform
+        return platformVersion["x86_64"]
+          ? platformVersion["x86_64"].version
+          : platformVersion[Object.keys(platformVersion)[0]].version;
+      } catch (err) {
+        return undefined;
+      }
     },
     getLatestTSMRelease() {
       return fetch(this.URL.ts3Manager[0])
         .then((res) => res.json())
         .then((releases) => releases.filter((release) => !release.prerelease))
-        .then((releases) => releases[0]);
+        .then((releases) => releases[0])
+        .catch(() => null);
     },
     // returns -1 if a is older than b
     // returns 1 if a is newer than b
     // returns 0 if both version are equal
     compareVersionNumbers(a, b) {
+      if (a == null || b == null) return 0;
+
       // convert "v6.0.0-beta" to "6.0.0"
       const versionRegex = /(\d+\.)*\d+/;
 
@@ -157,7 +166,7 @@ export default {
       try {
         this.latestTSMRelease = await this.getLatestTSMRelease();
 
-        this.latestTSMVersion = this.latestTSMRelease.name;
+        this.latestTSMVersion = this.latestTSMRelease?.name;
         this.currentTeamSpeakVersion = await this.getCurrentTeamSpeakVersion();
         this.latestTeamSpeakVersion = await this.getLatestTeamSpeakVersion();
 
@@ -184,7 +193,9 @@ export default {
           });
         }
       } catch (err) {
-        notify.error(err.message);
+        // Background update check — never surface a user-facing error. A failure
+        // to reach the release/version endpoint must not interrupt the app.
+        console.error("Update check failed:", err);
       }
     },
   },

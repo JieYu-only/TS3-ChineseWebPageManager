@@ -1,8 +1,8 @@
 <template>
   <v-container fluid class="console-page">
     <page-header title="频道用户权限" description="查看和配置频道内用户的权限" :breadcrumbs="['控制台', '权限管理', '频道用户权限']" />
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <permission-table
           :grantedPermissions="permissions"
           type="Channel Client Permissions"
@@ -12,39 +12,45 @@
           @loaded="init"
         >
           <template #selectMenu>
-            <v-flex sm3 xs12>
+            <v-col sm="3" cols="12">
               <v-autocomplete
                 :items="channelSelection"
+                item-title="text"
+                item-value="value"
                 v-model="selectedChannel"
                 label="频道"
                 @change="changeChannel"
                 :disabled="$store.state.query.loading"
               ></v-autocomplete>
-            </v-flex>
-            <v-flex sm3>
+            </v-col>
+            <v-col cols="12" sm="3">
               <v-autocomplete
                 :items="clientSelection"
+                item-title="text"
+                item-value="value"
                 v-model="selectedClient"
                 label="用户"
                 @change="changeClient"
                 :disabled="$store.state.query.loading"
               ></v-autocomplete>
-            </v-flex>
+            </v-col>
           </template>
         </permission-table>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import clientService from "@/services/clientService";
 import channelService from "@/services/channelService";
 import permissionService from "@/services/permissionService";
 export default {
   components: {
-    PermissionTable: () => import("@/components/PermissionTable"),
+    PermissionTable: defineAsyncComponent(() => import("@/components/PermissionTable")),
   },
   data() {
     return {

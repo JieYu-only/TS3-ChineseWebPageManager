@@ -1,9 +1,9 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <h1>页面不存在：{{ $route.path }}</h1>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>

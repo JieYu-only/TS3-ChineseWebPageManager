@@ -29,7 +29,7 @@ export default {
       return dashes[this.characterBlock];
     },
     filter() {
-      return this.$vuetify.theme.dark ? "invert(1)" : "invert(0)";
+      return this.$store.state.settings.darkMode ? "invert(1)" : "invert(0)";
     },
   },
 };

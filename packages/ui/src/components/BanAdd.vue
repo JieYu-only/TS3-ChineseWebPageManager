@@ -3,11 +3,13 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import banService from "@/services/banService";
 export default {
   components: {
-    BanForm: () => import("@/components/BanForm"),
+    BanForm: defineAsyncComponent(() => import("@/components/BanForm")),
   },
   data() {
     return {

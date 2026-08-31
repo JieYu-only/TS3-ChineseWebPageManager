@@ -8,6 +8,19 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 const validCookie = 'ts3_e2e_session=valid'
+const banRows = Array.from({ length: 30 }, (_, index) => ({
+  banid: String(index + 1),
+  ip: `192.0.2.${index + 1}`,
+  name: `E2E user ${String(index + 1).padStart(2, '0')}`,
+  uid: `e2e-uid-${index + 1}`,
+  reason: `Reason ${String(index + 1).padStart(2, '0')}`,
+  created: 1767225600,
+  duration: index % 2 === 0 ? 0 : 3600
+}))
+const clientDatabaseRows = [
+  { cldbid: '1', clientDatabaseId: '1', clientNickname: 'serveradmin', clientUniqueIdentifier: 'uid-admin' },
+  { cldbid: '2', clientDatabaseId: '2', clientNickname: 'E2E member', clientUniqueIdentifier: 'uid-member' }
+]
 
 app.use(express.json())
 
@@ -67,7 +80,7 @@ io.on('connection', (socket) => {
 
   socket.on('teamspeak-registerevents', (ack) => ack && ack('ok'))
   socket.on('teamspeak-unregisterevent', (ack) => ack && ack('ok'))
-  socket.on('teamspeak-execute', ({ command }, ack) => {
+  socket.on('teamspeak-execute', ({ command, params = {} }, ack) => {
     const responses = {
       serverlist: [
         {
@@ -81,8 +94,23 @@ io.on('connection', (socket) => {
         }
       ],
       whoami: [{ virtualserverId: '1', clientId: '7', clientNickname: 'serveradmin' }],
-      serverinfo: [{ virtualserverName: 'E2E 测试服务器' }],
-      channellist: [{ cid: '1', pid: '0', channelName: '欢迎大厅' }],
+      serverinfo: [{
+        virtualserverName: 'E2E 测试服务器',
+        virtualserverDefaultServerGroup: '8'
+      }],
+      servergrouplist: [
+        { sgid: '8', name: 'Guest', type: 1 },
+        { sgid: '9', name: 'Admin', type: 1 },
+        { sgid: '10', name: 'Query template', type: 2 }
+      ],
+      channelgrouplist: [
+        { cgid: '5', name: 'Channel Admin', type: 1 },
+        { cgid: '6', name: 'Channel Guest', type: 1 }
+      ],
+      channellist: [
+        { cid: '1', pid: '0', channelName: '欢迎大厅' },
+        { cid: '2', pid: '0', channelName: '测试频道' }
+      ],
       clientlist: [
         {
           clid: '7',
@@ -91,6 +119,14 @@ io.on('connection', (socket) => {
           clientDatabaseId: '1'
         }
       ],
+      clientinfo: [{
+        clientDatabaseId: '1',
+        clientNickname: 'serveradmin',
+        clientDescription: 'E2E administrator',
+        clientServergroups: [9]
+      }],
+      servergroupclientlist: [clientDatabaseRows[0]],
+      banlist: banRows,
       ftgetfilelist: [
         {
           cid: '1',
@@ -114,7 +150,11 @@ io.on('connection', (socket) => {
           tokenCreated: 1767225600
         }
       ],
+      tokenadd: [{ token: 'token-created-by-e2e' }],
       use: []
+    }
+    if (command === 'clientdblist') {
+      return ack && ack(Number(params.start || 0) === 0 ? clientDatabaseRows : [])
     }
     ack && ack(responses[command] || [])
   })

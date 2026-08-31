@@ -1,8 +1,8 @@
 <template>
   <v-container fluid class="console-page">
     <page-header title="投诉记录" description="查看并处理服务器用户投诉记录" :breadcrumbs="['控制台', '投诉记录']" />
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-card-title>
             <v-btn
@@ -10,7 +10,7 @@
               :disabled="!Boolean(selected.length)"
               @click="openDialog(selected)"
             >
-              <v-icon left>mdi-delete</v-icon>
+              <v-icon start>mdi-delete</v-icon>
               删除所选
             </v-btn>
           </v-card-title>
@@ -22,14 +22,14 @@
               :headers="headers"
               :items="complaints"
               v-model="selected"
-              item-key="timestamp"
-              :footer-props="{ 'items-per-page-options': rowsPerPage }"
+              item-value="timestamp"
+              :items-per-page-options="rowsPerPage"
               show-select
             >
               <template #item.actions="{ item }">
                 <v-menu>
-                  <template #activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
+                  <template #activator="{ props }">
+                    <v-btn icon v-bind="props">
                       <v-icon>mdi-dots-vertical</v-icon>
                     </v-btn>
                   </template>
@@ -56,7 +56,7 @@
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
           <v-card-title>删除投诉记录</v-card-title>
@@ -65,12 +65,12 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
-            <v-btn text color="error" @click="removeComplaints">删除</v-btn>
+            <v-btn variant="text" color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn variant="text" color="error" @click="removeComplaints">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
@@ -82,28 +82,33 @@ export default {
     return {
       headers: [
         {
-          text: "",
+          title: "",
           align: "start",
-          value: "actions",
+          key: "actions",
         },
         {
-          text: "被投诉用户",
-          value: "tname",
+          title: "被投诉用户",
+          key: "tname",
         },
         {
-          text: "投诉人",
-          value: "fname",
+          title: "投诉人",
+          key: "fname",
         },
         {
-          text: "投诉原因",
-          value: "message",
+          title: "投诉原因",
+          key: "message",
         },
       ],
       complaints: [],
       selected: [],
       dialog: false,
       selectedComplaints: [],
-      rowsPerPage: [25, 50, 75, -1],
+      rowsPerPage: [
+        { value: 25, title: "25" },
+        { value: 50, title: "50" },
+        { value: 75, title: "75" },
+        { value: -1, title: "All" },
+      ],
     };
   },
   methods: {

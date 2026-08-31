@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex xs12 sm6 offset-sm3>
+    <v-row>
+      <v-col cols="12" sm="6" offset-sm="3">
         <v-card>
           <v-card-title>编辑服务器组</v-card-title>
           <v-card-text>
@@ -23,15 +23,15 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-              text
+              variant="text"
               @click="save('close')"
               :disabled="$store.state.query.loading"
               color="primary"
               >保存</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
-              text
+              variant="text"
               @click="save('apply')"
               :disabled="$store.state.query.loading"
               color="primary"
@@ -40,18 +40,20 @@
           </v-card-actions>
         </v-card>
         <v-dialog v-model="swag"> </v-dialog>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import clientService from "@/services/clientService";
 import groupService from "@/services/groupService";
 export default {
   components: {
-    GroupClientList: () => import("@/components/GroupClientList"),
+    GroupClientList: defineAsyncComponent(() => import("@/components/GroupClientList")),
   },
   data() {
     return {

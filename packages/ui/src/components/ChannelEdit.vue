@@ -15,8 +15,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="saveAndLeave">继续</v-btn>
-          <v-btn text color="primary" @click="temporaryChannelWarning = false"
+          <v-btn variant="text" color="primary" @click="saveAndLeave">继续</v-btn>
+          <v-btn variant="text" color="primary" @click="temporaryChannelWarning = false"
             >取消</v-btn
           >
         </v-card-actions>
@@ -26,11 +26,13 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import channelService from "@/services/channelService";
 export default {
   components: {
-    ChannelForm: () => import("@/components/ChannelForm"),
+    ChannelForm: defineAsyncComponent(() => import("@/components/ChannelForm")),
   },
   data() {
     return {

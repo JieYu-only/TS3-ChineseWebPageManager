@@ -8,11 +8,13 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import channelService from "@/services/channelService";
 export default {
   components: {
-    ChannelForm: () => import("@/components/ChannelForm"),
+    ChannelForm: defineAsyncComponent(() => import("@/components/ChannelForm")),
   },
   data() {
     return {

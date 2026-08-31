@@ -2,11 +2,11 @@
   <v-container fluid class="console-page">
     <page-header title="密钥列表" description="创建和管理服务器组、频道组权限密钥" :breadcrumbs="['控制台', '密钥']">
       <template #actions>
-        <v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon left small>mdi-plus</v-icon>创建密钥</v-btn>
+        <v-btn color="primary" elevation="0" :to="{ name: 'token-add' }"><v-icon start size="small">mdi-plus</v-icon>创建密钥</v-btn>
       </template>
     </page-header>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-card-title>
             <v-btn
@@ -14,26 +14,26 @@
               :disabled="!Boolean(selectedTableItems.length)"
               @click="openDeleteDialog(selectedTableItems)"
             >
-              <v-icon left>mdi-delete</v-icon>
+              <v-icon start>mdi-delete</v-icon>
               删除所选
             </v-btn>
           </v-card-title>
           <v-card-text>
             <v-data-table
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '...loading' : '暂无数据'
               "
               :headers="headers"
               :items="tokens"
-              :footer-props="{ 'items-per-page-options': rowsPerPage }"
+              :items-per-page-options="rowsPerPage"
               show-select
               v-model="selectedTableItems"
-              item-key="token"
+              item-value="token"
             >
               <template #item.actions="{ item }">
                 <v-menu>
-                  <template #activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
+                  <template #activator="{ props }">
+                    <v-btn icon v-bind="props">
                       <v-icon>mdi-dots-vertical</v-icon>
                     </v-btn>
                   </template>
@@ -51,16 +51,16 @@
                 {{ new Date(item.tokenCreated * 1000).toLocaleString() }}
               </template>
               <template #item.tokenType="{ item }">
-                <v-chip x-small :color="item.tokenType === 0 ? 'primary' : 'secondary'" text-color="white">{{ item.tokenType === 0 ? '服务器组' : '频道组' }}</v-chip>
+                <v-chip size="x-small" :color="item.tokenType === 0 ? 'primary' : 'secondary'" text-color="white">{{ item.tokenType === 0 ? '服务器组' : '频道组' }}</v-chip>
               </template>
               <template #item.token="{ item }">
                 <code class="token-value">{{ item.token }}</code>
-                <v-btn icon x-small class="ml-1" @click="copyToClipboard(item.token)"><v-icon x-small>mdi-content-copy</v-icon></v-btn>
+                <v-btn icon size="x-small" class="ml-1" @click="copyToClipboard(item.token)"><v-icon size="x-small">mdi-content-copy</v-icon></v-btn>
               </template>
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
 
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
@@ -68,13 +68,13 @@
           <v-card-text>确定要删除所选密钥吗？此操作无法撤销。</v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
-            <v-btn text color="error" @click="deleteToken">删除</v-btn>
+            <v-btn variant="text" color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn variant="text" color="error" @click="deleteToken">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
 
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
@@ -89,15 +89,20 @@ export default {
       dialog: false,
       tokens: [],
       headers: [
-        { text: "", value: "actions", align: "start", sortable: false },
-        { text: "密钥", value: "token" },
-        { text: "类型", value: "tokenType" },
-        { text: "用户组", value: "tokenId1" },
-        { text: "频道", value: "tokenId2" },
-        { text: "创建时间", value: "tokenCreated" },
-        { text: "描述", value: "tokenDescription" },
+        { title: "", key: "actions", align: "start", sortable: false },
+        { title: "密钥", key: "token" },
+        { title: "类型", key: "tokenType" },
+        { title: "用户组", key: "tokenId1" },
+        { title: "频道", key: "tokenId2" },
+        { title: "创建时间", key: "tokenCreated" },
+        { title: "描述", key: "tokenDescription" },
       ],
-      rowsPerPage: [25, 50, 75, -1],
+      rowsPerPage: [
+        { value: 25, title: "25" },
+        { value: 50, title: "50" },
+        { value: 75, title: "75" },
+        { value: -1, title: "All" },
+      ],
       selectedTableItems: [],
       tokenRemoveList: [],
     };

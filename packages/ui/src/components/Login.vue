@@ -1,7 +1,7 @@
 <template>
   <div
     class="login-page"
-    :class="{ 'login-page--dark': $vuetify.theme.dark }"
+    :class="{ 'login-page--dark': $store.state.settings.darkMode }"
   >
     <div class="login-brand">
       <img :src="logo" alt="TS3 Manager" />
@@ -15,23 +15,23 @@
       </div>
       <v-form v-model="valid" @submit.prevent="connect">
         <div class="field-row">
-          <div class="field-grow"><label>服务器地址</label><v-text-field v-model="form.host" placeholder="IP 地址或域名" :rules="[rules.required]" outlined dense hide-details="auto" /></div>
-          <div class="port-field"><label>端口</label><v-text-field v-model="form.queryport" type="number" :rules="[rules.required]" outlined dense hide-details="auto" /></div>
+          <div class="field-grow"><label>服务器地址</label><v-text-field v-model="form.host" placeholder="IP 地址或域名" :rules="[rules.required]" variant="outlined" density="compact" hide-details /></div>
+          <div class="port-field"><label>端口</label><v-text-field v-model="form.queryport" type="number" :rules="[rules.required]" variant="outlined" density="compact" hide-details /></div>
         </div>
         <label>ServerQuery 用户名</label>
-        <v-text-field v-model="form.username" placeholder="例如 serveradmin" name="username" autocomplete="username" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-account-outline" />
+        <v-text-field v-model="form.username" placeholder="例如 serveradmin" name="username" autocomplete="username" :rules="[rules.required]" variant="outlined" density="compact" hide-details prepend-inner-icon="mdi-account-outline" />
         <label>密码</label>
-        <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" name="password" aria-label="密码" autocomplete="current-password" :rules="[rules.required]" outlined dense hide-details="auto" prepend-inner-icon="mdi-lock-outline" :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" @click:append="showPassword = !showPassword" />
+        <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" name="password" aria-label="密码" autocomplete="current-password" :rules="[rules.required]" variant="outlined" density="compact" hide-details prepend-inner-icon="mdi-lock-outline" :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" @click:append="showPassword = !showPassword" />
         <div class="login-options">
           <div class="login-remember">
-            <v-checkbox v-model="rememberLogin" label="在此设备保持登录 30 天" dense hide-details />
+            <v-checkbox v-model="rememberLogin" label="在此设备保持登录 30 天" density="compact" hide-details />
             <p class="login-hint">凭据将加密保存在管理服务所在设备中，请勿在公共管理服务上启用。</p>
           </div>
-          <v-switch v-model="form.ssh" label="SSH 加密" dense hide-details inset />
+          <v-switch v-model="form.ssh" label="SSH 加密" density="compact" hide-details inset />
         </div>
-        <v-btn class="connect-btn" type="submit" :disabled="!valid" :loading="loading" block elevation="0">连接控制台<v-icon right small>mdi-arrow-right</v-icon><template #loader><span>正在连接...</span></template></v-btn>
+        <v-btn class="connect-btn" type="submit" :disabled="!valid" :loading="loading" block elevation="0">连接控制台<v-icon end size="small">mdi-arrow-right</v-icon><template #loader><span>正在连接...</span></template></v-btn>
       </v-form>
-      <div class="login-footer"><v-icon size="15">mdi-shield-check-outline</v-icon>登录凭据仅保存在管理服务端 · v{{ appVersion }}</div>
+      <div class="login-footer"><v-icon size="15">mdi-shield-check-outline</v-icon>登录凭据仅保存在管理服务端 · {{ appVersion }}</div>
     </v-card>
     <p class="page-footer">TS3 Manager · TeamSpeak 服务器管理控制台</p>
   </div>

@@ -1,8 +1,8 @@
 <template>
   <v-container fluid class="console-page">
     <page-header title="服务器组权限" description="查看和配置服务器组的跨频道权限" :breadcrumbs="['控制台', '权限管理', '服务器组权限']" />
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <permission-table
           :grantedPermissions="serverGroupPermissions"
           type="Server Groups"
@@ -12,40 +12,41 @@
           @loaded="init"
         >
           <template #selectMenu>
-            <v-flex sm3 xs12>
+            <v-col sm="3" cols="12">
               <v-select
                 :items="allGroups"
                 v-model="selectedGroupId"
                 @change="changeGroup"
                 label="服务器组"
                 :disabled="$store.state.query.loading"
-                item-text="name"
+                item-title="name"
                 item-value="sgid"
               >
-                <template #item="{ item }">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item.name }}</v-list-item-title>
-                    <v-list-item-subtitle
-                      >({{ item.sgid }})</v-list-item-subtitle
-                    >
-                  </v-list-item-content>
+                <template #item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="item.raw.name"
+                    :subtitle="`(${item.raw.sgid})`"
+                  ></v-list-item>
                 </template>
               </v-select>
-            </v-flex>
+            </v-col>
           </template>
         </permission-table>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import groupService from "@/services/groupService";
 import permissionService from "@/services/permissionService";
 export default {
   components: {
-    PermissionTable: () => import("@/components/PermissionTable.vue"),
+    PermissionTable: defineAsyncComponent(() => import("@/components/PermissionTable.vue")),
   },
   data() {
     return {
@@ -57,13 +58,13 @@ export default {
   computed: {
     allGroups() {
       return [
-        { header: "常规服务器组" },
+        { type: "subheader", title: "常规服务器组" },
         ...this.regularGroups,
-        { divider: true },
-        { header: "模板组" },
+        { type: "divider" },
+        { type: "subheader", title: "模板组" },
         ...this.templateGroups,
-        { divider: true },
-        { header: "ServerQuery 管理组" },
+        { type: "divider" },
+        { type: "subheader", title: "ServerQuery 管理组" },
         ...this.serverQueryGroups,
       ];
     },

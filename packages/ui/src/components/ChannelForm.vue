@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex lg6 md8 sm10 xs12 offset-lg3 offset-md2 offset-sm1>
+    <v-row>
+      <v-col lg="6" md="8" sm="10" cols="12" offset-lg="3" offset-md="2" offset-sm="1">
         <v-card>
           <v-card-title>
             {{ title }}
@@ -14,8 +14,10 @@
                 v-model="specialSpacer"
                 :disabled="!!spacerAlignment || !!spacerText"
               >
-                <template #item="{ item }">
-                  <spacer-special :characterBlock="item"></spacer-special>
+                <template #item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <spacer-special :characterBlock="item.raw"></spacer-special>
+                  </v-list-item>
                 </template>
               </v-select>
 
@@ -24,6 +26,8 @@
                   <v-select
                     label="对齐方式"
                     :items="spacerAlignmentList"
+                    item-title="text"
+                    item-value="value"
                     v-model="spacerAlignment"
                     :disabled="!!specialSpacer"
                   >
@@ -66,22 +70,24 @@
             ></v-textarea>
             <v-expansion-panels accordion flat>
               <v-expansion-panel>
-                <v-expansion-panel-header>
+                <v-expansion-panel-title>
                   More Options
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card outlined>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card variant="outlined">
                     <v-card-text>
-                      <v-layout wrap>
-                        <v-flex xs12>
+                      <v-row>
+                        <v-col cols="12">
                           <v-autocomplete
                             :items="channelOrderSelection"
+                            item-title="text"
+                            item-value="value"
                             label="排序到此频道之后"
                             v-model="selectedChannelOrder"
                             :disabled="$store.state.query.loading"
                           ></v-autocomplete>
-                        </v-flex>
-                        <v-flex md4>
+                        </v-col>
+                        <v-col cols="12" md="4">
                           <v-radio-group
                             label="最大用户数"
                             v-model="channelUnlimitedClients"
@@ -94,8 +100,8 @@
                             v-model="channelMaxClients"
                             :disabled="!!channelUnlimitedClients"
                           ></v-text-field>
-                        </v-flex>
-                        <v-flex md4>
+                        </v-col>
+                        <v-col cols="12" md="4">
                           <v-radio-group
                             label="频道类型"
                             v-model="channelType"
@@ -113,24 +119,24 @@
                               value="semi-permanent"
                             ></v-radio>
                           </v-radio-group>
-                        </v-flex>
-                        <v-flex md4>
+                        </v-col>
+                        <v-col cols="12" md="4">
                           <v-checkbox
                             label="默认频道"
                             v-model="channelIsDefault"
                             :disabled="!!initChannelData.channelFlagDefault"
                           ></v-checkbox>
-                        </v-flex>
-                        <v-flex md4>
+                        </v-col>
+                        <v-col cols="12" md="4">
                           <v-checkbox
                             label="语音数据加密"
                             v-model="channelIsUnencrypted"
                           ></v-checkbox>
-                        </v-flex>
-                      </v-layout>
+                        </v-col>
+                      </v-row>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card-text>
@@ -138,15 +144,15 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-              text
+              variant="text"
               @click="save"
               :disabled="this.$store.state.query.loading"
               color="primary"
               >确定</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
-              text
+              variant="text"
               @click="save"
               :disabled="this.$store.state.query.loading"
               color="primary"
@@ -155,8 +161,8 @@
             >
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

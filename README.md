@@ -8,26 +8,26 @@ TS3 Manager 是一个基于浏览器的 TeamSpeak 3 ServerQuery 管理面板。�
 
 - 完成前端业务通信层解耦：Vue 组件与 Vuex 模块统一通过领域服务访问 TeamSpeak，移除 `$TeamSpeak`/`$socket` 全局注入和组件内原始命令调用
 - 建立统一的通信错误模型、Socket 请求超时/取消/断线处理及幂等实时事件订阅，并加入通信边界静态检查
-- 通信层 UI 单元测试基线达到 177 项，服务端测试 87 项，Playwright 核心回归 18 项
-- 已创建 `codex/vue3-migration` 独立迁移分支并完成 Vue 3、Vite、Vuetify 3、vue-router 4、Pinia 和新 PWA 方案设计；实际框架迁移仍在进行中
-- 升级到 Vue CLI 5 与 Webpack 5，并统一使用 Node.js 22、npm workspace 锁文件和可复现构建流程
+- 当前验证基线：UI 单元测试 181 项、服务端测试 88 项、持久化测试 4 项、Playwright 核心回归 30 项
+- 已创建 `codex/vue3-migration` 独立迁移分支，并按阶段完成 Vue 3、Vite、Vuetify 3、vue-router 4、Pinia 与新 PWA 的实际迁移（工具链、入口、路由、状态管理与最小可运行纵切面均已落地并验证）；该分支尚未合并回 `master`，当前生产基线仍为 Vue 2 版本
+- 前端构建工具链在迁移分支已切换为 Vite（`@vitejs/plugin-vue` + `vite-plugin-pwa`，替代 Vue CLI/Webpack），并统一使用 Node.js 22、npm workspace 锁文件和可复现构建流程
 - 同步 Docker 构建/运行环境、Windows x64 可执行文件及 GitHub Release 跨平台构建配置
 - 完善浅色/深色主题手动切换、系统主题初始化和本地偏好保存，修复深色主题文字对比度问题
-- 迁移 PWA Service Worker：版本化静态缓存，自动接管新版本，清理旧缓存，并确保 API 与 Socket.IO 始终走网络
-- 完成兼容范围内的依赖安全治理，审计告警由 57 项降至 24 项，严重级别告警由 4 项降至 0 项
+- 迁移 PWA Service Worker：版本化静态缓存，自动接管新版本，一次性清理 Vue CLI 旧缓存，并确保 API 与 Socket.IO 始终走网络；已在 Chrome localhost 环境通过离线冷启动、SPA fallback 和双版本更新验收
+- 完成依赖安全治理，迁移候选的 `npm audit --omit=dev` 为 0 vulnerabilities，生产依赖树已无 Vue 2 与 Vuetify 2
 - 完成服务端会话、Origin/CSRF、Socket.IO 鉴权与限流、文件传输一次性票据及传输资源上限加固
 - 统一 HTTP 与 Socket.IO 对 `TRUST_PROXY` 的解释，并支持按真实代理层数解析客户端 IP
 - 清理生产构建警告，关闭生产 source map，并将 MDI 图标字体收敛为单一 WOFF2 资源
-- 生产构建目录由 26.3 MB 降至 7.72 MB，体积减少约 70.6%，同时加入独立 Webpack runtime 分块
+- 生产构建目录由 26.3 MB 降至 7.72 MB，体积减少约 70.6%；迁移分支改用 Vite 按需分包与长期缓存友好的构建输出
 - 补齐 API 密钥、权限密钥、频道、服务器、通知、仪表盘及各类操作弹窗的简体中文翻译
 - 统一汉化按钮、表单字段、筛选条件、空数据、分页、确认操作和常见服务器错误提示
 - 优化未知英文异常的展示方式，避免直接向普通用户显示难以理解的原始报错
 - 保留 TeamSpeak、ServerQuery、UID、IP、权限标识符及服务器自定义名称等必要技术内容
 - 修正文件上传图标兼容性，并加强通知标题的安全渲染
 - 已通过前端代码检查和生产环境构建验证
-- 已在 Node.js 22.23.0 干净环境通过 `npm ci`、87 项服务端测试、前端 lint、UI/服务端构建及 Windows EXE 健康检查
+- 已在 Node.js 22.23.2 干净环境通过 `npm ci` 和全量门禁，并在本机隔离环境完成真实 TeamSpeak Raw/SSH Query、认证 Socket.IO、文件传输、会话恢复及 HTTPS/WSS 验收
 
-完整的发布验收结果及尚待真实基础设施执行的项目见 [发布验收记录](docs/release-readiness.md)。
+第四阶段必要执行门禁已闭环，当前状态为 **RELEASE READY（待独立评审）**；尚未合并、创建 Release 或部署生产环境。完整证据见 [发布验收记录](docs/release-readiness.md)。
 
 ## 项目特色
 
@@ -149,7 +149,7 @@ WHITELIST=ts3.example.com,192.0.2.10
 ### 1. 构建本项目镜像
 
 ```powershell
-cd "C:\Users\cjy19\Desktop\work\TS3-ChineseWebPageManager"
+cd "D:\path\to\TS3-ChineseWebPageManager"
 docker build -t ts3-manager-custom .
 ```
 
@@ -222,6 +222,7 @@ docker compose logs -f ts3-manager
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
 | `PORT` | Web 服务监听端口 | Docker 中为 `8080` |
+| `BIND_HOST` | Web 服务监听地址；位于反向代理后时建议设为 `127.0.0.1` | `0.0.0.0` |
 | `JWT_SECRET` | 兼容用旧密钥（新登录改用服务端会话） | 每次启动随机生成 |
 | `SESSION_ENCRYPTION_KEY` | 加密“记住登录”长会话凭据的 32 字节 Base64 密钥 | 首次启动自动生成并保存到 `data/session.key` |
 | `SESSION_COOKIE_SECURE` | 是否仅通过 HTTPS 发送会话 Cookie；公网必须为 `true` | `true` |
@@ -272,15 +273,15 @@ docker compose logs -f ts3-manager
 
 ## 本地开发
 
-项目为 npm workspace，前端使用 Vue 2 与 Vuetify 2，后端使用 Node.js、Express 和 Socket.IO。
+项目为 npm workspace。`master` 生产基线仍为 Vue 2 与 Vuetify 2；`codex/vue3-migration` 迁移分支已切换为 Vue 3、Vuetify 3，前端构建工具链为 Vite（`@vitejs/plugin-vue` + `vite-plugin-pwa`），路由为 vue-router 4，状态管理为 Pinia。后端使用 Node.js、Express 和 Socket.IO。
 
-项目仍采用 Vue 2 与 Vuetify 2 技术栈，开发、Docker 构建/运行和 Windows 可执行文件统一使用 Node.js 22。项目已升级到 Vue CLI 5 与 Webpack 5，不再需要 `NODE_OPTIONS=--openssl-legacy-provider`。
+开发、Docker 构建/运行和 Windows 可执行文件统一使用 Node.js 22。
 
-Vue 3/Vite 正式升级在独立的 `codex/vue3-migration` 分支推进，当前生产基线尚未切换到新框架。迁移计划见 [Vue 3 / Vite 迁移方案](docs/vue3-migration.md)。
+Vue 3/Vite 正式升级在独立的 `codex/vue3-migration` 分支推进，`master` 尚未切换到新框架。迁移决策与进度见 [Vue 3 / Vite 迁移方案](docs/vue3-migration.md)。
 
 PWA 使用自定义 Workbox Service Worker：静态构建资源支持离线访问，API 与 Socket.IO 始终走网络。新版本安装完成后会自动接管并刷新一次，同时清理旧版 Workbox 预缓存。
 
-生产构建默认关闭 source map，并复用单一 WOFF2 图标字体；Webpack 运行时代码独立分块，以减少发布体积并提高长期缓存命中率。
+生产构建默认关闭 source map，并复用单一 WOFF2 图标字体；迁移分支的 Vite 构建采用按需分包与长期缓存友好的输出命名。
 
 ### 安装依赖
 
@@ -340,7 +341,7 @@ npm run test:ui:e2e
 ```text
 packages/
 ├── server/    Node.js 后端与 ServerQuery/WebSocket 通信
-└── ui/        Vue 2 + Vuetify 管理控制台
+└── ui/        管理控制台（迁移分支为 Vue 3 + Vuetify 3 + Vite；`master` 基线仍为 Vue 2）
 ```
 
 前端业务通信采用分层结构：

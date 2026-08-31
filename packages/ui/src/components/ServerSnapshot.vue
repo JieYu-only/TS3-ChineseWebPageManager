@@ -1,12 +1,12 @@
 <template>
   <v-container fluid class="console-page">
-    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>快照</strong></div>
+    <div class="page-breadcrumb"><v-icon size="small">mdi-home</v-icon><span>控制台</span><v-icon size="x-small">mdi-chevron-right</v-icon><strong>快照</strong></div>
     <div class="page-title-row"><h1>服务器快照</h1><p>下载完整配置备份，或从本地快照恢复服务器</p></div>
     <v-row>
       <v-col cols="12" md="6">
         <v-card class="snapshot-card" elevation="0">
           <div class="card-icon download"><v-icon>mdi-cloud-download-outline</v-icon></div>
-          <div class="card-content"><h2>创建快照</h2><p>导出当前虚拟服务器的频道、权限和配置，生成可下载的 <code>.backup</code> 文件。</p><v-btn color="primary" elevation="0" :loading="creating" @click="createSnapshot"><v-icon left small>mdi-download</v-icon>创建并下载</v-btn></div>
+          <div class="card-content"><h2>创建快照</h2><p>导出当前虚拟服务器的频道、权限和配置，生成可下载的 <code>.backup</code> 文件。</p><v-btn color="primary" elevation="0" :loading="creating" @click="createSnapshot"><v-icon start size="small">mdi-download</v-icon>创建并下载</v-btn></div>
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
@@ -14,15 +14,15 @@
           <div class="card-icon restore"><v-icon>mdi-backup-restore</v-icon></div>
           <div class="card-content"><h2>恢复快照</h2><p>恢复会覆盖当前服务器配置。请确认文件来自可信来源，并建议先下载当前快照。</p>
             <input ref="hiddenFileSelector" type="file" class="hidden-input" accept=".backup" @change="readFile" />
-            <div class="file-picker" @click="selectFile"><v-icon small>mdi-paperclip</v-icon><span>{{ fileName || '选择 .backup 快照文件' }}</span><v-btn text small color="primary">浏览</v-btn></div>
-            <v-btn color="error" elevation="0" :disabled="!fileName" :loading="restoring" @click="restoreDialog = true"><v-icon left small>mdi-upload</v-icon>恢复服务器</v-btn>
+            <div class="file-picker" @click="selectFile"><v-icon size="small">mdi-paperclip</v-icon><span>{{ fileName || '选择 .backup 快照文件' }}</span><v-btn variant="text" size="small" color="primary">浏览</v-btn></div>
+            <v-btn color="error" elevation="0" :disabled="!fileName" :loading="restoring" @click="restoreDialog = true"><v-icon start size="small">mdi-upload</v-icon>恢复服务器</v-btn>
           </div>
         </v-card>
       </v-col>
     </v-row>
-    <v-alert text dense type="info" class="mt-4">快照包含服务器配置数据，但不包含 TeamSpeak 服务端程序和外部文件。</v-alert>
+    <v-alert variant="text" density="compact" type="info" class="mt-4">快照包含服务器配置数据，但不包含 TeamSpeak 服务端程序和外部元素。</v-alert>
     <v-dialog v-model="restoreDialog" max-width="480">
-      <v-card><v-card-title>确认恢复快照</v-card-title><v-card-text>该操作会覆盖当前服务器的频道和权限配置。确定使用“{{ fileName }}”继续吗？</v-card-text><v-card-actions><v-spacer /><v-btn text @click="restoreDialog=false">取消</v-btn><v-btn color="error" elevation="0" @click="deploySnapshot">确认恢复</v-btn></v-card-actions></v-card>
+      <v-card><v-card-title>确认恢复快照</v-card-title><v-card-text>该操作会覆盖当前服务器的频道和权限配置。确定使用“{{ fileName }}”继续吗？</v-card-text><v-card-actions><v-spacer /><v-btn variant="text" @click="restoreDialog=false">取消</v-btn><v-btn color="error" elevation="0" @click="deploySnapshot">确认恢复</v-btn></v-card-actions></v-card>
     </v-dialog>
   </v-container>
 </template>

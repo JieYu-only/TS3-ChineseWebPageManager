@@ -1,7 +1,7 @@
 <template lang="html">
   <v-container>
-    <v-layout justify-center>
-      <v-flex lg6 md8 sm8 xs12>
+    <v-row justify="center">
+      <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
           <v-card-title>管理虚拟服务器</v-card-title>
           <v-card-text>
@@ -16,24 +16,24 @@
               :disabled="$store.state.query.loading"
               type="password"
             ></v-text-field>
-            <v-layout justify-space-between>
-              <v-flex xs5>
+            <v-row justify="space-between">
+              <v-col cols="5">
                 <v-text-field
                   label="最大用户数"
                   v-model="serverInfo.virtualserverMaxclients"
                   :disabled="$store.state.query.loading"
                   type="number"
                 ></v-text-field>
-              </v-flex>
-              <v-flex xs5>
+              </v-col>
+              <v-col cols="5">
                 <v-text-field
                   label="预留席位数"
                   v-model="serverInfo.virtualserverReservedSlots"
                   :disabled="$store.state.query.loading"
                   type="number"
                 ></v-text-field>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
             <v-textarea
               label="欢迎消息"
               v-model="serverInfo.virtualserverWelcomemessage"
@@ -42,9 +42,9 @@
 
             <v-expansion-panels accordion flat>
               <v-expansion-panel>
-                <v-expansion-panel-header>主机信息</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card outlined>
+                <v-expansion-panel-title>主机信息</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card variant="outlined">
                     <v-card-subtitle>主机消息</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
@@ -56,10 +56,12 @@
                         label="消息显示方式"
                         v-model="serverInfo.virtualserverHostmessageMode"
                         :items="messageModes"
+                        item-title="text"
+                        item-value="value"
                       ></v-select>
                     </v-card-text>
                   </v-card>
-                  <v-card class="mt-2" outlined>
+                  <v-card class="mt-2" variant="outlined">
                     <v-card-subtitle>主机横幅</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
@@ -72,8 +74,8 @@
                         v-model="serverInfo.virtualserverHostbannerUrl"
                         :disabled="$store.state.query.loading"
                       ></v-text-field>
-                      <v-layout justify-space-between>
-                        <v-flex xs4>
+                      <v-row justify="space-between">
+                        <v-col cols="4">
                           <v-text-field
                             label="图片切换间隔"
                             v-model="
@@ -82,18 +84,20 @@
                             type="number"
                             :disabled="$store.state.query.loading"
                           ></v-text-field>
-                        </v-flex>
-                        <v-flex xs6>
+                        </v-col>
+                        <v-col cols="6">
                           <v-select
                             label="缩放方式"
                             :items="bannerModes"
+                            item-title="text"
+                            item-value="value"
                             v-model="serverInfo.virtualserverHostbannerMode"
                           ></v-select>
-                        </v-flex>
-                      </v-layout>
+                        </v-col>
+                      </v-row>
                     </v-card-text>
                   </v-card>
-                  <v-card class="my-2" outlined>
+                  <v-card class="my-2" variant="outlined">
                     <v-card-subtitle>主机按钮</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
@@ -113,12 +117,12 @@
                       ></v-text-field>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header>文件传输</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card outlined>
+                <v-expansion-panel-title>文件传输</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card variant="outlined">
                     <v-card-subtitle>上传</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
@@ -145,7 +149,7 @@
                       </v-text-field>
                     </v-card-text>
                   </v-card>
-                  <v-card class="my-2" outlined>
+                  <v-card class="my-2" variant="outlined">
                     <v-card-subtitle>下载</v-card-subtitle>
                     <v-card-text>
                       <v-text-field
@@ -172,14 +176,14 @@
                       </v-text-field>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header>
+                <v-expansion-panel-title>
                   Anti-Flood
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card class="mb-2" outlined>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card class="mb-2" variant="outlined">
                     <v-card-text>
                       <v-text-field
                         label="每周期减少的防洪积分"
@@ -207,12 +211,12 @@
                       ></v-text-field>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header>安全设置</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card class="mb-2" outlined>
+                <v-expansion-panel-title>安全设置</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card class="mb-2" variant="outlined">
                     <v-card-text>
                       <v-text-field
                         label="所需安全等级"
@@ -226,50 +230,60 @@
                         label="频道语音数据加密"
                         v-model="serverInfo.virtualserverCodecEncryptionMode"
                         :items="encryptionModes"
+                        item-title="text"
+                        item-value="value"
                       ></v-select>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header>其他设置</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card outlined>
+                <v-expansion-panel-title>其他设置</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card variant="outlined">
                     <v-card-subtitle>默认用户组</v-card-subtitle>
                     <v-card-text>
                       <v-autocomplete
                         :items="serverGroups"
-                        item-text="name"
+                        item-title="name"
                         item-value="sgid"
                         v-model="serverInfo.virtualserverDefaultServerGroup"
                         label="服务器组"
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
-                          <div>{{ item.name }} ({{ item.sgid }})</div>
+                          <div>{{ item.raw.name }} ({{ item.raw.sgid }})</div>
                         </template>
-                        <template #item="{ item }">
-                          <div>{{ item.name }} ({{ item.sgid }})</div>
+                        <template #item="{ item, props }">
+                          <v-list-item
+                            v-bind="props"
+                            :title="item.raw.name"
+                            :subtitle="`(${item.raw.sgid})`"
+                          ></v-list-item>
                         </template>
                       </v-autocomplete>
                       <v-autocomplete
                         :items="channelGroups"
-                        item-text="name"
+                        item-title="name"
                         item-value="cgid"
                         v-model="serverInfo.virtualserverDefaultChannelGroup"
                         label="频道组"
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
-                          <div>{{ item.name }} ({{ item.cgid }})</div>
+                          <div>{{ item.raw.name }} ({{ item.raw.cgid }})</div>
                         </template>
-                        <template #item="{ item }">
-                          <div>{{ item.name }} ({{ item.cgid }})</div>
+                        <template #item="{ item, props }">
+                          <v-list-item
+                            v-bind="props"
+                            :title="item.raw.name"
+                            :subtitle="`(${item.raw.cgid})`"
+                          ></v-list-item>
                         </template>
                       </v-autocomplete>
                       <v-autocomplete
                         :items="channelGroups"
-                        item-text="name"
+                        item-title="name"
                         item-value="cgid"
                         v-model="
                           serverInfo.virtualserverDefaultChannelAdminGroup
@@ -278,19 +292,23 @@
                         :disabled="$store.state.query.loading"
                       >
                         <template #selection="{ item }">
-                          <div>{{ item.name }} ({{ item.cgid }})</div>
+                          <div>{{ item.raw.name }} ({{ item.raw.cgid }})</div>
                         </template>
-                        <template #item="{ item }">
-                          <div>{{ item.name }} ({{ item.cgid }})</div>
+                        <template #item="{ item, props }">
+                          <v-list-item
+                            v-bind="props"
+                            :title="item.raw.name"
+                            :subtitle="`(${item.raw.cgid})`"
+                          ></v-list-item>
                         </template>
                       </v-autocomplete>
                     </v-card-text>
                   </v-card>
-                  <v-card class="mt-2" outlined>
+                  <v-card class="mt-2" variant="outlined">
                     <v-card-subtitle>投诉与自动封禁</v-card-subtitle>
                     <v-card-text>
-                      <v-layout justify-space-between wrap>
-                        <v-flex xs5 md3>
+                      <v-row justify="space-between">
+                        <v-col cols="5" md="3">
                           <v-text-field
                             label="触发自动封禁的投诉次数"
                             :disabled="$store.state.query.loading"
@@ -299,8 +317,8 @@
                             "
                             type="number"
                           ></v-text-field>
-                        </v-flex>
-                        <v-flex xs5 md3>
+                        </v-col>
+                        <v-col cols="5" md="3">
                           <v-text-field
                             label="自动封禁时长"
                             :disabled="$store.state.query.loading"
@@ -313,8 +331,8 @@
                               <div>秒</div>
                             </template>
                           </v-text-field>
-                        </v-flex>
-                        <v-flex xs5 md3>
+                        </v-col>
+                        <v-col cols="5" md="3">
                           <v-text-field
                             label="投诉记录移除时间"
                             :disabled="$store.state.query.loading"
@@ -327,11 +345,11 @@
                               <div>秒</div>
                             </template>
                           </v-text-field>
-                        </v-flex>
-                      </v-layout>
+                        </v-col>
+                      </v-row>
                     </v-card-text>
                   </v-card>
-                  <v-card class="my-2" outlined>
+                  <v-card class="my-2" variant="outlined">
                     <v-card-text>
                       <v-text-field
                         label="启用静音前频道最少用户数"
@@ -368,12 +386,12 @@
                       ></v-checkbox>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
               <v-expansion-panel>
-                <v-expansion-panel-header>日志设置</v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-card class="mb-2" outlined>
+                <v-expansion-panel-title>日志设置</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-card class="mb-2" variant="outlined">
                     <v-card-subtitle>启用以下日志</v-card-subtitle>
                     <v-card-text>
                       <v-checkbox
@@ -402,22 +420,22 @@
                       ></v-checkbox>
                     </v-card-text>
                   </v-card>
-                </v-expansion-panel-content>
+                </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-              text
+              variant="text"
               :disabled="this.$store.state.query.loading"
               color="primary"
               @click="saveChanges"
               >OK
             </v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
             <v-btn
-              text
+              variant="text"
               :disabled="this.$store.state.query.loading"
               color="primary"
               @click="applyChanges"
@@ -425,8 +443,8 @@
             </v-btn>
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

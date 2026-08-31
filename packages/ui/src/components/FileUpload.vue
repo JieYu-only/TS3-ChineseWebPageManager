@@ -13,10 +13,10 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="addFilesToUploadQueue" :disabled="!files.length"
+            <v-btn variant="text" @click="addFilesToUploadQueue" :disabled="!files.length"
               >加入上传队列</v-btn
             >
-            <v-btn text @click="close">取消</v-btn>
+            <v-btn variant="text" @click="close">取消</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>

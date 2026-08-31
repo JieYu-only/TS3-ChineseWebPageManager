@@ -1,55 +1,17 @@
-<template lang="html">
+<template>
   <div>
-    <v-menu offset-y max-width="300px">
-      <template #activator="{ on, attrs }">
-        <v-list-item v-bind="attrs" v-on="on">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+    <v-menu :offset="true" max-width="300px">
+      <template #activator="{ props }">
+        <span v-bind="props" class="tree-node-label">
+          {{ item.name }}
+        </span>
       </template>
 
       <v-list>
-        <v-list-item @click="goToUploadRoute">
-          <v-list-item-action>
-            <v-icon>mdi-upload</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>上传文件</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item @click="openSubfolderDialog">
-          <v-list-item-action>
-            <v-icon>mdi-plus</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>创建子文件夹</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <!-- Disable option if it is a channel  -->
-        <v-list-item
-          @click="renameDialog = true"
-          :disabled="item.type === undefined"
-        >
-          <v-list-item-action>
-            <v-icon>mdi-pencil</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>重命名文件夹</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <!-- Disable option if it is a channel  -->
-        <v-list-item
-          @click="deleteDialog = true"
-          :disabled="item.type === undefined"
-        >
-          <v-list-item-action>
-            <v-icon>mdi-delete</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>删除文件夹</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <v-list-item title="上传文件" append-icon="mdi-upload" @click="goToUploadRoute"></v-list-item>
+        <v-list-item title="创建子文件夹" append-icon="mdi-plus" @click="openSubfolderDialog"></v-list-item>
+        <v-list-item title="重命名文件夹" append-icon="mdi-pencil" :disabled="item.type === undefined" @click="renameDialog = true"></v-list-item>
+        <v-list-item title="删除文件夹" append-icon="mdi-delete" :disabled="item.type === undefined" @click="deleteDialog = true"></v-list-item>
       </v-list>
     </v-menu>
 
@@ -64,8 +26,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="createSubfolder" color="primary">确定</v-btn>
-          <v-btn text @click="subfolderDialog = false" color="primary"
+          <v-btn variant="text" @click="createSubfolder" color="primary">确定</v-btn>
+          <v-btn variant="text" @click="subfolderDialog = false" color="primary"
             >取消</v-btn
           >
         </v-card-actions>
@@ -86,14 +48,16 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import Path from "path-browserify";
 import fileService from "@/services/fileService";
 
 export default {
   components: {
-    FileRenameDialog: () => import("@/components/FileRenameDialog"),
-    FileDeleteDialog: () => import("@/components/FileDeleteDialog"),
+    FileRenameDialog: defineAsyncComponent(() => import("@/components/FileRenameDialog")),
+    FileDeleteDialog: defineAsyncComponent(() => import("@/components/FileDeleteDialog")),
   },
   props: {
     /**
@@ -152,3 +116,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.tree-node-label {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  line-height: 1.4;
+}
+</style>

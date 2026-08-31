@@ -8,6 +8,8 @@
             <v-select
               label="权限范围"
               :items="scopes"
+              item-title="text"
+              item-value="value"
               v-model="selectedScope"
             ></v-select>
             <v-text-field
@@ -20,20 +22,17 @@
               label="用户"
               chips
               :items="dbClients"
-              item-text="clientNickname"
+              item-title="clientNickname"
               item-value="cldbid"
               v-model="selectedClient"
               deletable-chips
             >
-              <template #item="{ item }">
-                <v-list-item-content>
-                  <v-list-item-title>
-                    {{ item.clientNickname }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ item.cldbid }}
-                  </v-list-item-subtitle>
-                </v-list-item-content>
+              <template #item="{ item, props }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.raw.clientNickname"
+                  :subtitle="item.raw.cldbid"
+                ></v-list-item>
               </template>
             </v-autocomplete>
             <key-text-field
@@ -44,14 +43,14 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-              text
+              variant="text"
               color="primary"
               :disabled="selectedScope === undefined"
               @click="addApiKey"
             >
               创建
             </v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -60,12 +59,14 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import apikeyService from "@/services/apikeyService";
 import clientService from "@/services/clientService";
 export default {
   components: {
-    KeyTextField: () => import("@/components/KeyTextField"),
+    KeyTextField: defineAsyncComponent(() => import("@/components/KeyTextField")),
   },
   data() {
     return {

@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-layout justify-center>
-      <v-flex lg6 md8 sm8 xs12>
+    <v-row justify="center">
+      <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
           <v-card-title>编辑用户</v-card-title>
           <v-card-text>
@@ -13,35 +13,35 @@
             <v-textarea label="描述" v-model="description"></v-textarea>
             <v-autocomplete
               :items="availableServerGroups"
-              item-text="name"
+              item-title="name"
               item-value="sgid"
-              :item-disabled="notSelectableGroup"
+              :item-props="(i) => ({ disabled: notSelectableGroup(i) })"
               chips
               label="服务器组"
               multiple
               v-model="selectedGroups"
             >
-              <template #item="{ item, attrs }">
-                <v-list-item-action>
-                  <v-checkbox v-model="attrs.inputValue"></v-checkbox>
-                </v-list-item-action>
-                <v-list-item-content>
-                  <v-list-item-title>{{ item.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                    getServerGroupTypeName(item.type)
-                  }}</v-list-item-subtitle>
-                </v-list-item-content>
+              <template #item="{ item, props }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.raw.name"
+                  :subtitle="getServerGroupTypeName(item.raw.type)"
+                >
+                  <template #prepend="{ isSelected }">
+                    <v-checkbox :model-value="isSelected" hide-details></v-checkbox>
+                  </template>
+                </v-list-item>
               </template>
             </v-autocomplete>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="save" color="primary">保存</v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="save" color="primary">保存</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

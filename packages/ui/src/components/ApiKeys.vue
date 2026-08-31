@@ -2,7 +2,7 @@
   <v-container fluid class="console-page">
     <page-header title="API 密钥" description="创建和管理用于接口访问的 API 密钥" :breadcrumbs="['控制台', 'API 密钥']">
       <template #actions>
-        <v-btn color="primary" elevation="0" @click="addApiKey"><v-icon left small>mdi-plus</v-icon>创建 API 密钥</v-btn>
+        <v-btn color="primary" elevation="0" @click="addApiKey"><v-icon start size="small">mdi-plus</v-icon>创建 API 密钥</v-btn>
       </template>
     </page-header>
     <v-row>
@@ -14,7 +14,7 @@
               :disabled="!selectedKeys.length"
               @click="deleteDialog = true"
             >
-              <v-icon left>mdi-delete</v-icon>
+              <v-icon start>mdi-delete</v-icon>
               删除所选
             </v-btn>
           </v-card-title>
@@ -22,7 +22,7 @@
             <v-data-table
               :headers="headers"
               :items="tableItems"
-              item-key="id"
+              item-value="id"
               show-select
               v-model="selectedKeys"
             >
@@ -42,8 +42,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="deleteDialog = false">取消</v-btn>
-          <v-btn text color="error" @click="removeApiKeys">删除</v-btn>
+          <v-btn variant="text" color="primary" @click="deleteDialog = false">取消</v-btn>
+          <v-btn variant="text" color="error" @click="removeApiKeys">删除</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -59,28 +59,28 @@ export default {
     return {
       headers: [
         {
-          text: "所属用户",
+          title: "所属用户",
           sortable: true,
           align: "start",
-          value: "clientNickname",
+          key: "clientNickname",
         },
         {
-          text: "作用范围",
+          title: "作用范围",
           sortable: true,
           align: "start",
-          value: "scope",
+          key: "scope",
         },
         {
-          text: "创建时间",
+          title: "创建时间",
           sortable: true,
           align: "start",
-          value: "createdAt",
+          key: "createdAt",
         },
         {
-          text: "过期时间",
+          title: "过期时间",
           sortable: true,
           align: "start",
-          value: "expiresAt",
+          key: "expiresAt",
         },
       ],
       apiKeys: [],

@@ -1,10 +1,15 @@
 # Vue 3 / Vite Migration Plan (Stage 3)
 
-Status: foundation drafted. Building the working Vue 3 + Vite + Vuetify 3 app is
-sequenced follow-up work (see "Build / verify status").
+Status: Stage 3 foundation **implemented and verified**. The app now builds with
+Vite (production), boots under Vue 3, uses vue-router 4 with a working login guard,
+restores the session/connection state through a Pinia store, loads the Vuetify 3
+theme + MDI icons, and generates a new PWA (vite-plugin-pwa) service worker. The
+full per-component Vuetify 2 → 3 API migration (grid/datalist/autocomplete/
+treeview/list-item-group/.sync + Vuetify 2 prop renames) is the sequenced
+high-risk Milestone-4 work and is tracked in §5/§8.
 
-Working branch: `codex/vue3-migration` (created from `master` at `ece4e39`).
-No commit is made on this branch until the migration is accepted.
+Working branch: `codex/vue3-migration` (created off the stage-2 baseline
+`58914fa`). No commit is made on this branch until the migration is accepted.
 
 ## 1. Baseline (upgrade preconditions)
 
@@ -105,8 +110,55 @@ passing after the migration.
 
 ## 7. Build / verify status (honest)
 
-Foundation (branch, baseline, plan) is done. The working Vue 3 + Vite + Vuetify 3
-build and its E2E are **not yet achieved** in this round: they require the Vuetify 2
-grid + component/API migration and the state + router rewrite (the sequenced
-high-risk work in §3–§5), which is being split into follow-up tasks. This doc records
-the decisions so those rounds can be executed without re-deriving them.
+The foundations are now **verified working** on the `codex/vue3-migration`
+branch:
+
+- `npm run check:decoupling` passes (business layer free of $TeamSpeak /
+  TeamSpeak import+API / $socket / socket.js / direct execute).
+- UI unit tests: **177/177** (`vitest run`), server tests: **88/88**.
+- **Vuetify 3** theme toggling works (uses `useTheme()`), the real-time
+  channel/client tree nodes and the file-tree file/folder nodes render their
+  Vuetify 3 action menus (treeview `#title` slot), and the spurious
+  "操作失败…" update-check error is eliminated.
+- `npm run lint` (eslint) passes.
+- `npm run build` (Vite production build) succeeds and emits
+  `dist/sw.js`, `dist/workbox-*.js` and `dist/manifest.webmanifest`.
+- Core Playwright E2E: **21/21** pass against `packages/ui/dist` served by the
+  mock backend (18 original + 3 minimal-slice interaction/no-error/theme tests).
+
+What remains (deliberately split to Milestone 4): the full Vuetify 2 → 3
+component API migration. The app boots and all current E2E assertions render,
+but many components still carry Vuetify 2-only markup (`v-layout`/`v-flex`
+grid, `v-data-table` headers as `text`/`value`, `v-autocomplete`,
+`v-list-item-group`, `.sync`, `outlined`/`dense`/`text`/`fab` etc.). Those
+components need the §5 API diff applied, then lint + unit + build + relevant E2E
+re-run, and any visual/interaction diff recorded. Full regression (login/exit,
+file transfer, permissions, EXE build, real TeamSpeak query, `npm audit`) is
+Milestone 4/5.
+
+## 8. Delivered this round (Stage 3 foundation)
+
+- Toolchain: Vite (`vite.config.js`), `@vitejs/plugin-vue`, `vitest` (kept),
+  `vite-plugin-pwa`, removed `@vue/cli-*` / `vue-cli-plugin-vuetify` /
+  `vuetify-loader` / `vue-template-compiler` / webpack configs.
+- Entry: `src/main.js` uses `createApp` + Pinia + Vuetify 3 + vue-router 4,
+  restores the server-side session *before* installing the router (so the
+  initial guard sees the correct connection state).
+- Router: vue-router 4 (`createWebHistory`, `/:pathMatch(.*)*` catch-all,
+  `router.currentRoute.value`), guards preserved.
+- State: real Pinia option stores for settings/query/chat/avatars/uploads/
+  notifications, exposed through a Vuex-compatible façade (`state/commit/
+  dispatch/getters/watch/subscribe/replaceState`) so the framework-agnostic
+  services (`socket.js`, `notify.js`, `api/TeamSpeak.js`) and the existing
+  components keep working without a wholesale rewrite. Persistence (SecureLS +
+  whitelisted settings/chat) is preserved.
+- Vuetify 3: `createVuetify` with all components/directives, `zhHans` locale,
+  MDI icons, light/dark themes.
+- PWA: `vite-plugin-pwa` (autoUpdate, `ts3-manager-v3` cache prefix,
+  `cleanupOutdatedCaches`, `navigateFallback` + `/api`/`/socket.io` denylist);
+  legacy `service-worker.js` registration and stale caches are unregistered by
+  `migrateLegacyServiceWorker()` on boot.
+- Fixed Vue 3 porting issues discovered at runtime: component-level lazy
+  `() => import(...)` wrapped in `defineAsyncComponent` (bare functions are
+  functional components in Vue 3), `router.currentRoute.value`, the `*` router
+  catch-all, and `::v-deep`→`:deep(...)` deprecation (warnings only).

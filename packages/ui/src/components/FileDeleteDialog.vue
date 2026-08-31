@@ -10,8 +10,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="deleteFile" color="primary">确定</v-btn>
-        <v-btn text @click="dialog = false" color="primary">取消</v-btn>
+        <v-btn variant="text" @click="deleteFile" color="primary">确定</v-btn>
+        <v-btn variant="text" @click="dialog = false" color="primary">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -30,15 +30,15 @@ export default {
      * @type {TreeItem}
      */
     item: Object,
-    value: Boolean,
+    modelValue: Boolean,
   },
   computed: {
     dialog: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(val) {
-        this.$emit("input", val);
+        this.$emit("update:modelValue", val);
       },
     },
   },

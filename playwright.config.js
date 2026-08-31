@@ -3,10 +3,10 @@ const { defineConfig, devices } = require('@playwright/test')
 module.exports = defineConfig({
   testDir: './e2e',
   outputDir: 'test-results/playwright',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI
     ? [['github'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
     : [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],

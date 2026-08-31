@@ -3,13 +3,11 @@
     v-model="visible"
     :color="color"
     :timeout="timeout"
-    top
-    multi-line
-    app
+    location="top"
   >
     {{ message }}
-    <template #action="{ attrs }">
-      <v-btn text v-bind="attrs" @click="dismiss">关闭</v-btn>
+    <template #action="{ props }">
+      <v-btn v-bind="props" @click="dismiss">关闭</v-btn>
     </template>
   </v-snackbar>
 </template>
@@ -42,11 +40,17 @@ export default {
         ? this.current.duration
         : 4000;
     },
+    notificationCount() {
+      return this.$store.state.notifications.queue.length;
+    },
   },
   watch: {
     visible(value) {
       // When the current snackbar closes, show the next queued notification.
       if (!value) this.$nextTick(() => this.flush());
+    },
+    notificationCount() {
+      this.flush();
     },
   },
   methods: {
@@ -66,12 +70,6 @@ export default {
   },
   created() {
     this.flush();
-  },
-  mounted() {
-    this.$store.watch(
-      (state) => state.notifications.queue.length,
-      () => this.flush()
-    );
   },
 };
 </script>

@@ -1,11 +1,10 @@
 <template>
   <header class="page-header">
     <nav class="page-breadcrumb" aria-label="面包屑">
-      <v-icon small>mdi-home</v-icon>
-      <template v-for="(crumb, index) in crumbs">
+      <v-icon size="small">mdi-home</v-icon>
+      <template v-for="(crumb, index) in crumbs" :key="index">
         <v-icon
           v-if="index > 0"
-          :key="'sep-' + index"
           x-small
           class="breadcrumb-sep"
         >
@@ -13,7 +12,6 @@
         </v-icon>
         <component
           :is="index === crumbs.length - 1 ? 'strong' : 'span'"
-          :key="'crumb-' + index"
           :class="{ 'breadcrumb-current': index === crumbs.length - 1 }"
         >
           {{ crumb }}

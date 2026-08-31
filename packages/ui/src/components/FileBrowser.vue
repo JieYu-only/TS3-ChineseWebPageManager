@@ -25,8 +25,9 @@
               return-object
               selectable
               v-model="selectedFiles"
-              :open.sync="openFolders"
+              v-model:opened="openFolders"
               selection-type="independent"
+              item-title="name"
               :key="key"
             >
               <template #prepend="{ item, open, active }">
@@ -35,7 +36,7 @@
                 </v-icon>
                 <v-icon v-else> mdi-file </v-icon>
               </template>
-              <template #label="{ item }">
+              <template #title="{ item }">
                 <file-browser-file
                   v-if="item.type === 1"
                   :item="item"
@@ -61,6 +62,8 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 /**
  * Item in the file tree.
@@ -82,10 +85,10 @@ import fileService from "@/services/fileService";
 
 export default {
   components: {
-    FileBrowserFile: () => import("@/components/FileBrowserFile"),
-    FileBrowserFolder: () => import("@/components/FileBrowserFolder"),
-    FileDeleteButton: () => import("@/components/FileDeleteButton"),
-    FileRefreshButton: () => import("@/components/FileRefreshButton"),
+    FileBrowserFile: defineAsyncComponent(() => import("@/components/FileBrowserFile")),
+    FileBrowserFolder: defineAsyncComponent(() => import("@/components/FileBrowserFolder")),
+    FileDeleteButton: defineAsyncComponent(() => import("@/components/FileDeleteButton")),
+    FileRefreshButton: defineAsyncComponent(() => import("@/components/FileRefreshButton")),
   },
   data() {
     return {

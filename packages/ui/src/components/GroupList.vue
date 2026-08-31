@@ -1,27 +1,27 @@
 <template>
   <v-container fluid class="console-page">
-    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>{{ entityName }}</strong></div>
-    <div class="page-title-row"><div><h1>{{ entityName }}</h1><p>{{ pageDescription }}</p></div><v-btn color="primary" elevation="0" @click="addDialog = true"><v-icon left small>mdi-plus</v-icon>创建{{ entityName }}</v-btn></div>
+    <div class="page-breadcrumb"><v-icon size="small">mdi-home</v-icon><span>控制台</span><v-icon size="x-small">mdi-chevron-right</v-icon><strong>{{ entityName }}</strong></div>
+    <div class="page-title-row"><div><h1>{{ entityName }}</h1><p>{{ pageDescription }}</p></div><v-btn color="primary" elevation="0" @click="addDialog = true"><v-icon start size="small">mdi-plus</v-icon>创建{{ entityName }}</v-btn></div>
     <v-row>
       <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-list>
             <template v-if="regularGroups.length">
-              <v-subheader>常规{{ entityName }}</v-subheader>
+              <v-list-subheader>常规{{ entityName }}</v-list-subheader>
               <v-list-item
                 v-for="regularGroup in regularGroups"
                 :key="regularGroup.sgid || regularGroup.cgid"
               >
-                <v-list-item-content>
+
                   <v-list-item-title>{{ regularGroup.name }}</v-list-item-title>
                   <v-list-item-subtitle>
                     ({{ regularGroup.sgid || regularGroup.cgid }})
                   </v-list-item-subtitle>
-                </v-list-item-content>
-                <v-list-item-action>
+
+
                   <v-menu>
-                    <template #activator="{ on, attrs }">
-                      <v-btn icon v-bind="attrs" v-on="on">
+                    <template #activator="{ props }">
+                      <v-btn icon v-bind="props">
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
@@ -37,19 +37,19 @@
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                </v-list-item-action>
+
               </v-list-item>
 
               <v-divider></v-divider>
             </template>
 
             <template v-if="templateGroups.length">
-              <v-subheader>模板组</v-subheader>
+              <v-list-subheader>模板组</v-list-subheader>
               <v-list-item
                 v-for="templateGroup in templateGroups"
                 :key="templateGroup.sgid || templateGroup.cgid"
               >
-                <v-list-item-content>
+
                   <v-list-item-title>{{
                     templateGroup.name
                   }}</v-list-item-title>
@@ -58,11 +58,11 @@
                       templateGroup.sgid || templateGroup.cgid
                     }})</v-list-item-subtitle
                   >
-                </v-list-item-content>
-                <v-list-item-action>
+
+
                   <v-menu>
-                    <template #activator="{ on, attrs }">
-                      <v-btn icon v-bind="attrs" v-on="on">
+                    <template #activator="{ props }">
+                      <v-btn icon v-bind="props">
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
@@ -78,19 +78,19 @@
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                </v-list-item-action>
+
               </v-list-item>
             </template>
 
             <template v-if="serverQueryGroups.length">
               <v-divider></v-divider>
 
-              <v-subheader>ServerQuery 管理组</v-subheader>
+              <v-list-subheader>ServerQuery 管理组</v-list-subheader>
               <v-list-item
                 v-for="serverQueryGroup in serverQueryGroups"
                 :key="serverQueryGroup.sgid || serverQueryGroup.cgid"
               >
-                <v-list-item-content>
+
                   <v-list-item-title>{{
                     serverQueryGroup.name
                   }}</v-list-item-title>
@@ -99,11 +99,11 @@
                       serverQueryGroup.sgid || serverQueryGroup.cgid
                     }})</v-list-item-subtitle
                   >
-                </v-list-item-content>
-                <v-list-item-action>
+
+
                   <v-menu>
-                    <template #activator="{ on, attrs }">
-                      <v-btn icon v-bind="attrs" v-on="on">
+                    <template #activator="{ props }">
+                      <v-btn icon v-bind="props">
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
@@ -119,7 +119,7 @@
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                </v-list-item-action>
+
               </v-list-item>
             </template>
           </v-list>
@@ -127,7 +127,7 @@
       </v-col>
       <v-btn
         class="mobile-create"
-        fab
+        icon
         color="primary"
         fixed
         bottom
@@ -149,10 +149,10 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="removeDialog = false"
+            <v-btn variant="text" color="primary" @click="removeDialog = false"
               >取消</v-btn
             >
-            <v-btn text color="primary" @click="removeGroup"
+            <v-btn variant="text" color="primary" @click="removeGroup"
               >删除</v-btn
             >
           </v-card-actions>
@@ -166,13 +166,15 @@
             <v-select
               :label="`${entityName}类型`"
               :items="groupTypes"
+              item-title="text"
+              item-value="value"
               v-model="selectedGroupType"
             ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="addGroup">创建</v-btn>
-            <v-btn text color="primary" @click="addDialog = false"
+            <v-btn variant="text" color="primary" @click="addGroup">创建</v-btn>
+            <v-btn variant="text" color="primary" @click="addDialog = false"
               >取消</v-btn
             >
           </v-card-actions>
@@ -186,18 +188,17 @@
               :label="`源${entityName}`"
               :items="allGroups"
               v-model="selectedGroup"
-              :item-disabled="disabledSourceGroup"
+              :item-props="(i) => ({ disabled: disabledSourceGroup(i) })"
               return-object
-              :item-value="allGroups[0].sgid ? 'sgid' : 'cgid'"
-              item-text="name"
+              :item-value="groupValueField"
+              item-title="name"
             >
-              <template #item="{ item }">
-                <v-list-item-content>
-                  <v-list-item-title>{{ item.name }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    ({{ item.sgid || item.cgid }})
-                  </v-list-item-subtitle>
-                </v-list-item-content>
+              <template #item="{ item, props }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.raw.name"
+                  :subtitle="`(${item.raw.sgid || item.raw.cgid})`"
+                ></v-list-item>
               </template>
             </v-select>
             <v-row class="px-3">
@@ -211,19 +212,18 @@
                 :label="`目标${entityName}`"
                 :disabled="!overwriteGroup"
                 :items="allGroups"
-                item-text="name"
-                :item-disabled="disabledTargetGroup"
+                item-title="name"
+                :item-props="(i) => ({ disabled: disabledTargetGroup(i) })"
                 return-object
-                :item-value="allGroups[0].sgid ? 'sgid' : 'cgid'"
+                :item-value="groupValueField"
                 v-model="selectedTargetGroup"
               >
-                <template #item="{ item }">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item.name }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      ({{ item.sgid || item.cgid }})
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
+                <template #item="{ item, props }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="item.raw.name"
+                    :subtitle="`(${item.raw.sgid || item.raw.cgid})`"
+                  ></v-list-item>
                 </template>
               </v-select>
             </v-row>
@@ -236,14 +236,16 @@
             <v-select
               :label="`新${entityName}类型`"
               :items="groupTypes"
+              item-title="text"
+              item-value="value"
               v-model="selectedTargetGroupType"
               :disabled="overwriteGroup"
             ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="copyGroup">确定</v-btn>
-            <v-btn text color="primary" @click="copyDialog = false"
+            <v-btn variant="text" color="primary" @click="copyGroup">确定</v-btn>
+            <v-btn variant="text" color="primary" @click="copyDialog = false"
               >取消</v-btn
             >
           </v-card-actions>
@@ -293,13 +295,13 @@ export default {
     },
     allGroups() {
       return [
-        { header: "常规组" },
+        { type: "subheader", title: "常规组" },
         ...this.regularGroups,
-        { divider: true },
-        { header: "模板组" },
+        { type: "divider" },
+        { type: "subheader", title: "模板组" },
         ...this.templateGroups,
-        { divider: true },
-        { header: "ServerQuery 管理组" },
+        { type: "divider" },
+        { type: "subheader", title: "ServerQuery 管理组" },
         ...this.serverQueryGroups,
       ];
     },
@@ -311,6 +313,12 @@ export default {
     },
     serverQueryGroups() {
       return this.groups.filter((group) => group.type === 2);
+    },
+    // Server groups are keyed by `sgid`, channel groups by `cgid`. The copy
+    // dialogs need a stable `item-value` field; derive it from an actual group
+    // (never from the leading subheader/divider entries).
+    groupValueField() {
+      return this.groups.some((group) => group.sgid != null) ? "sgid" : "cgid";
     },
   },
   methods: {

@@ -1,18 +1,22 @@
 <template>
   <v-container>
-    <v-layout justify-center>
-      <v-flex lg6 md8 sm8 xs12>
+    <v-row justify="center">
+      <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
           <v-card-title>创建权限密钥</v-card-title>
           <v-card-text>
             <v-select
               :items="tokenTypes"
+              item-title="text"
+              item-value="value"
               label="密钥类型"
               v-model="selectedType"
               :disabled="$store.state.query.loading"
             ></v-select>
             <v-autocomplete
               :items="availableGroups"
+              item-title="text"
+              item-value="value"
               label="用户组"
               v-model="selectedGroup"
               :disabled="
@@ -22,6 +26,8 @@
             ></v-autocomplete>
             <v-autocomplete
               :items="availableChannels"
+              item-title="text"
+              item-value="value"
               label="频道"
               v-model="selectedChannel"
               :disabled="
@@ -42,21 +48,23 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-              text
+              variant="text"
               @click="createToken"
               color="primary"
               :disabled="typeof selectedType === 'undefined'"
               >创建</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import copyToClipboard from "@/utils/clipboard";
 import channelService from "@/services/channelService";
@@ -65,7 +73,7 @@ import tokenService from "@/services/tokenService";
 
 export default {
   components: {
-    KeyTextField: () => import("@/components/KeyTextField"),
+    KeyTextField: defineAsyncComponent(() => import("@/components/KeyTextField")),
   },
   data() {
     return {

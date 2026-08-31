@@ -9,11 +9,13 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import groupService from "@/services/groupService";
 export default {
   components: {
-    GroupList: () => import("@/components/GroupList"),
+    GroupList: defineAsyncComponent(() => import("@/components/GroupList")),
   },
   data() {
     return {

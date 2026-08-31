@@ -1,10 +1,8 @@
 <template>
-  <v-tooltip bottom>
-    <template #activator="{ on, attrs }">
+  <v-tooltip location="bottom">
+    <template #activator="{ props }">
       <v-btn
-        icon
-        v-bind="attrs"
-        v-on="on"
+        v-bind="props"
         :aria-label="label"
         @click="toggleDarkMode"
       >
@@ -16,7 +14,13 @@
 </template>
 
 <script>
+import { useTheme } from "vuetify";
+
 export default {
+  setup() {
+    const theme = useTheme();
+    return { theme };
+  },
   computed: {
     icon() {
       return this.$store.state.settings.darkMode
@@ -31,9 +35,10 @@ export default {
   },
   methods: {
     toggleDarkMode() {
-      this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
-
-      this.$store.commit("setDarkMode", this.$vuetify.theme.dark);
+      const dark = this.theme.global.name.value === "dark";
+      this.theme.global.name.value = dark ? "light" : "dark";
+      // Keep the Vuetify 3 theme and the persisted setting in sync.
+      this.$store.commit("setDarkMode", !dark);
     },
   },
 };

@@ -1,9 +1,15 @@
 # 依赖安全公告评估 (Dependency Security Advisory Assessment)
 
 > 评估范围：前端生产依赖 (`npm audit --omit=dev`) 暴露的 Vue / Vuetify 相关安全公告。
-> 评估日期：2026-08-29
+> 评估日期：2026-08-29（**迁移前基线**）；迁移分支当前候选复核：2026-09-01（见 §7）。
 
 **重要**：`npm audit --omit=dev` 的汇总（当前输出为 `1 high, 4 low`）是**按包聚合**的结果，并不代表“只有一条公告”。实际需要跟踪的公告包含下列多条，其中 `High` 并非只有 Vue 的一条。
+
+> **迁移分支当前候选复核（2026-09-01）**：当前候选生产依赖树为 Vue `3.5.42` /
+> Vuetify `3.13.2` / Pinia `2.3.1` / vue-router `4.6.4`，`npm audit --omit=dev` =
+> **0 vulnerabilities**，且 `npm ls vue@2 vuetify@2 vuex@3 vue-template-compiler@2` 为空。
+> 因此本文 §1 列出的 Vuetify 2 / Vue 2 公告在当前候选**生产树中不再适用**。本表 §1–§6
+> 为**迁移前（Vue 2）基线**，保留供 `master` 追踪；当前候选的按项结论见 §7。
 
 ---
 
@@ -113,3 +119,26 @@
 - **Vuetify VDatePicker XSS**：Moderate，当前未使用 VDatePicker，路径不可达。
 - **npm 汇总**：“1 high、4 low”是按包聚合结果，不代表只有一条公告；High 中包含 Vuetify 原型污染。
 - **不执行** `npm audit fix --force`；非零 audit 结果以书面风险接受处理，不误报为“没有 High”。
+
+---
+
+## 7. 迁移分支（当前候选 `58914fa`）按项结论（2026-09-01）
+
+> 基于对本工作区生产依赖树与 `npm audit --omit=dev` 的**实际复核**，不沿用历史
+> 通过/制品结论。`master` / Vue 2 基线的 §1–§6 分析不变。
+
+| 公告 | 迁移分支当前候选的实际证据 | 结论 |
+|------|------------------------------|------|
+| Vue ReDoS（CVE-2024-9506，Vue 2 / Low） | 生产树为 Vue `3.5.42` | **已消除**（依赖层） |
+| Vuetify 原型污染（CVE-2025-8083，Vuetify 2 / High） | 生产树为 Vuetify `3.13.2`；`npm audit --omit=dev`=0 | **已消除**（依赖层）；不再适用 |
+| Vuetify VDatePicker XSS（CVE-2025-8082，Vuetify 2 / Moderate） | 生产树为 Vuetify `3.13.2`；未使用 `VDatePicker` | **已消除**（依赖层 + 未使用） |
+| 4 条低危传递项（vuex/vuex-persistedstate/vue-toast-notification） | 生产树为 Pinia `2.3.1` / vue-router `4.6.4` / vue-demi | **已消除**（依赖层）；随迁移完成 |
+
+- **当前候选 `npm audit --omit=dev` = 0 vulnerabilities**：无既有清单之外的新
+  High/Critical，因此**不触发** `docs/security-tracker.md` §7“新增跟踪任务”规则。
+- **边界**：上述“已消除”仅指 **Vuetify 2 / Vue 2 公告**在迁移分支生产树中不再适用。
+  任何**新**出现的 High/Critical（即使同包同根因）仍须按 `docs/security-tracker.md` §7
+  新增跟踪任务；不得因“已迁移到 Vue 3”而自动放宽。
+- 本机 TeamSpeak 与隔离 HTTPS/WSS 主要路径已执行通过；live-host PWA 仍未执行；Node 22
+  干净环境与人工视口已经完成，
+  发布结论以 `docs/release-readiness.md` §6（NOT RELEASE READY）为准。

@@ -146,7 +146,10 @@ socket.init = (server, corsOptions) => {
      * Register TeamSpeak event listeners that forward to the client.
      * @param {object} serverQuery
      */
-    const initEventListeners = (serverQuery) => {
+    const initLifecycleListeners = (serverQuery) => {
+      if (serverQuery.__managerLifecycleListenersReady) return;
+      serverQuery.__managerLifecycleListenersReady = true;
+
       serverQuery.on("error", (err) => {
         log.error(err.stack);
         socket.emit("teamspeak-error", err);
@@ -157,6 +160,12 @@ socket.init = (server, corsOptions) => {
         serverQuery.removeAllListeners();
         socket.emit("teamspeak-disconnect");
       });
+    };
+
+    const initEventListeners = (serverQuery) => {
+      if (serverQuery.__managerEventListenersReady) return;
+      serverQuery.__managerEventListenersReady = true;
+
       serverQuery.on("clientconnect", (data) =>
         socket.emit("teamspeak-clientconnect", data)
       );
@@ -200,7 +209,12 @@ socket.init = (server, corsOptions) => {
         await serverQuery.execute("use", { sid: session.serverId });
       }
 
-      initEventListeners(serverQuery);
+      // Domain listeners trigger servernotifyregister in the TeamSpeak library.
+      // A fresh session has no selected virtual server, so registering here
+      // produces `invalid serverID`. Attach lifecycle listeners immediately and
+      // wait for the explicit register request after `use` succeeds.
+      initLifecycleListeners(serverQuery);
+      if (session.serverId) initEventListeners(serverQuery);
 
       if (session.remember) {
         sessionManager.get(session.id); // refresh lastUsedAt
@@ -292,15 +306,12 @@ socket.init = (server, corsOptions) => {
 
         const serverQuery = socket.data.serverQuery;
 
-        if (serverQuery.eventNames().length > 1) {
-          await serverQuery.registerEvent("textserver");
-          await serverQuery.registerEvent("textchannel");
-          await serverQuery.registerEvent("textprivate");
-          await serverQuery.registerEvent("server");
-          await serverQuery.registerEvent("channel", 0);
-        } else {
-          initEventListeners(serverQuery);
-        }
+        initEventListeners(serverQuery);
+        await serverQuery.registerEvent("textserver");
+        await serverQuery.registerEvent("textchannel");
+        await serverQuery.registerEvent("textprivate");
+        await serverQuery.registerEvent("server");
+        await serverQuery.registerEvent("channel", 0);
 
         handleResponse("ok", ack);
       })

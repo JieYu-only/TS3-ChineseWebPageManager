@@ -1,30 +1,29 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import routes from "./routes";
 import store from "../store";
 import NProgress from "nprogress";
 
-const router = new VueRouter({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   store.commit("isLoading", true);
 
   NProgress.start();
 
   if (to.meta.requiresAuth) {
     if (store.state.query.connected) {
-      next();
+      return true;
     } else {
-      next({ name: "login" });
+      return { name: "login" };
     }
   } else {
     if (to.name === "login" && store.state.query.connected) {
-      next({ name: "servers" });
+      return { name: "servers" };
     } else {
-      next();
+      return true;
     }
   }
 });
@@ -40,7 +39,5 @@ router.afterEach(() => {
     }
   }, 0);
 });
-
-Vue.use(VueRouter);
 
 export default router;

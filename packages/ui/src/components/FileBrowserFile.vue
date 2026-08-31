@@ -1,42 +1,17 @@
-<template lang="html">
+<template>
   <div>
-    <v-menu offset-y max-width="300px">
-      <template #activator="{ on, attrs }">
-        <v-list-item v-bind="attrs" v-on="on">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
-            <v-list-item-subtitle>
-              {{ fileSize }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+    <v-menu :offset="true" max-width="300px">
+      <template #activator="{ props }">
+        <span v-bind="props" class="tree-node-label">
+          {{ item.name }}
+          <span class="tree-node-sub">{{ fileSize }}</span>
+        </span>
       </template>
 
       <v-list>
-        <v-list-item @click="downloadFile">
-          <v-list-item-action>
-            <v-icon>mdi-download</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>下载文件</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item @click="deleteDialog = true">
-          <v-list-item-action>
-            <v-icon>mdi-delete</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>删除文件</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item @click="renameDialog = true">
-          <v-list-item-action>
-            <v-icon>mdi-pencil</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>重命名文件</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <v-list-item title="下载文件" append-icon="mdi-download" @click="downloadFile"></v-list-item>
+        <v-list-item title="删除文件" append-icon="mdi-delete" @click="deleteDialog = true"></v-list-item>
+        <v-list-item title="重命名文件" append-icon="mdi-pencil" @click="renameDialog = true"></v-list-item>
       </v-list>
     </v-menu>
 
@@ -54,6 +29,8 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import {
   getDownloadUrl,
@@ -63,8 +40,8 @@ import fileTransfer from "@/mixins/fileTransfer";
 
 export default {
   components: {
-    FileRenameDialog: () => import("@/components/FileRenameDialog"),
-    FileDeleteDialog: () => import("@/components/FileDeleteDialog"),
+    FileRenameDialog: defineAsyncComponent(() => import("@/components/FileRenameDialog")),
+    FileDeleteDialog: defineAsyncComponent(() => import("@/components/FileDeleteDialog")),
   },
   mixins: [fileTransfer],
   props: {
@@ -124,3 +101,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.tree-node-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+.tree-node-sub {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+}
+</style>

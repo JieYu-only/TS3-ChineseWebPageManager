@@ -1,8 +1,8 @@
 <template lang="html">
   <v-container fluid class="console-page">
     <page-header title="服务器日志" description="查询和查看 TeamSpeak 服务器运行日志" :breadcrumbs="['控制台', '服务器日志']" />
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card>
           <v-card-title>
             <v-row align="center">
@@ -37,6 +37,8 @@
               <v-col cols="12" sm="6" xl="3">
                 <v-select
                   :items="timezones"
+                  item-title="text"
+                  item-value="value"
                   v-model="selectedTimezone"
                   label="时间显示"
                 ></v-select>
@@ -69,8 +71,8 @@
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -86,23 +88,23 @@ export default {
       filter: "",
       headers: [
         {
-          text: "时间",
-          value: "timestamp",
+          title: "时间",
+          key: "timestamp",
           sortable: false,
         },
         {
-          text: "级别",
-          value: "level",
+          title: "级别",
+          key: "level",
           sortable: false,
         },
         {
-          text: "日志模块",
-          value: "channel",
+          title: "日志模块",
+          key: "channel",
           sortable: false,
         },
         {
-          text: "日志内容",
-          value: "msg",
+          title: "日志内容",
+          key: "msg",
           sortable: false,
         },
       ],

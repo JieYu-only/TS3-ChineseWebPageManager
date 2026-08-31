@@ -1,8 +1,8 @@
 <template lang="html">
-  <v-menu offset-y :close-on-content-click="false" max-width="400">
-    <template #activator="{ on }">
-      <v-btn icon v-on="on">
-        <v-badge :value="uploadQueue.length">
+  <v-menu :offset="true" :close-on-content-click="false" max-width="400">
+    <template #activator="{ props }">
+      <v-btn icon v-bind="props">
+        <v-badge :content="uploadQueue.length">
           <template #badge>
             <span>{{ uploadQueue.length }}</span>
           </template>
@@ -13,21 +13,21 @@
     <v-card>
       <v-list>
         <v-list-item v-if="!uploadQueue.length">
-          <v-list-item-content>
+
             <v-list-item-title>暂无上传任务</v-list-item-title>
-          </v-list-item-content>
+
         </v-list-item>
 
         <v-list-item v-for="file in uploadQueue" :key="file.clientftfid">
-          <v-list-item-avatar>
+
             <v-progress-circular :value="file.progress" color="primary">
             </v-progress-circular>
-          </v-list-item-avatar>
-          <v-list-item-content>
+
+
             <v-list-item-title>{{ file.blob.name }}</v-list-item-title>
             <v-list-item-subtitle>{{ file.filePath }}</v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
+
+
             <div class="d-flex">
               <v-btn v-if="file.uploading" icon @click="pauseUpload()">
                 <v-icon>mdi-pause</v-icon>
@@ -50,7 +50,7 @@
                 <v-icon>mdi-close</v-icon>
               </v-btn>
             </div>
-          </v-list-item-action>
+
         </v-list-item>
       </v-list>
     </v-card>

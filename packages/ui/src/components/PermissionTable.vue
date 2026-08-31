@@ -2,23 +2,23 @@
   <div>
     <v-card class="permission-card" elevation="0">
       <v-card-title>
-        <v-layout justify-space-between wrap>
+        <v-row justify="space-between">
           <slot name="selectMenu"></slot>
-          <v-flex xs12 sm5>
+          <v-col cols="12" sm="5">
             <v-text-field
               v-model="filter"
           append-icon="mdi-filter-variant"
               label="筛选权限"
             ></v-text-field>
-          </v-flex>
-          <v-flex xs12 sm2>
+          </v-col>
+          <v-col cols="12" sm="2">
             <v-checkbox
               v-model="onlyGranted"
               label="仅显示已授予"
               primary
             ></v-checkbox>
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -27,13 +27,13 @@
           "
           :headers="headers"
           :items="permissionlist"
-          :footer-props="{ 'items-per-page-options': rowsPerPage }"
+          :items-per-page-options="rowsPerPage"
           :search="filter"
         >
           <template #item.actions="{ item }">
             <v-menu>
-              <template #activator="{ on, attrs }">
-                <v-btn icon v-bind="attrs" v-on="on">
+              <template #activator="{ props }">
+                <v-btn icon v-bind="props">
                   <v-icon>mdi-dots-vertical</v-icon>
                 </v-btn>
               </template>
@@ -82,33 +82,33 @@
       <v-card>
         <v-card-title>编辑权限：{{ editedPermission.permname }}</v-card-title>
         <v-card-text>
-          <v-layout wrap justify-space-between>
-            <v-flex xs12 v-if="editableContent.includes('permvalue')">
+          <v-row justify="space-between">
+            <v-col cols="12">
               <v-text-field
                 label="权限值"
                 type="number"
                 v-model="editedPermission.permvalue"
               ></v-text-field>
-            </v-flex>
-            <v-flex xs5 v-if="editableContent.includes('permskip')">
+            </v-col>
+            <v-col cols="5">
               <v-checkbox
                 label="跳过权限检查"
                 v-model="editedPermission.permskip"
               ></v-checkbox>
-            </v-flex>
-            <v-flex xs5 v-if="editableContent.includes('permnegated')">
+            </v-col>
+            <v-col cols="5">
               <v-checkbox
                 label="拒绝权限"
                 v-model="editedPermission.permnegated"
                 :disabled="type === 'Client Permissions' ? true : false"
               ></v-checkbox>
-            </v-flex>
-          </v-layout>
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="savePermission" color="primary">保存</v-btn>
-          <v-btn text @click="dialog = false" color="primary">取消</v-btn>
+          <v-btn variant="text" @click="savePermission" color="primary">保存</v-btn>
+          <v-btn variant="text" @click="dialog = false" color="primary">取消</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -120,8 +120,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="removePermission" color="error">移除</v-btn>
-          <v-btn text @click="deleteDialog = false" color="primary"
+          <v-btn variant="text" @click="removePermission" color="error">移除</v-btn>
+          <v-btn variant="text" @click="deleteDialog = false" color="primary"
             >取消</v-btn
           >
         </v-card-actions>
@@ -144,37 +144,42 @@ export default {
       onlyGranted: true, // Only show granted Permissions on default
       availableHeaders: [
         {
-          text: "",
+          title: "",
           align: "start",
-          value: "actions",
+          key: "actions",
           sortable: false,
         },
         {
-          text: "权限标识",
+          title: "权限标识",
           align: "left",
-          value: "permname",
+          key: "permname",
           sortable: false,
         },
         {
-          text: "权限值",
+          title: "权限值",
           align: "left",
-          value: "permvalue",
+          key: "permvalue",
           sortable: false,
         },
         {
-          text: "跳过检查",
+          title: "跳过检查",
           align: "left",
-          value: "permskip",
+          key: "permskip",
           sortable: false,
         },
         {
-          text: "拒绝",
+          title: "拒绝",
           align: "left",
-          value: "permnegated",
+          key: "permnegated",
           sortable: false,
         },
       ],
-      rowsPerPage: [50, 100, 150, -1],
+      rowsPerPage: [
+        { value: 50, title: "50" },
+        { value: 100, title: "100" },
+        { value: 150, title: "150" },
+        { value: -1, title: "All" },
+      ],
       filter: "", // Filter table content
       dialog: false, // Shows the edit lightbox
       deleteDialog: false,
@@ -218,9 +223,9 @@ export default {
     headers() {
       return this.availableHeaders.filter(
         (header) =>
-          this.editableContent.includes(header.value) ||
-          header.value === "permname" ||
-          header.value === "actions"
+          this.editableContent.includes(header.key) ||
+          header.key === "permname" ||
+          header.key === "actions"
       );
     },
   },

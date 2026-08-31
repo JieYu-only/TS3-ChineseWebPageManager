@@ -2,7 +2,7 @@
   <div class="management-tabs-wrap">
   <div class="management-tabs">
     <router-link v-for="tab in tabs" :key="tab.route" :to="{ name: tab.route }" :class="{ active: isActive(tab) }">
-      <v-icon small>{{ tab.icon }}</v-icon><span>{{ tab.title }}</span>
+      <v-icon size="small">{{ tab.icon }}</v-icon><span>{{ tab.title }}</span>
     </router-link>
   </div>
   </div>

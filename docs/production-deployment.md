@@ -10,6 +10,8 @@
 # ==== 运行时 ====
 NODE_ENV=production
 SESSION_COOKIE_SECURE=true
+# 反向代理部署必须仅监听回环地址，避免 Node 端口直接暴露。
+BIND_HOST=127.0.0.1
 
 # ==== 会话与凭据密钥 ====
 # 32 字节随机值经 Base64 编码。通过部署环境 / secret 管理注入，不要写进文件提交。
@@ -51,6 +53,7 @@ FILE_TRANSFER_TICKET_TTL_MS=45000
 ## 2. 强制要求
 
 - **`WHITELIST` 在公网部署时不得留空**：必须列出允许连接的 TeamSpeak 主机（IP 或域名）。留空等于放行任意主机，禁止。
+- **反向代理部署必须设置 `BIND_HOST=127.0.0.1`**：确保 Node 仅接受本机代理转发，不能直接从外部网络访问。
 - **密钥必须通过 secret / 部署环境注入**：`SESSION_ENCRYPTION_KEY` 由 AWS Secrets Manager / Docker Secret / Kubernetes Secret / 部署编排注入，勿写入文件或镜像。
 - **旧密钥与真实域名不得出现在 Git 历史**：不要把真实 `SESSION_ENCRYPTION_KEY`、`WHITELIST` 值、`ALLOWED_ORIGINS` 域名写入任何提交、`*.env*`、`docker-compose.yml`、Dockerfile 或发布产物。若已误提交，应立即轮换密钥并清理历史（`filter-repo`/`bfg`），然后重新生成密钥。
 - **文件大小与并发限制需按实际环境调整**：

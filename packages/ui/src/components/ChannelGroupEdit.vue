@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex md6 sm8 xs12 offset-md3 offset-sm2>
+    <v-row>
+      <v-col md="6" sm="8" cols="12" offset-md="3" offset-sm="2">
         <v-card>
           <v-card-title>编辑频道组</v-card-title>
           <v-card-text>
@@ -12,6 +12,8 @@
             ></v-text-field>
             <v-autocomplete
               :items="channelSelection"
+              item-title="text"
+              item-value="value"
               label="频道"
               v-model="selectedChannel"
               :disabled="$store.state.query.loading"
@@ -24,24 +26,26 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="save('close')" color="primary">保存</v-btn>
-            <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
-            <v-btn text @click="save('apply')" color="primary">应用</v-btn>
+            <v-btn variant="text" @click="save('close')" color="primary">保存</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="save('apply')" color="primary">应用</v-btn>
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import channelService from "@/services/channelService";
 import clientService from "@/services/clientService";
 import groupService from "@/services/groupService";
 export default {
   components: {
-    GroupClientList: () => import("@/components/GroupClientList"),
+    GroupClientList: defineAsyncComponent(() => import("@/components/GroupClientList")),
   },
   data() {
     return {

@@ -25,11 +25,6 @@
     "ui:rebuild": "npm run ui:clean && npm run ui:build",
     "test": "npm run test --workspace=@ts3-manager/server"
   },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "concurrently": "^6.2.0"
@@ -38,6 +33,7 @@
     "@vue/compiler-sfc": {
       "postcss": "^8.5.26"
     },
+    "vue": "^3.5.42",
     "local-echo": {
       "shell-quote": "^1.10.0"
     },

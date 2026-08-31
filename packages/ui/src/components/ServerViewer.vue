@@ -2,17 +2,22 @@
   <v-container fluid class="console-page">
     <page-header title="实时在线" description="实时查看频道树与服务器在线用户" :breadcrumbs="['控制台', '实时在线']" />
     <div class="viewer-tabs">
-      <div class="viewer-tab active"><v-icon small>mdi-view-dashboard-outline</v-icon>服务器频道</div>
+      <div class="viewer-tab active"><v-icon size="small">mdi-view-dashboard-outline</v-icon>服务器频道</div>
       <div class="viewer-stat"><span>服务器</span><strong>{{ serverInfo.virtualserverName || 'TeamSpeak 3' }}</strong></div>
       <div class="viewer-stat"><span>在线人数</span><strong>{{ clientList.length }}</strong></div>
     </div>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="viewer-card" elevation="0">
-          <v-card-title class="viewer-title"><div><v-icon color="primary" class="mr-2">mdi-account-tree-outline</v-icon>实时在线</div><v-chip small color="success" text-color="white">运行中</v-chip></v-card-title>
+          <v-card-title class="viewer-title"><div><v-icon color="primary" class="mr-2">mdi-account-tree-outline</v-icon>实时在线</div><v-chip size="small" color="success" text-color="white">运行中</v-chip></v-card-title>
           <v-card-text>
-            <v-treeview :items="channelTree" :open="itemIDs" dense>
-              <template #label="{ item }">
+            <v-treeview
+              :items="channelTree"
+              :opened="itemIDs"
+              item-title="name"
+              density="compact"
+            >
+              <template #title="{ item }">
                 <channel
                   v-if="item.channelName"
                   :channel="item"
@@ -23,19 +28,18 @@
             </v-treeview>
           </v-card-text>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
 
     <v-speed-dial right bottom fixed v-model="speedDial">
       <template #activator>
-        <v-tooltip left>
-          <template #activator="{ on, attrs }">
+        <v-tooltip location="left">
+          <template #activator="{ props }">
             <v-btn
-              fab
+              icon
               color="primary"
               dark
-              v-bind="attrs"
-              v-on="on"
+              v-bind="props"
               :aria-label="speedDial ? '收起创建菜单' : '添加频道或分隔符'"
             >
               <v-icon>mdi-plus</v-icon>
@@ -44,15 +48,14 @@
           <span>{{ speedDial ? '收起创建菜单' : '添加频道或分隔符' }}</span>
         </v-tooltip>
       </template>
-      <v-tooltip left>
-        <template #activator="{ on, attrs }">
+      <v-tooltip location="left">
+        <template #activator="{ props }">
           <v-btn
-            fab
+            icon
             color="primary"
             dark
-            small
-            v-bind="attrs"
-            v-on="on"
+            size="small"
+            v-bind="props"
             :to="{ name: 'channel-add' }"
             aria-label="创建频道"
           >
@@ -61,15 +64,14 @@
         </template>
         <span>创建频道</span>
       </v-tooltip>
-      <v-tooltip left>
-        <template #activator="{ on, attrs }">
+      <v-tooltip location="left">
+        <template #activator="{ props }">
           <v-btn
-            fab
+            icon
             color="primary"
             dark
-            small
-            v-bind="attrs"
-            v-on="on"
+            size="small"
+            v-bind="props"
             :to="{ name: 'spacer-add' }"
             aria-label="创建频道分隔符"
           >
@@ -82,6 +84,8 @@
   </v-container>
 </template>
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import eventService from "@/services/eventService";
 import channelService from "@/services/channelService";
@@ -89,8 +93,8 @@ import clientService from "@/services/clientService";
 import serverService from "@/services/serverService";
 export default {
   components: {
-    Channel: () => import("@/components/ServerViewerChannel"),
-    Client: () => import("@/components/ServerViewerClient"),
+    Channel: defineAsyncComponent(() => import("@/components/ServerViewerChannel")),
+    Client: defineAsyncComponent(() => import("@/components/ServerViewerClient")),
   },
   data() {
     return {

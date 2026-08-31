@@ -292,7 +292,7 @@ export default [
     },
   },
   {
-    path: "*",
+    path: "/:pathMatch(.*)*",
     component: () => import("@/components/NotFound"),
     name: "404",
     meta: {

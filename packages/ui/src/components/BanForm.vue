@@ -1,15 +1,15 @@
 <template>
   <v-container>
-    <v-layout justify-center>
-      <v-flex lg6 md8 sm8 xs12>
+    <v-row justify="center">
+      <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
           <v-form>
             <v-card-title>
               {{ title }}
             </v-card-title>
             <v-card-text>
-              <v-layout wrap justify-space-between>
-                <v-flex xs12>
+              <v-row justify="space-between">
+                <v-col cols="12">
                   <v-text-field
                     label="IP"
                     :disabled="$store.state.query.loading"
@@ -31,39 +31,41 @@
                     :disabled="$store.state.query.loading"
                   >
                   </v-textarea>
-                </v-flex>
-                <v-flex sm5 xs12>
+                </v-col>
+                <v-col sm="5" cols="12">
                   <v-text-field
                     type="number"
                     label="封禁时长"
                     :disabled="!selectedUnit || $store.state.query.loading"
                     v-model="time"
                   ></v-text-field>
-                </v-flex>
-                <v-flex sm5 xs12>
+                </v-col>
+                <v-col sm="5" cols="12">
                   <v-autocomplete
                     :items="timeUnits"
+                    item-title="text"
+                    item-value="value"
                     :disabled="$store.state.query.loading"
                     v-model="selectedUnit"
                   ></v-autocomplete>
-                </v-flex>
-              </v-layout>
+                </v-col>
+              </v-row>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn
-                text
+                variant="text"
                 @click="addBan"
                 :disabled="disabledButton"
                 color="primary"
                 >确定</v-btn
               >
-              <v-btn text @click="$router.go(-1)" color="primary">取消</v-btn>
+              <v-btn variant="text" @click="$router.go(-1)" color="primary">取消</v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

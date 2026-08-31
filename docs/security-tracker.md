@@ -2,8 +2,16 @@
 
 > 用于跟踪无法立即修复、需按风险接受管理的高危依赖公告。审计命令与风险评估见
 > `docs/security-advisory-assessment.md`；生产配置见 `docs/production-deployment.md`。
-> 当前跟踪基线：Vuetify 2 高危公告。
+> 当前跟踪基线：Vuetify 2 高危公告（**针对 `master` / Vue 2 基线**）。
 > 本表具名负责人/复核人已确认接受（§1.1）；Vue 3 / Vuetify 3 迁移已拆为带负责人与截止日期的独立任务（§6）；期中/期末复核点见 §5。
+>
+> **迁移分支（当前候选 `58914fa`）状态：** 当前候选生产依赖树为 Vue `3.5.42` / Vuetify
+> `3.13.2`，`npm audit --omit=dev` = **0 vulnerabilities**，已无 Vue 2/Vuetify 2 包。
+> 因此本表 §1 所跟踪的 Vuetify 2 原型污染 High、Vue ReDoS（Vue 2）Low 与 VDatePicker
+> XSS（Vuetify 2）等公告，**在迁移分支生产树中不再适用**（§7 的“已接受清单”随迁移
+> 分支生产树消除，见下方 §8 说明）。`master`/Vue 2 基线仍须按原跟踪继续。
+> **注意：此“消除”仅指依赖与生产树层面；当前候选的真实环境门禁仍未执行，发布结论以
+> `docs/release-readiness.md` §6 为准（NOT RELEASE READY）。**
 
 ---
 
@@ -101,3 +109,25 @@
 2. **不得自动覆盖**：任何新出现的 High/Critical，即使与既有接受项同包同根因，也要**新增一条 §1 跟踪任务**，登记负责人/复核人/截止日期/处理计划，并纳入 §5 复核与 §3 审计对照。
 3. **不写“实际不可利用”**：沿用 `docs/security-advisory-assessment.md` §2.2 的严谨口径——未完全证明不可达的，一律记为“暂未发现触发路径，保留升级要求”，不得写成“实际不可利用”。
 4. **发布门禁**：若发布前 `npm audit --omit=dev` 出现**既有清单之外的新 High/Critical**，视为发布阻塞项（见 `docs/release-readiness.md`），按 P0 处理；只有完成评审、登记并纳入 §7 清单后方可继续。
+
+---
+
+## 8. 迁移分支（当前候选）风险接受项关闭/替换记录
+
+> 日期 2026-09-01。本记录仅针对迁移分支当前候选（`58914fa`，Vue 3 / Vuetify 3 /
+> Vite），基于对本工作区生产依赖树与 `npm audit --omit=dev` 的**实际复核**，不沿用历史
+> 通过/制品结论。`master` / Vue 2 基线的 §1 跟踪与 §7 已接受清单**不变**，仍须按其原
+> 计划跟进。
+
+| 原跟踪公告 | 原风险接受 | 迁移分支当前候选的实际证据 | 结论 |
+|------------|------------|------------------------------|------|
+| Vuetify 原型污染（CVE-2025-8083，Vuetify 2 / High） | 已接受，保留升级要求 | 生产树为 Vuetify **3.13.2**；`npm audit --omit=dev` = 0；`npm ls vue@2 vuetify@2` = empty | **已消除**（依赖层）；风险接受项记为**关闭**（原公告仅影响 Vuetify 2.x） |
+| Vue ReDoS（CVE-2024-9506，Vue 2 / Low） | 已接受；`runtimeCompiler:false` 缓解 | 生产树为 Vue **3.5.42** | **已消除**（依赖层）；风险接受项记为**关闭** |
+| Vuetify VDatePicker XSS（CVE-2025-8082，Vuetify 2 / Moderate） | 已接受；当前未用 `VDatePicker` | 生产树为 Vuetify **3.13.2**；未引入 `VDatePicker` | **已消除**（依赖层 + 未使用）；风险接受项记为**关闭** |
+| 4 条低危传递项（vuex/vuex-persistedstate/vue-toast-notification） | 随 Vue 3 升级 | 生产树为 Pinia 2.3.1 / vue-router 4.6.4 / vue-demi；已无 vuex/Vue 2-only 插件 | **已消除**（依赖层）；随迁移完成 |
+
+> **边界与依赖策略**：上述“关闭”指 §1 跟踪的 **Vuetify 2 / Vue 2 公告**在当前候选
+> 生产树中不再适用。任何**新**出现的 High/Critical 仍按 §7“新增跟踪任务”规则处理，
+> 不得因“已迁移到 Vue 3”而自动放宽。当前候选 `npm audit --omit=dev` = 0，
+> **无既有清单之外的新 High/Critical**；但真实环境门禁仍未执行，发布结论以
+> `docs/release-readiness.md` §6（NOT RELEASE READY）与 §7 为准。

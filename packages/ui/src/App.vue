@@ -13,14 +13,19 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 import notify from "@/notify";
 import eventService from "@/services/eventService";
 import serverService from "@/services/serverService";
 export default {
   components: {
-    AppShell: () => import("@/components/AppShell"),
-    ServerManagementTabs: () => import("@/components/ServerManagementTabs"),
-    GlobalNotifications: () => import("@/components/GlobalNotifications"),
+    AppShell: defineAsyncComponent(() => import("@/components/AppShell")),
+    ServerManagementTabs: defineAsyncComponent(
+      () => import("@/components/ServerManagementTabs")
+    ),
+    GlobalNotifications: defineAsyncComponent(
+      () => import("@/components/GlobalNotifications")
+    ),
   },
   computed: {
     showServerManagement() {

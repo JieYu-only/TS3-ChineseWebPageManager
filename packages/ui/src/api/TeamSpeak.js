@@ -19,14 +19,14 @@ import EventTarget from "@ungap/event-target";
  * @type {Object}
  */
 
-const TeamSpeak = Object.create(new EventTarget());
+const TeamSpeak = new EventTarget();
 
 // A TeamSpeak / socket-level connection loss invalidates the current session.
 // Clear the client session state and send the user back to the login screen.
 const handleConnectionLost = () => {
   store.dispatch("clearStorage");
 
-  if (router.currentRoute.name !== "login") {
+  if (router.currentRoute.value.name !== "login") {
     router.push({ name: "login" });
   }
 };

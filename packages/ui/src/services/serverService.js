@@ -28,8 +28,12 @@ export default {
     return info;
   },
   async version() {
-    const [result] = await TeamSpeak.execute("version");
-    return result.version;
+    const result = await TeamSpeak.execute("version");
+    // The backend may return an empty result set (e.g. during a degraded
+    // connection); don't crash the caller, just report "unknown".
+    return result && result.length && result[0]
+      ? result[0].version
+      : undefined;
   },
   async create(input) {
     const [response] = await TeamSpeak.execute("servercreate", input);

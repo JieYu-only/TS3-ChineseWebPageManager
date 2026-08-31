@@ -5,7 +5,7 @@
       @click="dialog = true"
       :disabled="!!!selectedFiles.length"
     >
-      <v-icon left>mdi-delete</v-icon>
+      <v-icon start>mdi-delete</v-icon>
       删除所选
     </v-btn>
 
@@ -17,8 +17,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="deleteFiles" color="primary">确定</v-btn>
-          <v-btn text @click="dialog = false" color="primary">取消</v-btn>
+          <v-btn variant="text" @click="deleteFiles" color="primary">确定</v-btn>
+          <v-btn variant="text" @click="dialog = false" color="primary">取消</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -2,32 +2,32 @@
   <v-container fluid class="console-page">
     <page-header title="黑名单" description="按 IP、名称或 UID 管理服务器封禁记录" :breadcrumbs="['控制台', '黑名单']">
       <template #actions>
-        <v-btn color="primary" elevation="0" @click="addBan"><v-icon left small>mdi-plus</v-icon>添加封禁</v-btn>
+        <v-btn color="primary" elevation="0" @click="addBan"><v-icon start size="small">mdi-plus</v-icon>添加封禁</v-btn>
       </template>
     </page-header>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-card-title>
-            <v-layout wrap justify-space-between>
-              <v-flex sm6 xs12>
+            <v-row justify="space-between">
+              <v-col sm="6" cols="12">
                 <v-btn
                   color="error"
                   :disabled="!Boolean(selectedTableItems.length)"
                   @click="openDialog(selectedTableItems)"
                 >
-                  <v-icon left>mdi-delete</v-icon>
+                  <v-icon start>mdi-delete</v-icon>
                   删除所选
                 </v-btn>
-              </v-flex>
-              <v-flex md4 sm6 xs12>
+              </v-col>
+              <v-col md="4" sm="6" cols="12">
                 <v-text-field
                   append-icon="mdi-magnify"
                   label="搜索黑名单"
                   v-model="filter"
                 ></v-text-field>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-card-title>
           <v-card-text>
             <v-data-table
@@ -37,15 +37,15 @@
               :headers="headers"
               :items="preparedBanlist"
               v-model="selectedTableItems"
-              item-key="banid"
+              item-value="banid"
               show-select
-              :footer-props="{ 'items-per-page-options': rowsPerPage }"
+              :items-per-page-options="rowsPerPage"
               :search="filter"
             >
               <template #item.actions="{ item }">
                 <v-menu>
-                  <template #activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
+                  <template #activator="{ props }">
+                    <v-btn icon v-bind="props">
                       <v-icon>mdi-dots-vertical</v-icon>
                     </v-btn>
                   </template>
@@ -76,7 +76,7 @@
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
       <v-dialog v-model="dialog" max-width="500px">
         <v-card>
           <v-card-title>删除封禁</v-card-title>
@@ -85,12 +85,12 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="dialog = false">取消</v-btn>
-            <v-btn text color="error" @click="deleteBans">删除</v-btn>
+            <v-btn variant="text" color="primary" @click="dialog = false">取消</v-btn>
+            <v-btn variant="text" color="error" @click="deleteBans">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
@@ -102,27 +102,32 @@ export default {
     return {
       headers: [
         {
-          text: "",
+          title: "",
           algin: "start",
-          value: "actions",
+          key: "actions",
         },
         {
-          text: "IP / 名称 / UID",
-          value: "nameIpUid",
+          title: "IP / 名称 / UID",
+          key: "nameIpUid",
         },
         {
-          text: "原因",
-          value: "reason",
+          title: "原因",
+          key: "reason",
         },
         {
-          text: "过期时间",
-          value: "duration",
+          title: "过期时间",
+          key: "duration",
         },
       ],
       banlist: [],
       selectedTableItems: [],
       dialog: false,
-      rowsPerPage: [25, 50, 75, -1],
+      rowsPerPage: [
+        { value: 25, title: "25" },
+        { value: 50, title: "50" },
+        { value: 75, title: "75" },
+        { value: -1, title: "All" },
+      ],
       filter: "",
       banRemoveList: [],
     };

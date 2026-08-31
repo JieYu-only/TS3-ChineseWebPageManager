@@ -1,29 +1,29 @@
 <template>
   <v-container fluid class="console-page">
     <page-header title="用户管理" description="查询服务器历史用户及连接信息" :breadcrumbs="['控制台', '用户管理']" />
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-card-title>
-            <v-layout wrap justify-space-between>
-              <v-flex sm6 xs12>
+            <v-row justify="space-between">
+              <v-col sm="6" cols="12">
                 <v-btn
                   color="error"
                   :disabled="!Boolean(selectedTableItems.length)"
                   @click="openRemoveDialog(selectedTableItems)"
                 >
-                  <v-icon left>mdi-delete</v-icon>
+                  <v-icon start>mdi-delete</v-icon>
                   删除所选
                 </v-btn>
-              </v-flex>
-              <v-flex md4 sm6 xs12>
+              </v-col>
+              <v-col md="4" sm="6" cols="12">
                 <v-text-field
                   append-icon="mdi-magnify"
                   label="搜索用户"
                   v-model="search"
                 ></v-text-field>
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-card-title>
           <v-card-text>
             <v-data-table
@@ -33,15 +33,15 @@
               :headers="headers"
               :items="clientdblist"
               :search="search"
-              :footer-props="{ 'items-per-page-options': rowsPerPage }"
+              :items-per-page-options="rowsPerPage"
               v-model="selectedTableItems"
               show-select
-              item-key="cldbid"
+              item-value="cldbid"
             >
               <template #item.name="{ item }">
                 <v-menu>
-                  <template #activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
+                  <template #activator="{ props }">
+                    <v-btn icon v-bind="props">
                       <v-icon>mdi-dots-vertical</v-icon>
                     </v-btn>
                   </template>
@@ -66,7 +66,7 @@
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
       <v-dialog max-width="500px" v-model="dialog">
         <v-card>
           <v-card-title>删除用户记录</v-card-title>
@@ -79,12 +79,12 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="dialog = false" color="primary">取消</v-btn>
-            <v-btn text @click="deleteClient" color="error">删除</v-btn>
+            <v-btn variant="text" @click="dialog = false" color="primary">取消</v-btn>
+            <v-btn variant="text" @click="deleteClient" color="error">删除</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
-    </v-layout>
+    </v-row>
   </v-container>
 </template>
 
@@ -96,43 +96,48 @@ export default {
     return {
       headers: [
         {
-          text: "",
-          value: "name",
+          title: "",
+          key: "name",
           align: "start",
           sortable: false,
         },
         {
-          text: "最后昵称",
-          value: "clientNickname",
+          title: "最后昵称",
+          key: "clientNickname",
         },
         {
-          text: "唯一标识（UID）",
-          value: "clientUniqueIdentifier",
+          title: "唯一标识（UID）",
+          key: "clientUniqueIdentifier",
         },
         {
-          text: "首次连接",
-          value: "clientCreated",
+          title: "首次连接",
+          key: "clientCreated",
         },
         {
-          text: "最后连接",
-          value: "clientLastconnected",
+          title: "最后连接",
+          key: "clientLastconnected",
         },
         {
-          text: "连接次数",
-          value: "clientTotalconnections",
+          title: "连接次数",
+          key: "clientTotalconnections",
         },
         {
-          text: "最后 IP",
-          value: "clientLastip",
+          title: "最后 IP",
+          key: "clientLastip",
         },
         {
-          text: "描述",
-          value: "clientDescription",
+          title: "描述",
+          key: "clientDescription",
         },
       ],
       clientdblist: [],
       search: "",
-      rowsPerPage: [25, 50, 75, -1],
+      rowsPerPage: [
+        { value: 25, title: "25" },
+        { value: 50, title: "50" },
+        { value: 75, title: "75" },
+        { value: -1, title: "All" },
+      ],
       dialog: false,
       clientRemoveList: [],
       selectedTableItems: [],

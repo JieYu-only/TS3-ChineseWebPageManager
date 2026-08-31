@@ -83,9 +83,13 @@ app.get("/*", (req, res) => {
 // When it is required by a test the app is exported instead so the test can
 // bind it to an ephemeral port without side effects.
 if (require.main === module) {
-  const server = app.listen(config.port, () => {
-    console.log(`Server listening on http://127.0.0.1:${config.port}`);
-  });
+  const onListening = () => {
+    const host = config.bindHost || "0.0.0.0";
+    console.log(`Server listening on http://${host}:${config.port}`);
+  };
+  const server = config.bindHost
+    ? app.listen(config.port, config.bindHost, onListening)
+    : app.listen(config.port, onListening);
 
   // Periodically clean expired sessions (temporary + remembered).
   sessionManager.startCleanup();

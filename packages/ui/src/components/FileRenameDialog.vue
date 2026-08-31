@@ -11,13 +11,13 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-          text
+          variant="text"
           @click="renameFile"
           color="primary"
           :disabled="newFileName === item.name"
           >确定</v-btn
         >
-        <v-btn text @click="dialog = false" color="primary">取消</v-btn>
+        <v-btn variant="text" @click="dialog = false" color="primary">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -36,7 +36,7 @@ export default {
      * @type {TreeItem}
      */
     item: Object,
-    value: Boolean,
+    modelValue: Boolean,
   },
   data() {
     return {
@@ -46,10 +46,10 @@ export default {
   computed: {
     dialog: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(val) {
-        this.$emit("input", val);
+        this.$emit("update:modelValue", val);
       },
     },
   },

@@ -1,16 +1,16 @@
 <template lang="html">
   <v-container fluid class="console-page">
     <page-header title="查询终端" description="直接执行 ServerQuery 命令并查看返回结果" :breadcrumbs="['控制台', '查询终端']" />
-    <v-layout justify-center>
-      <v-flex lg8 md10 sm10 xs12>
+    <v-row justify="center">
+      <v-col lg="8" md="10" sm="10" cols="12">
         <v-card>
           <v-card-text>
             <v-switch v-model="prettyPrint" label="格式化显示"></v-switch>
             <div ref="terminal" v-resize="resizeTerminal"></div>
           </v-card-text>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -112,5 +112,5 @@ export default {
 </script>
 
 <style lang="css">
-@import "~xterm/css/xterm.css";
+@import "xterm/css/xterm.css";
 </style>

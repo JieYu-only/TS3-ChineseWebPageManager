@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar app flat class="console-header">
+    <v-app-bar flat class="console-header">
       <v-app-bar-nav-icon
         @click="drawer = !drawer"
         v-if="connected"
@@ -15,8 +15,8 @@
       <bell-icon v-if="connected"></bell-icon>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="drawer" v-if="connected" width="240" class="console-drawer">
-      <v-list dense class="pt-3 px-3" subheader nav>
+    <v-navigation-drawer v-model="drawer" v-if="connected" width="240" class="console-drawer">
+      <v-list density="compact" class="pt-3 px-3" nav>
         <logo></logo>
         <v-divider></v-divider>
         <div class="drawer-label">主导航</div>
@@ -24,38 +24,35 @@
         <!-- Avoid v-if with v-for https://v3.vuejs.org/style-guide/#avoid-v-if-with-v-for-essential -->
         <template v-for="(entry, i) in menuEntries">
           <v-list-item
-            :key="i"
+            :key="'item-' + i"
             v-if="!entry.submenu"
             @click="pushRoute(entry)"
             :class="{ 'v-list-item--active': $route.name === entry.route.name }"
           >
-            <v-list-item-icon>
+            <template #prepend>
               <v-badge
                 color="error"
-                :value="entry.title === 'Chat' && $store.getters.unreadMessages"
+                :model-value="entry.title === 'Chat'"
+                :content="$store.getters.unreadMessages"
               >
                 <template #badge>
                   <span>{{ $store.getters.unreadMessages }}</span>
                 </template>
                 <v-icon>{{ entry.icon }}</v-icon>
               </v-badge>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                {{ entry.title }}
-                <v-icon v-if="entry.experimental">mdi-test-tube</v-icon>
-              </v-list-item-title>
-            </v-list-item-content>
+            </template>
+            <v-list-item-title>
+              {{ entry.title }}
+              <v-icon v-if="entry.experimental">mdi-test-tube</v-icon>
+            </v-list-item-title>
           </v-list-item>
 
-          <v-list-group v-else :key="i" no-action :prepend-icon="entry.icon">
+          <v-list-group v-else :key="'group-' + i" no-action :prepend-icon="entry.icon">
             <template #activator>
               <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>
-                    {{ entry.title }}
-                  </v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>
+                  {{ entry.title }}
+                </v-list-item-title>
               </v-list-item>
             </template>
             <v-list-item
@@ -66,14 +63,14 @@
                 'v-list-item--active': $route.name === subEntry.route.name,
               }"
             >
-              <v-list-item-icon>
+
                 <v-icon>{{ subEntry.icon }}</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
+
+
                 <v-list-item-title>
                   {{ subEntry.title }}
                 </v-list-item-title>
-              </v-list-item-content>
+
             </v-list-item>
           </v-list-group>
         </template>
@@ -83,12 +80,13 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 export default {
   components: {
-    DarkModeSwitch: () => import("@/components/DarkModeSwitch"),
-    BellIcon: () => import("@/components/BellIcon"),
-    FileUploadIcon: () => import("@/components/FileUploadIcon"),
-    Logo: () => import("@/components/Logo"),
+    DarkModeSwitch: defineAsyncComponent(() => import("@/components/DarkModeSwitch")),
+    BellIcon: defineAsyncComponent(() => import("@/components/BellIcon")),
+    FileUploadIcon: defineAsyncComponent(() => import("@/components/FileUploadIcon")),
+    Logo: defineAsyncComponent(() => import("@/components/Logo")),
   },
   data() {
     return {
@@ -165,12 +163,12 @@ export default {
 .console-drawer .v-list-item--active { color: #555cda !important; background: linear-gradient(90deg,#eeefff,#f6f6ff) !important; box-shadow: inset 3px 0 #6268df; }
 .console-drawer .v-list-item__icon { margin-right: 14px; }
 .console-drawer .v-icon { font-size: 21px; }
-.console-header.theme--dark { border-bottom-color: #3b3e50 !important; background: #343746 !important; }
-.console-header.theme--dark .page-caption strong { color: #f3f4f8; }
-.console-header.theme--dark .caption-kicker { color: #aeb3c3; }
-.console-drawer.theme--dark { border-right-color: #3b3e50 !important; background: linear-gradient(180deg,#343746 0%,#2e303e 100%) !important; }
-.console-drawer.theme--dark .drawer-label { color: #969caf; }
-.console-drawer.theme--dark .v-list-item { color: #c7cad5; }
-.console-drawer.theme--dark .v-list-item:hover { color: #fff; background: #414457; }
-.console-drawer.theme--dark .v-list-item--active { color: #e1d2ff !important; background: linear-gradient(90deg,#49405d,#3d3f52) !important; box-shadow: inset 3px 0 #bd93f9; }
+.v-theme--dark.console-header { border-bottom-color: #3b3e50 !important; background: #343746 !important; }
+.v-theme--dark.console-header .page-caption strong { color: #f3f4f8; }
+.v-theme--dark.console-header .caption-kicker { color: #aeb3c3; }
+.v-theme--dark.console-drawer { border-right-color: #3b3e50 !important; background: linear-gradient(180deg,#343746 0%,#2e303e 100%) !important; }
+.v-theme--dark.console-drawer .drawer-label { color: #969caf; }
+.v-theme--dark.console-drawer .v-list-item { color: #c7cad5; }
+.v-theme--dark.console-drawer .v-list-item:hover { color: #fff; background: #414457; }
+.v-theme--dark.console-drawer .v-list-item--active { color: #e1d2ff !important; background: linear-gradient(90deg,#49405d,#3d3f52) !important; box-shadow: inset 3px 0 #bd93f9; }
 </style>

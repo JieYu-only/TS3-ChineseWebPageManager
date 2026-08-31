@@ -2,33 +2,33 @@
   <v-container
     fluid
     class="console-page"
-    :class="{ 'console-page--dark': $vuetify.theme.dark }"
+    :class="{ 'console-page--dark': $store.state.settings.darkMode }"
   >
-    <div class="page-breadcrumb"><v-icon small>mdi-home</v-icon><span>控制台</span><v-icon x-small>mdi-chevron-right</v-icon><strong>服务器列表</strong></div>
+    <div class="page-breadcrumb"><v-icon size="small">mdi-home</v-icon><span>控制台</span><v-icon size="x-small">mdi-chevron-right</v-icon><strong>服务器列表</strong></div>
     <div class="page-title-row">
-      <div><div class="title-with-count"><h1>服务器列表</h1><v-chip small color="indigo lighten-5" text-color="indigo">{{ servers.length }} 台</v-chip></div><p>管理 TeamSpeak 虚拟服务器及运行状态</p></div>
-      <v-btn color="primary" elevation="0" :to="{ name: 'server-create' }"><v-icon left small>mdi-plus</v-icon>创建服务器</v-btn>
+      <div><div class="title-with-count"><h1>服务器列表</h1><v-chip size="small" color="indigo lighten-5" text-color="indigo">{{ servers.length }} 台</v-chip></div><p>管理 TeamSpeak 虚拟服务器及运行状态</p></div>
+      <v-btn color="primary" elevation="0" :to="{ name: 'server-create' }"><v-icon start size="small">mdi-plus</v-icon>创建服务器</v-btn>
     </div>
-    <v-layout>
-      <v-flex xs12>
+    <v-row>
+      <v-col cols="12">
         <v-card class="content-card" elevation="0">
           <v-card-text>
             <v-data-table
               :no-data-text="
-                $store.state.query.loading ? '...loading' : $vuetify.noDataText
+                $store.state.query.loading ? '...loading' : '暂无数据'
               "
               :headers="headers"
               :items="servers"
               :item-class="serverRowClass"
-              item-key="virtualserverId"
-              :footer-props="{ 'items-per-page-options': rowsPerPage }"
+              item-value="virtualserverId"
+              :items-per-page-options="rowsPerPage"
             >
               <!-- show-select
           single-select v-model="selectedServer" -->
               <template #item.actions="{ item }">
                 <v-menu>
-                  <template #activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
+                  <template #activator="{ props }">
+                    <v-btn icon v-bind="props">
                       <v-icon>mdi-dots-vertical</v-icon>
                     </v-btn>
                   </template>
@@ -69,7 +69,7 @@
                 <!-- <v-switch v-model="onlineServerIds" :value="item.virtualserverId"></v-switch> -->
                 <div class="status-cell">
                   <v-switch
-                    :input-value="!isOffline(item.virtualserverStatus)"
+                    :model-value="!isOffline(item.virtualserverStatus)"
                     readonly
                     hide-details
                     inset
@@ -82,20 +82,20 @@
               </template>
               <template #item.manage="{ item }">
                 <v-btn
-                  small outlined
+                  size="small" variant="outlined"
                   color="primary"
                   elevation="0"
                   :disabled="isOffline(item.virtualserverStatus)"
                   @click="manageServer(item)"
                 >
-                  <v-icon left small>mdi-cog-outline</v-icon>管理
+                  <v-icon start size="small">mdi-cog-outline</v-icon>管理
                 </v-btn>
               </template>
             </v-data-table>
           </v-card-text>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
 
     <v-dialog v-model="stopDialog" max-width="500px">
       <v-card>
@@ -105,8 +105,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="stopDialog = false" color="primary">取消</v-btn>
-          <v-btn text @click="stopServer" color="primary">停止</v-btn>
+          <v-btn variant="text" @click="stopDialog = false" color="primary">取消</v-btn>
+          <v-btn variant="text" @click="stopServer" color="primary">停止</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -119,10 +119,10 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="deleteDialog = false" color="primary"
+          <v-btn variant="text" @click="deleteDialog = false" color="primary"
             >取消</v-btn
           >
-          <v-btn text @click="deleteServer" color="error">删除</v-btn>
+          <v-btn variant="text" @click="deleteServer" color="error">删除</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -132,7 +132,7 @@
       class="mobile-create"
       :to="{ name: 'server-create' }"
     >
-      <v-icon left>mdi-plus</v-icon>创建服务器
+      <v-icon start>mdi-plus</v-icon>创建服务器
     </v-btn>
   </v-container>
 </template>
@@ -169,45 +169,45 @@ export default {
     return {
       headers: [
         {
-          text: "",
+          title: "",
           align: "start",
-          value: "actions",
+          key: "actions",
           sortable: false,
         },
         {
-          text: "选择",
+          title: "选择",
           align: "start",
-          value: "selectedSid",
+          key: "selectedSid",
           sortable: false,
         },
         {
-          text: "名称",
-          value: "virtualserverName",
+          title: "名称",
+          key: "virtualserverName",
           sortable: false,
         },
         {
-          text: "端口",
-          value: "virtualserverPort",
+          title: "端口",
+          key: "virtualserverPort",
           sortable: false,
         },
         {
-          text: "在线/最大人数",
-          value: "virtualserverClientsonlineMaxclients",
+          title: "在线/最大人数",
+          key: "virtualserverClientsonlineMaxclients",
           sortable: false,
         },
         {
-          text: "运行时间（天:时:分:秒）",
-          value: "virtualserverUptime",
+          title: "运行时间（天:时:分:秒）",
+          key: "virtualserverUptime",
           sortable: false,
         },
         {
-          text: "管理",
-          value: "manage",
+          title: "管理",
+          key: "manage",
           sortable: false,
         },
         {
-          text: "运行状态",
-          value: "virtualserverStatus",
+          title: "运行状态",
+          key: "virtualserverStatus",
           sortable: false,
         },
       ],
@@ -215,7 +215,12 @@ export default {
       stopDialog: false,
       deleteDialog: false,
       counterIds: [],
-      rowsPerPage: [25, 50, 75, -1],
+      rowsPerPage: [
+        { value: 25, title: "25" },
+        { value: 50, title: "50" },
+        { value: 75, title: "75" },
+        { value: -1, title: "All" },
+      ],
       queryUser: {},
     };
   },

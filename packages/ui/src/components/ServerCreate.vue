@@ -1,21 +1,21 @@
 <template>
   <v-container>
-    <v-layout justify-center>
-      <v-flex lg6 md8 sm8 xs12>
+    <v-row justify="center">
+      <v-col lg="6" md="8" sm="8" cols="12">
         <v-card>
           <v-card-title>创建服务器</v-card-title>
           <v-card-text>
             <v-form v-model="valid">
-              <v-layout justify-space-between wrap>
-                <v-flex xs12>
+              <v-row justify="space-between">
+                <v-col cols="12">
                   <v-text-field
                     v-model="serverName"
                     label="服务器名称"
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
                   ></v-text-field>
-                </v-flex>
-                <v-flex xs12 md4>
+                </v-col>
+                <v-col cols="12" md="4">
                   <v-text-field
                     v-model="serverPort"
                     label="端口"
@@ -23,8 +23,8 @@
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
                   ></v-text-field>
-                </v-flex>
-                <v-flex xs12 md4>
+                </v-col>
+                <v-col cols="12" md="4">
                   <v-text-field
                     v-model="maxClients"
                     label="最大用户数"
@@ -32,35 +32,37 @@
                     :disabled="$store.state.query.loading"
                     :rules="[rules.required]"
                   ></v-text-field>
-                </v-flex>
-                <v-flex xs12>
+                </v-col>
+                <v-col cols="12">
                   <key-text-field
                     v-model="token"
                     label="生成的服务器密钥"
                   ></key-text-field>
-                </v-flex>
-              </v-layout>
+                </v-col>
+              </v-row>
             </v-form>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="createServer" :disabled="!valid" color="primary"
+            <v-btn variant="text" @click="createServer" :disabled="!valid" color="primary"
               >创建</v-btn
             >
-            <v-btn text @click="$router.go(-1)" color="primary">关闭</v-btn>
+            <v-btn variant="text" @click="$router.go(-1)" color="primary">关闭</v-btn>
           </v-card-actions>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+
 import notify from "@/notify";
 import serverService from "@/services/serverService";
 export default {
   components: {
-    KeyTextField: () => import("@/components/KeyTextField"),
+    KeyTextField: defineAsyncComponent(() => import("@/components/KeyTextField")),
   },
   data() {
     return {

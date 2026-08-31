@@ -19,8 +19,11 @@ process.env.DATA_DIR = DATA_DIR;
 process.env.SESSION_FILE = path.join(DATA_DIR, "sessions.enc");
 
 const { TeamSpeak } = require("ts3-nodejs-library");
+const attachedListenerNames = [];
 TeamSpeak.connect = async () => ({
-  on() {},
+  on(name) {
+    attachedListenerNames.push(name);
+  },
   removeAllListeners() {},
   execute() {
     return Promise.resolve([]);
@@ -103,6 +106,11 @@ test("socket: malformed event handling stays contained", async (t) => {
   assert.ok(ok, "socket should connect with a valid session");
   t.after(() => client.close());
 
+  await t.test("domain events wait until a virtual server is selected", () => {
+    assert.ok(attachedListenerNames.includes("error"));
+    assert.ok(!attachedListenerNames.includes("clientconnect"));
+  });
+
   await t.test("teamspeak-execute(null) yields a controlled error", async () => {
     const response = await emit(client, "teamspeak-execute", null);
     assert.ok(response && response.message, "should return a message");
@@ -145,6 +153,7 @@ test("socket: malformed event handling stays contained", async (t) => {
 
     const registered = await emit(client, "teamspeak-registerevents");
     assert.strictEqual(registered, "ok");
+    assert.ok(attachedListenerNames.includes("clientconnect"));
     assert.deepStrictEqual(unhandledRejections, []);
   });
 });

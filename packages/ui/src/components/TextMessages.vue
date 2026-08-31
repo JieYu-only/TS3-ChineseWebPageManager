@@ -1,8 +1,8 @@
 <template>
   <v-container fluid class="console-page">
     <page-header title="消息中心" description="查看并发送服务器、频道及私聊消息" :breadcrumbs="['控制台', '消息中心']" />
-    <v-layout>
-      <v-flex xl10 lg12 md12 sm12 xs12 offset-xl1>
+    <v-row>
+      <v-col xl="10" lg="12" md="12" sm="12" cols="12" offset-xl="1">
         <v-sheet elevation="2" rounded class="textmessages__wrapper">
           <div
             :class="{
@@ -11,22 +11,23 @@
               'd-md-flex': true,
             }"
           >
-            <v-list subheader class="my-2" width="100%">
-              <v-subheader>频道列表</v-subheader>
-              <v-list-item-group :value="selectedChannelItem">
+            <v-list class="my-2" width="100%">
+              <v-list-subheader>频道列表</v-list-subheader>
+              <v-list :selected="activeChannelIndex" selectable>
                 <channel
-                  v-for="channel in channelList"
+                  v-for="(channel, index) in channelList"
                   :key="channel.cid"
                   :channel="channel"
-                  @click="switchTextChannel(channel.cid)"
+                  :value="index"
+                  @click="selectChannel(channel)"
                   :badgeValue="
                     countUnreadMessages({ target: channel.cid, targetmode: 2 })
                   "
                 >
                 </channel>
-              </v-list-item-group>
+              </v-list>
 
-              <v-subheader>在线用户</v-subheader>
+              <v-list-subheader>在线用户</v-list-subheader>
               <client
                 v-for="client in clientList"
                 :client="client"
@@ -58,7 +59,7 @@
                 <v-tab>
                   <v-badge
                     color="error"
-                    :value="countUnreadMessages(textServerTab)"
+                    :content="countUnreadMessages(textServerTab)"
                   >
                     <template #badge>
                       {{ countUnreadMessages(textServerTab) }}
@@ -70,7 +71,7 @@
                 <v-tab>
                   <v-badge
                     color="error"
-                    :value="countUnreadMessages(textChannelTab)"
+                    :content="countUnreadMessages(textChannelTab)"
                   >
                     <template #badge>
                       {{ countUnreadMessages(textChannelTab) }}
@@ -85,7 +86,7 @@
                 >
                   <v-badge
                     color="error"
-                    :value="countUnreadMessages(textPrivateTab)"
+                    :content="countUnreadMessages(textPrivateTab)"
                   >
                     <template #badge>
                       {{ countUnreadMessages(textPrivateTab) }}
@@ -102,9 +103,9 @@
             </div>
 
             <div class="textmessages__chat--history" ref="chat">
-              <v-tabs-items v-model="selectedTab">
+              <v-window v-model="selectedTab">
                 <!-- Server text message history -->
-                <v-tab-item :transition="false" :reverse-transition="false">
+                <v-window-item :transition="false" :reverse-transition="false">
                   <p class="text-center text--secondary">
                     服务器消息
                   </p>
@@ -121,9 +122,9 @@
                       {{ message.text }}
                     </div>
                   </div>
-                </v-tab-item>
+                </v-window-item>
                 <!-- Channel text message history -->
-                <v-tab-item :transition="false" :reverse-transition="false">
+                <v-window-item :transition="false" :reverse-transition="false">
                   <p class="text-center text--secondary">
                     频道消息
                   </p>
@@ -140,9 +141,9 @@
                       {{ message.text }}
                     </div>
                   </div>
-                </v-tab-item>
+                </v-window-item>
                 <!-- Private text message histories -->
-                <v-tab-item
+                <v-window-item
                   v-for="(textPrivateTab, index) in textPrivateTabs"
                   :key="index + 2"
                   :transition="false"
@@ -167,8 +168,8 @@
                       </div>
                     </div>
                   </div>
-                </v-tab-item>
-              </v-tabs-items>
+                </v-window-item>
+              </v-window>
             </div>
 
             <div>
@@ -182,12 +183,15 @@
             </div>
           </div>
         </v-sheet>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
+import { useDisplay } from "vuetify";
+
 import notify from "@/notify";
 import eventService from "@/services/eventService";
 import messageService from "@/services/messageService";
@@ -215,13 +219,16 @@ export default {
     });
   },
   components: {
-    Client: () => import("@/components/TextMessageClient"),
-    Channel: () => import("@/components/TextMessageChannel"),
+    Client: defineAsyncComponent(() => import("@/components/TextMessageClient")),
+    Channel: defineAsyncComponent(() => import("@/components/TextMessageChannel")),
+  },
+  setup() {
+    const { smAndDown } = useDisplay();
+    return { smAndDown };
   },
   data() {
     return {
-      clientList: [],
-      channelList: [],
+      clientList: [],      channelList: [],
       serverInfo: {},
       queryUser: {},
       /**
@@ -229,6 +236,14 @@ export default {
        * @type {number}
        */
       channelId: this.$route.params.cid,
+      /**
+       * Vuetify 3 `v-list` `selected` is a selection *array*. Holds `[index]`
+       * when a channel is joined, `[]` otherwise. It is kept in sync with the
+       * actually-joined channel (via the selectedChannelItem watcher) only after
+       * a successful navigation.
+       * @type {Array<number>}
+       */
+      activeChannelIndex: [],
       /**
        * Clientlist of opened private chats
        * @type {Array.<{clid: number, cid: number, clientDatabaseId: number, clientNickname: string, clientType: number}>}
@@ -371,6 +386,13 @@ export default {
     moveClient(clid, cid) {
       return messageService.moveCurrentClient({ clientId: clid, channelId: cid });
     },
+      async selectChannel(channel) {
+        // The highlight is driven by `activeChannelIndex`, which is kept in sync
+        // with the actually-joined channel via the `selectedChannelItem` watcher
+        // (i.e. only after navigation succeeds). We do NOT set it here so a failed
+        // `switchTextChannel` never shows a stale "active" channel.
+        await this.switchTextChannel(channel.cid);
+      },
     async switchTextChannel(cid) {
       try {
         this.openChatOnMobile();
@@ -512,6 +534,15 @@ export default {
     this.init();
   },
   watch: {
+    selectedChannelItem: {
+      immediate: true,
+      handler(value) {
+        // Vuetify 3 `v-list` `selected` is a selection *array*, so store the
+        // single active channel index as `[index]` (empty when none). This keeps
+        // the highlight in sync with the route after a successful navigation.
+        this.activeChannelIndex = value >= 0 ? [value] : [];
+      },
+    },
     selectedChat(chat) {
       this.$nextTick(() => {
         this.scrollBottom();
@@ -526,7 +557,7 @@ export default {
 
       this.$store.commit("markMessageAsRead", this.selectedChat);
     },
-    "$vuetify.breakpoint.smAndDown": {
+    smAndDown: {
       immediate: true,
       handler() {
         this.hideChat = true;

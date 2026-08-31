@@ -21,6 +21,7 @@ function parseWhitelist(value) {
 // process order of the parameters: command line > environment variable > default value
 module.exports = {
   port: program.port || process.env.PORT || 3000,
+  bindHost: process.env.BIND_HOST || undefined,
   secret:
     program.secret ||
     process.env.JWT_SECRET ||
