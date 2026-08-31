@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **25 component
-files** (50 calls); **34 src files** still use some `$TeamSpeak` method (of which
-the component files are 32).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **15 component
+files** (21 calls); **23 src files** still use some `$TeamSpeak` method (of which
+the component files are 22, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -75,9 +75,20 @@ the component files are 32).
   `channelService.*` (list/create/edit/remove/moveClient/info/serverInfo).
 - Client domain: `ServerViewerClient.vue`, `Clients.vue`, `ClientEdit.vue` and
   `ClientBan.vue` use `clientService.*`
-  (listOnline/listDatabase/info/dbInfo/remove/edit/moveToChannel/kick/poke/ban
-  plus a client's server-group memberships: defaultServerGroupId/listServerGroups/
-  addToServerGroup/removeFromServerGroup).
+  (listOnline/listDatabase/info/dbInfo/remove/edit/moveToChannel/kick/poke/ban;
+  a client's server-group memberships live in `groupService`).
+- Permission domain: `PermissionTable.vue`, `ClientPermissions.vue`,
+  `ChannelPermissions.vue`, `ChannelClientPermissions.vue`,
+  `ChannelGroupPermissions.vue` and `ServerGroupPermissions.vue` use
+  `permissionService.*` (listDefinitions/list*Permissions/add*Permission/
+  remove*Permission). `PermissionTable` emits business-named payloads
+  (`permissionId`/`value`/`skip`/`negated`).
+- Group domain: `ServerGroups.vue`, `ServerGroupEdit.vue`, `ChannelGroups.vue`
+  and `ChannelGroupEdit.vue` use `groupService.*`
+  (list/create/rename/copy/remove for server+channel groups, plus client
+  memberships `listServerGroupClients`/`listChannelGroupClients`/
+  `addClientToServerGroup`/`removeClientFromServerGroup`/
+  `assignClientChannelGroup` and the default-group helpers).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -85,8 +96,6 @@ the component files are 32).
 | serverService | ServerEdit, ServerLogs (list/create/start/stop/select done) |
 | channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
 | clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
-| permissionService | PermissionTable, ClientPermissions, ChannelPermissions, ChannelClientPermissions, ChannelGroupPermissions, ServerGroupPermissions |
-| groupService | ServerGroups, ServerGroupEdit, ChannelGroups, ChannelGroupEdit |
 | tokenService | Tokens, TokenAdd |
 | banService | Bans, BanAdd, BanEdit, ClientBan |
 | complaintService | Complaints |
@@ -107,11 +116,19 @@ the component files are 32).
 - `test/persist.test.cjs` — persisted-state payload validation (node:test).
 - `test/clientService.test.js` — listOnline/listDatabase delegation, info/dbInfo
   first-row unwrap, remove/edit/moveToChannel/kick/poke/ban argument mapping,
-  permission-denied propagation, and the server-group membership helpers
-  (defaultServerGroupId/listServerGroups/addToServerGroup/removeFromServerGroup).
+  permission-denied propagation.
 - `test/channelService.test.js` also covers **invalid-argument** handling: a
   missing `channelId` in `info`/`edit`/`remove`/`moveClient` rejects with
   `INVALID_ARGUMENT` before any command is sent.
+- `test/permissionService.test.js` — listDefinitions delegation, all
+  list/add/remove mapping for client/channel/channel-client/channel-group/
+  server-group permissions, boolean skip/negated flag coercion, missing-ID and
+  missing-permissionId `INVALID_ARGUMENT`, `PERMISSION_DENIED`/
+  `SESSION_EXPIRED` propagation, empty permission lists.
+- `test/groupService.test.js` — server/channel group list & CRUD mapping,
+  default-group helpers, server/channel client memberships, name/ID
+  `INVALID_ARGUMENT`, `PERMISSION_DENIED` and `RESOURCE_CONFLICT` (copy target)
+  propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.
