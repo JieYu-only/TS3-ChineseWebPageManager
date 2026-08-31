@@ -22,9 +22,14 @@ export default {
     // Release every business subscription before leaving the session so stale
     // listeners never fire against the next one.
     eventService.clear();
-    const response = await httpLogout();
-    socket.disconnect();
-    return response;
+
+    try {
+      return await httpLogout();
+    } finally {
+      // Always tear down the local socket, even if the server-side logout
+      // fails — otherwise the authenticated connection could keep running.
+      socket.disconnect();
+    }
   },
   async restore() {
     const response = await httpStatus();

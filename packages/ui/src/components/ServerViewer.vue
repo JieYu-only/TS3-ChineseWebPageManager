@@ -132,11 +132,11 @@ export default {
     },
     addEventListeners() {
       this.eventSubscriptions = [
-        eventService.subscribe("clientmoved", this.loadChannelTree),
-        eventService.subscribe("clientconnect", this.loadChannelTree),
-        eventService.subscribe("clientconnect", this.getSingleClientAvatar),
-        eventService.subscribe("clientdisconnect", this.loadChannelTree),
-        eventService.subscribe("channeldelete", this.loadChannelTree),
+        eventService.onClientMoved(this.loadChannelTree),
+        eventService.onClientConnected(this.loadChannelTree),
+        eventService.onClientConnected(this.getSingleClientAvatar),
+        eventService.onClientDisconnected(this.loadChannelTree),
+        eventService.onChannelDeleted(this.loadChannelTree),
       ];
     },
     removeEventListeners() {

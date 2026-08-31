@@ -3,6 +3,11 @@ import store from "../store";
 import router from "../router";
 import NProgress from "nprogress";
 import { updateServer } from "./session";
+import {
+  fromTeamSpeakError,
+  ServiceError,
+  ERROR_CODES,
+} from "../transport/transportError";
 
 // Polyfill for EventTarget because Safari has no constructor for it
 import EventTarget from "@ungap/event-target";
@@ -26,38 +31,44 @@ const handleConnectionLost = () => {
   }
 };
 
-const handleError = (error, resolve, reject) => {
+const handleError = (error, resolve, reject, operation) => {
   if (error.connected) {
     // Ignore empty result error e.g. an empty permissionlist
     if (error.id === "1281") {
       resolve([]);
     } else {
-      reject(error);
+      reject(fromTeamSpeakError(error, operation));
     }
   } else {
     handleConnectionLost();
 
-    reject(error);
+    reject(
+      new ServiceError({
+        code: ERROR_CODES.SESSION_EXPIRED,
+        operation,
+        cause: error,
+      })
+    );
   }
 };
 
-let handleResponse = (response, resolve, reject) => {
+let handleResponse = (response, resolve, reject, operation) => {
   // TeamSpeak Error or general Error
   if (
     (response.id && response.id !== 0) ||
     (!response.id && response.message)
   ) {
-    handleError(response, resolve, reject);
+    handleError(response, resolve, reject, operation);
   } else {
     resolve(response);
   }
 };
 
 // Emit a socket event and normalize the ack through handleResponse.
-const emitAndHandle = (event, ...payload) => {
+const emitAndHandle = (event, operation, ...payload) => {
   return new Promise((resolve, reject) => {
     socket.emit(event, ...payload, (response) =>
-      handleResponse(response, resolve, reject)
+      handleResponse(response, resolve, reject, operation)
     );
   });
 };
@@ -115,13 +126,18 @@ TeamSpeak.execute = (...args) => {
   let params = args[1] ? args[1] : {};
   let options = args[2] ? args[2] : [];
 
-  return emitAndHandle("teamspeak-execute", { command, params, options });
+  return emitAndHandle("teamspeak-execute", "teamspeak.execute", {
+    command,
+    params,
+    options,
+  });
 };
 
-TeamSpeak.createSnapshot = () => emitAndHandle("teamspeak-createsnapshot");
+TeamSpeak.createSnapshot = () =>
+  emitAndHandle("teamspeak-createsnapshot", "snapshot.create");
 
 TeamSpeak.deploySnapshot = (snapshot) =>
-  emitAndHandle("teamspeak-deploysnapshot", snapshot);
+  emitAndHandle("teamspeak-deploysnapshot", "snapshot.restore", snapshot);
 
 // The ServerQuery returns maximum 200 entries in the clientdblist.
 // This function collects all available entries in the client database list.
@@ -169,7 +185,8 @@ TeamSpeak.getBanList = () => TeamSpeak.execute("banlist");
 
 TeamSpeak.whoAmI = () => TeamSpeak.execute("whoami").then((list) => list[0]);
 
-TeamSpeak.registerEvents = () => emitAndHandle("teamspeak-registerevents");
+TeamSpeak.registerEvents = () =>
+  emitAndHandle("teamspeak-registerevents", "events.register");
 
 TeamSpeak.selectServer = (sid) => {
   return TeamSpeak.execute("use", { sid })
@@ -181,7 +198,7 @@ TeamSpeak.selectServer = (sid) => {
 };
 
 TeamSpeak.downloadFile = (path, cid, cpw = "") =>
-  emitAndHandle("teamspeak-downloadfile", { path, cid, cpw });
+  emitAndHandle("teamspeak-downloadfile", "file.download", { path, cid, cpw });
 
 TeamSpeak.on = (name, fn) => {
   TeamSpeak.addEventListener(name, fn);

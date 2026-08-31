@@ -24,6 +24,7 @@ export function createSocketRequest(socket) {
       const cleanup = () => {
         if (timer) clearTimeout(timer);
         if (signal) signal.removeEventListener("abort", onCancel);
+        socket.off("disconnect", onDisconnect);
       };
       const settle = (fn, value) => {
         if (settled) return;
@@ -33,6 +34,8 @@ export function createSocketRequest(socket) {
       };
       const onCancel = () =>
         settle(reject, socketError(ERROR_CODES.REQUEST_CANCELLED, event));
+      const onDisconnect = () =>
+        settle(reject, socketError(ERROR_CODES.CONNECTION_LOST, event));
 
       if (signal) {
         if (signal.aborted) {
@@ -46,6 +49,10 @@ export function createSocketRequest(socket) {
         () => settle(reject, socketError(ERROR_CODES.REQUEST_TIMEOUT, event)),
         timeoutMs
       );
+
+      // A mid-flight disconnect must fail the request quickly instead of
+      // leaving it pending until the timeout.
+      socket.on("disconnect", onDisconnect);
 
       const ack = (response) => settle(resolve, response);
       if (args === undefined) socket.emit(event, ack);

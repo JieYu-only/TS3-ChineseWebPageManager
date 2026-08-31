@@ -1,8 +1,8 @@
 # Frontend Communication Decoupling
 
-Status: in progress. Goal: isolate Vue components from TeamSpeak, HTTP and
-Socket.IO so a Vue 3 / Vite / Vuetify 3 migration only needs to adjust service
-injection, not page behaviour.
+Status: in progress (foundation + first core-path migrations accepted conditionally).
+Goal: isolate Vue components from TeamSpeak, HTTP and Socket.IO so a Vue 3 / Vite /
+Vuetify 3 migration only needs to adjust service injection, not page behaviour.
 
 ## Architecture (target)
 
@@ -11,33 +11,40 @@ components / Vuex modules   (page state + view only)
         ↓  call
 domain services             packages/ui/src/services/*   (serverService, channelService, ...)
         ↓  call
-protocol clients            packages/ui/src/api/*        (teamspeakClient, teamspeakCommands, fileTransferClient, sessionClient)
+protocol clients            packages/ui/src/api/*        (teamspeakClient, fileTransferClient, sessionClient, TeamSpeak)
         ↓  use             (raw command/event names live ONLY here)
 transport                   packages/ui/src/transport/*  (socketRequest, httpClient, socketClient, transportError)
-        ↓  use
-Socket.IO / axios
 ```
 
 Rules:
 - Components never call `$TeamSpeak.execute("command", ...)` or touch the socket.
 - Raw TeamSpeak command/event strings exist only in the protocol layer.
-- Errors surface as `ServiceError` (see `transportError.js`) with stable codes.
-- Realtime subscriptions go through `eventService.subscribe` (idempotent,
-  disposable handle) — never `TeamSpeak.on/off` directly.
+- Domain services expose business methods (`clientService.moveToChannel(...)`), not commands.
+- Realtime subscriptions go through `eventService` domain helpers
+  (`eventService.onClientConnected(handler)`), never raw event names or
+  `TeamSpeak.on/off` directly.
 
-## Unified error structure
+## Unified error structure (in use)
 
 ```js
 {
   name: "ServiceError",
   code,          // ERROR_CODES.* e.g. PERMISSION_DENIED
   message,       // default user-facing message
-  operation,     // e.g. "client.moveToChannel"
+  operation,     // e.g. "teamspeak.execute" / "client.moveToChannel"
   retryable,     // boolean
   cause,         // original error (diagnostics only)
   details,       // context; never credentials/tokens
 }
 ```
+
+The protocol layer (`TeamSpeak.js`) already throws `ServiceError`: TeamSpeak
+error messages are mapped to stable codes via `fromTeamSpeakError`
+(`PERMISSION_DENIED`, `RESOURCE_NOT_FOUND`, `INVALID_ARGUMENT`,
+`RESOURCE_CONFLICT`, `AUTH_REQUIRED`, `SESSION_EXPIRED`, `SERVER_UNAVAILABLE`,
+`FILE_TOO_LARGE`, `TRANSFER_FAILED`, ...) and a lost connection raises
+`SESSION_EXPIRED`. Components may branch on `err.code`; today most still let
+`notify.error` translate the `message`.
 
 Codes: AUTH_REQUIRED, SESSION_EXPIRED, PERMISSION_DENIED, NOT_CONNECTED,
 CONNECTION_LOST, REQUEST_TIMEOUT, REQUEST_CANCELLED, INVALID_ARGUMENT,
@@ -46,28 +53,42 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending (migrate to a domain service / remove raw call).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **35 component
+files** (65 calls); **41 src files** still use some `$TeamSpeak` method.
 
-| Component | Socket/event decoupled | `$TeamSpeak.execute` removed | Notes |
-|---|---|---|---|
-| Login.vue | ✔ (sessionService.login) | n/a | |
-| Logout.vue | ✔ (sessionService.logout) | n/a | |
-| main.js | ✔ (sessionService.restore) | n/a | |
-| ServerViewer.vue | ✔ (eventService) | ◻ | still uses `$TeamSpeak.*` for data |
-| TextMessages.vue | ✔ (eventService) | ◻ | |
-| Servers.vue | ◻ | ◻ | selectServer → sessionService |
-| ServerCreate.vue | ◻ | ◻ | |
-| FileBrowser*.vue | ◻ | ◻ | fileService |
-| ... (all remaining management components) | ◻ | ◻ | see $TeamSpeak inventory |
+### Already decoupled
+- Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
+  (restore), virtual-server switch (`Service` layer via `sessionService.selectServer`).
+- Realtime events: `ServerViewer.vue`, `TextMessages.vue` now use
+  `eventService.onClient*`/`onChannel*` domain helpers.
 
-## Current unit-test baseline
+### Per-domain remaining migration
+| Domain service | Components to migrate |
+|---|---|
+| serverService | Servers, ServerCreate, ServerEdit, ServerLogs |
+| channelService | ChannelAdd, ChannelEdit, ChannelForm, ChannelSpacerAdd, ServerViewerChannel, TextMessages |
+| clientService | Clients, ClientEdit, ClientBan, ServerViewerClient, TextMessages |
+| permissionService | PermissionTable, ClientPermissions, ChannelPermissions, ChannelClientPermissions, ChannelGroupPermissions, ServerGroupPermissions |
+| groupService | ServerGroups, ServerGroupEdit, ChannelGroups, ChannelGroupEdit |
+| tokenService | Tokens, TokenAdd |
+| banService | Bans, BanAdd, BanEdit, ClientBan |
+| complaintService | Complaints |
+| fileService | FileBrowserFolder, FileDeleteButton, FileDeleteDialog, FileRenameDialog, (FileBrowser, FileUploadIcon, FileUpload) |
+| apikeyService | ApiKeys, ApiKeyAdd |
+| consoleService | Console |
+| snapshotService | ServerSnapshot |
 
-- `packages/ui/test/transportError.test.js` — error model + TeamSpeak -> code mapping.
-- `packages/ui/test/socketRequest.test.js` — ACK success, error, timeout, cancel, disconnect.
-- `packages/ui/test/eventService.test.js` — subscribe/duplicate/unsubscribe/clear.
+## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 
-Run with `npm run test:unit --workspace=@ts3-manager/ui` (vitest).
+- `test/transportError.test.js` — ServiceError fields, TeamSpeak message/1281
+  -> stable-code mapping.
+- `test/socketRequest.test.js` — ACK success, no-payload, NOT_CONNECTED,
+  REQUEST_TIMEOUT, **mid-flight CONNECTION_LOST**, REQUEST_CANCELLED
+  (pre-abort + mid-flight), late-ACK no-op (via a FakeSocket).
+- `test/eventService.test.js` — subscribe, duplicate add, unsubscribe,
+  per-event split, `clear()`, `unsubscribe(handle)` (TeamSpeak mocked).
+- `test/persist.test.cjs` — persisted-state payload validation (node:test).
 
-Note: vitest was added as a UI devDependency because the transport/protocol
-modules are ESM, which the CommonJS `node --test` runner used by the server
-cannot import directly. The existing webpack build is unaffected.
+vitest was added as a UI devDependency because the transport/protocol modules are
+ESM, which the server's CommonJS `node --test` runner cannot import directly.
+The existing webpack build is unaffected.
