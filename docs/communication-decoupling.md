@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **2 component
-files** (3 calls); **6 src files** still use some `$TeamSpeak` method (of which
-the component files are 5, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **1 component
+file** (1 call); **5 src files** still use some `$TeamSpeak` method (of which
+the component files are 4, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -114,13 +114,18 @@ the component files are 5, the remaining one being `App.vue`).
   never calls `$TeamSpeak.execute` directly; the service validates the command
   string, rejects empty commands and invalid parameter/option structures, and
   does not log sensitive values.
+- Message domain: `TextMessages.vue` uses `messageService.*`
+  (sendToClient/sendToChannel/sendToServer/moveCurrentClient, plus
+  listClients/listChannels/getCurrentClient/getServerInfo which delegate to the
+  client/channel/server services). Realtime subscriptions stay in
+  `eventService`.
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
 |---|---|
-| serverService | ServerEdit (list/create/start/stop/select done) |
-| channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); TextMessages (chat) |
-| clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); TextMessages (chat + move) |
+| serverService | ServerEdit, ServerViewer (list/create/start/stop/select done) |
+| channelService | (ChannelAdd/Edit/SpacerAdd/ServerViewerChannel/ChannelForm done); ServerViewer (tree) |
+| clientService | (Clients, ClientEdit, ClientBan, ServerViewerClient done); BellIcon (avatar) |
 
 ## Current unit-test baseline (vitest, `npm run test:unit --workspace=@ts3-manager/ui`)
 
@@ -175,6 +180,10 @@ the component files are 5, the remaining one being `App.vue`).
 - `test/consoleService.test.js` — execute delegation with defaults, empty/non
   string command `INVALID_ARGUMENT`, invalid parameters/options structure, and
   `SESSION_EXPIRED` propagation.
+- `test/messageService.test.js` — listClients/listChannels/getCurrentClient/
+  getServerInfo delegation, moveCurrentClient delegation, sendToClient/
+  sendToChannel/sendToServer targetmode mapping, empty message
+  `INVALID_ARGUMENT`, and `PERMISSION_DENIED` propagation.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

@@ -11,6 +11,10 @@ export default {
   whoAmI() {
     return TeamSpeak.whoAmI();
   },
+  async info() {
+    const [info] = await TeamSpeak.getServerInfo();
+    return info;
+  },
   async create(input) {
     const [response] = await TeamSpeak.execute("servercreate", input);
     return response;

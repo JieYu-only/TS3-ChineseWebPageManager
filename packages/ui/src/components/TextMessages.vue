@@ -190,6 +190,7 @@
 <script>
 import notify from "@/notify";
 import eventService from "@/services/eventService";
+import messageService from "@/services/messageService";
 export default {
   beforeRouteEnter(to, from, next) {
     next(async (vm) => {
@@ -342,7 +343,7 @@ export default {
       }).length;
     },
     getClientList() {
-      return this.$TeamSpeak.getClientList();
+      return messageService.listClients();
     },
     async updateClientList() {
       try {
@@ -352,7 +353,7 @@ export default {
       }
     },
     getChannelList() {
-      return this.$TeamSpeak.getChannelList();
+      return messageService.listChannels();
     },
     async updateChannelList() {
       try {
@@ -362,16 +363,13 @@ export default {
       }
     },
     getServerInfo() {
-      return this.$TeamSpeak.getServerInfo().then((list) => list[0]);
+      return messageService.getServerInfo();
     },
     getQueryUserInfo() {
-      return this.$TeamSpeak.whoAmI();
+      return messageService.getCurrentClient();
     },
     moveClient(clid, cid) {
-      return this.$TeamSpeak.execute("clientmove", {
-        clid,
-        cid,
-      });
+      return messageService.moveCurrentClient({ clientId: clid, channelId: cid });
     },
     async switchTextChannel(cid) {
       try {
@@ -464,11 +462,13 @@ export default {
           clientNickname: this.queryUser.clientNickname,
         };
 
-        await this.$TeamSpeak.execute("sendtextmessage", {
-          targetmode,
-          target,
-          msg: this.message,
-        });
+        if (targetmode === 3) {
+          await messageService.sendToServer({ target, text: this.message });
+        } else if (targetmode === 2) {
+          await messageService.sendToChannel({ target, text: this.message });
+        } else {
+          await messageService.sendToClient({ target, text: this.message });
+        }
 
         // targetmode = number ,  sender = {clid, clientNickname}, text = string, target = number
         this.$store.dispatch("saveTextMessage", {
