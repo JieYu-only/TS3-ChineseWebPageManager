@@ -59,17 +59,14 @@
 
 <script>
 import notify from "@/notify";
-import axios from "axios";
-import {
-  getUploadUrl,
-  initFileUpload as initUploadRequest,
-} from "@/api/fileTransfer";
+import fileService from "@/services/fileService";
+import { ERROR_CODES } from "@/transport/transportError";
 
 export default {
   data() {
     return {
       queueWatcher: undefined,
-      cancelUpload: {},
+      currentTransferId: undefined,
       loading: false,
     };
   },
@@ -80,12 +77,10 @@ export default {
   },
   methods: {
     getFileInfo(cid, name, cpw = "") {
-      return this.$TeamSpeak
-        .execute("ftgetfileinfo", { cid, name, cpw })
-        .then((res) => res[0]);
+      return fileService.getInfo({ channelId: cid, name, channelPassword: cpw });
     },
     initFileUpload(file, overwrite = 1, resume = 0, cpw = "") {
-      return initUploadRequest({
+      return fileService.initUpload({
         cid: file.cid,
         path: file.filePath,
         size: file.fileSize,
@@ -106,29 +101,17 @@ export default {
       return this.uploadQueue.find((file) => file.clientftfid === clientftfid);
     },
     uploadFile(blob, clientftfid, ticket, sendedBytes = 0) {
-      let formData = new FormData();
-
-      formData.append("file", blob, blob.name);
-
-      return axios({
-        method: "POST",
-        url: getUploadUrl(ticket),
-        withCredentials: true,
-        data: formData,
-        onUploadProgress: (e) => {
-          let percentage =
-            ((e.loaded + sendedBytes) / (e.total + sendedBytes)) * 100;
-
+      return fileService.upload({
+        blob,
+        ticket,
+        transferId: clientftfid,
+        sendedBytes,
+        onProgress: (percentage) => {
           this.$store.commit("setFileUploadProgress", {
             clientftfid,
             percentage,
           });
         },
-        signal: (() => {
-          const controller = new AbortController();
-          this.cancelUpload = () => controller.abort();
-          return controller.signal;
-        })(),
       });
     },
     async startUploadLoop(clientTransferId) {
@@ -140,6 +123,7 @@ export default {
           : this.uploadQueue[0].clientftfid;
         let file = this.getFileInQueue(clientftfid);
 
+        this.currentTransferId = clientftfid;
         file.uploading = true;
 
         if (file.progress) {
@@ -158,6 +142,7 @@ export default {
           await this.uploadFile(file.blob, clientftfid, ticket);
         }
 
+        this.currentTransferId = undefined;
         this.$store.commit("removeFileFromQueue", clientftfid);
 
         if (!this.uploadQueue.length) {
@@ -170,7 +155,7 @@ export default {
       }
     },
     pauseUpload() {
-      this.cancelUpload();
+      fileService.cancel(this.currentTransferId);
 
       this.loading = true;
 
@@ -179,14 +164,17 @@ export default {
       }, 5000);
     },
     removeUpload(clientftfid) {
+      fileService.cancel(clientftfid);
+
       this.$store.commit("removeFileFromQueue", clientftfid);
     },
     handleUploadError(err) {
       // Hide error when upload got paused
-      if (!axios.isCancel(err)) {
+      if (err.code !== ERROR_CODES.REQUEST_CANCELLED) {
         notify.error(err.message);
       }
 
+      this.currentTransferId = undefined;
       this.$store.commit("resetUploadState");
     },
   },
@@ -194,10 +182,8 @@ export default {
     this.watchQueue();
   },
   beforeDestroy() {
-    try {
-      this.cancelUpload();
-    } catch (err) {
-      // Silent error
+    if (this.currentTransferId !== undefined) {
+      fileService.cancel(this.currentTransferId);
     }
   },
 };

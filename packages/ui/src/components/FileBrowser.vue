@@ -77,6 +77,8 @@ import notify from "@/notify";
  */
 
 import Path from "path-browserify";
+import channelService from "@/services/channelService";
+import fileService from "@/services/fileService";
 
 export default {
   components: {
@@ -99,7 +101,7 @@ export default {
      * @return {Array.<TreeItem>}
      */
     getFolderList() {
-      return this.$TeamSpeak.getChannelList().then((channels) => {
+      return channelService.list().then((channels) => {
         return channels.map((channel) => {
           return {
             id: channel.cid,
@@ -133,10 +135,9 @@ export default {
      * @return {Array.<TreeItem>}
      */
     getFileList({ cid, path, name, id }) {
-      return this.$TeamSpeak
-        .execute("ftgetfilelist", {
-          cid,
-          cpw: "",
+      return fileService
+        .list({
+          channelId: cid,
           path: path ? Path.join(path, name) : "/",
         })
         .then((files) => {

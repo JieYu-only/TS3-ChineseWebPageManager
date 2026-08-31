@@ -88,6 +88,7 @@
 <script>
 import notify from "@/notify";
 import Path from "path-browserify";
+import fileService from "@/services/fileService";
 
 export default {
   components: {
@@ -120,9 +121,8 @@ export default {
       let currentPath = path ? Path.join(path, name) : "/";
 
       try {
-        await this.$TeamSpeak.execute("ftcreatedir", {
-          cid,
-          cpw: "",
+        await fileService.createDirectory({
+          channelId: cid,
           dirname: Path.join(currentPath, this.newSubfolderName),
         });
 

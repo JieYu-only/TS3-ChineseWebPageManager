@@ -59,9 +59,9 @@ SERVER_UNAVAILABLE, PROTOCOL_ERROR, UNKNOWN_ERROR.
 
 ## Migration checklist
 
-Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **15 component
-files** (21 calls); **23 src files** still use some `$TeamSpeak` method (of which
-the component files are 22, the remaining one being `App.vue`).
+Legend: ✔ done, ◻ pending. Raw `$TeamSpeak.execute` calls remain in **11 component
+files** (16 calls); **17 src files** still use some `$TeamSpeak` method (of which
+the component files are 16, the remaining one being `App.vue`).
 
 ### Already decoupled
 - Session: `Login.vue` (login), `Logout.vue` (logout+event clear), `main.js`
@@ -89,6 +89,12 @@ the component files are 22, the remaining one being `App.vue`).
   memberships `listServerGroupClients`/`listChannelGroupClients`/
   `addClientToServerGroup`/`removeClientFromServerGroup`/
   `assignClientChannelGroup` and the default-group helpers).
+- File domain: `FileBrowser.vue`, `FileBrowserFolder.vue`,
+  `FileRenameDialog.vue`, `FileDeleteDialog.vue`, `FileDeleteButton.vue`,
+  `FileUploadIcon.vue` and `FileUpload.vue` use `fileService.*`
+  (list/getInfo/createDirectory/rename/remove plus the HTTP transfer primitives
+  initUpload/initDownload/upload/download/cancel that keep progress,
+  cancellation, timeout, concurrency-slot and resource release).
 
 ### Per-domain remaining migration
 | Domain service | Components to migrate |
@@ -99,7 +105,6 @@ the component files are 22, the remaining one being `App.vue`).
 | tokenService | Tokens, TokenAdd |
 | banService | Bans, BanAdd, BanEdit, ClientBan |
 | complaintService | Complaints |
-| fileService | FileBrowserFolder, FileDeleteButton, FileDeleteDialog, FileRenameDialog, (FileBrowser, FileUploadIcon, FileUpload) |
 | apikeyService | ApiKeys, ApiKeyAdd |
 | consoleService | Console |
 | snapshotService | (ServerSnapshot select done via serverService; create/restore remain) |
@@ -129,6 +134,10 @@ the component files are 22, the remaining one being `App.vue`).
   default-group helpers, server/channel client memberships, name/ID
   `INVALID_ARGUMENT`, `PERMISSION_DENIED` and `RESOURCE_CONFLICT` (copy target)
   propagation.
+- `test/fileService.test.js` — `ftgetfilelist`/`ftcreatedir`/`ftrenamefile`/
+  `ftdeletefile`/`ftgetfileinfo` mapping and first-row unwrap, `INVALID_ARGUMENT`
+  for missing paths, initUpload/initDownload delegation, upload streaming with
+  progress, `FILE_TOO_LARGE` mapping, and in-flight cancel -> `REQUEST_CANCELLED`.
 
 vitest was added as a UI devDependency because the transport/protocol modules are
 ESM, which the server's CommonJS `node --test` runner cannot import directly.

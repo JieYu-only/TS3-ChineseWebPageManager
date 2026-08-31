@@ -28,6 +28,7 @@
 <script>
 import notify from "@/notify";
 import Path from "path-browserify";
+import fileService from "@/services/fileService";
 
 export default {
   props: {
@@ -77,18 +78,16 @@ export default {
         for (let file of fileRemoveList) {
           // if it is a file or folder
           if (file.path !== undefined) {
-            await this.$TeamSpeak.execute("ftdeletefile", {
-              cid: file.cid,
-              cpw: "",
+            await fileService.remove({
+              channelId: file.cid,
               name: Path.join(file.path, file.name),
             });
 
             // if it is a channel
           } else {
             for (let childFile of file.children) {
-              await this.$TeamSpeak.execute("ftdeletefile", {
-                cid: file.cid,
-                cpw: "",
+              await fileService.remove({
+                channelId: file.cid,
                 name: Path.join(childFile.path, childFile.name),
               });
             }

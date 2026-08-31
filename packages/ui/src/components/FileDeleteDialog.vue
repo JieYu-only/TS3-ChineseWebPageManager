@@ -20,6 +20,7 @@
 <script>
 import notify from "@/notify";
 import Path from "path-browserify";
+import fileService from "@/services/fileService";
 
 export default {
   props: {
@@ -49,9 +50,8 @@ export default {
       let { cid, path, name } = this.item;
 
       try {
-        await this.$TeamSpeak.execute("ftdeletefile", {
-          cid,
-          cpw: "",
+        await fileService.remove({
+          channelId: cid,
           name: Path.join(path, name),
         });
       } catch (err) {
