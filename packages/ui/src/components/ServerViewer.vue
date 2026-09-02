@@ -31,31 +31,33 @@
       </v-col>
     </v-row>
 
-    <v-speed-dial right bottom fixed v-model="speedDial">
-      <template #activator>
-        <v-tooltip location="left">
-          <template #activator="{ props }">
-            <v-btn
-              icon
-              color="primary"
-              dark
-              v-bind="props"
-              :aria-label="speedDial ? '收起创建菜单' : '添加频道或分隔符'"
-            >
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ speedDial ? '收起创建菜单' : '添加频道或分隔符' }}</span>
-        </v-tooltip>
+    <v-speed-dial
+      v-model="speedDial"
+      location="top right"
+      transition="scale-transition"
+    >
+      <!-- The activator button is bound to the speed-dial's own activator
+           props. It MUST NOT be wrapped in a nested overlay's `#activator`
+           slot, otherwise the tooltip's props shadow the dial's `onClick` and
+           clicking does not toggle the menu. -->
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          icon
+          color="primary"
+          class="speed-dial-fab"
+          :aria-label="speedDial ? '收起创建菜单' : '添加频道或分隔符'"
+        >
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
       </template>
       <v-tooltip location="left">
         <template #activator="{ props }">
           <v-btn
+            v-bind="props"
             icon
             color="primary"
-            dark
             size="small"
-            v-bind="props"
             :to="{ name: 'channel-add' }"
             aria-label="创建频道"
           >
@@ -67,11 +69,10 @@
       <v-tooltip location="left">
         <template #activator="{ props }">
           <v-btn
+            v-bind="props"
             icon
             color="primary"
-            dark
             size="small"
-            v-bind="props"
             :to="{ name: 'spacer-add' }"
             aria-label="创建频道分隔符"
           >
@@ -271,5 +272,9 @@ export default {
 .console-page { max-width: 1440px; padding: 22px 30px 50px; }
 .viewer-tabs { display: flex; align-items: stretch; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid #e8ebf0; }.viewer-tab { display: flex; align-items: center; gap: 7px; padding: 13px 18px; color: #687386; font-size: 13px; }.viewer-tab.active { color: #6268df; border-bottom: 2px solid #6268df; }.viewer-stat { display: flex; flex-direction: column; justify-content: center; padding: 0 18px; border-left: 1px solid #edf0f4; }.viewer-stat span { color: #9ca5b2; font-size: 10px; }.viewer-stat strong { color: #243047; font-size: 13px; }
 .viewer-card { min-height: 420px; }.viewer-title { display: flex; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid #edf0f4; color: #1f2a3e; font-size: 17px; }
-@media (max-width: 600px) { .console-page { padding: 16px; }.viewer-tabs { overflow-x: auto; }.viewer-stat { min-width: 115px; } }
+/* Anchor the add-channel FAB to the bottom-right of the viewport (the Vuetify 2
+   `right bottom fixed` props are not part of the Vuetify 3 speed-dial API, so
+   the position is applied here). */
+.speed-dial-fab { position: fixed !important; right: 24px; bottom: 24px; z-index: 2000; }
+@media (max-width: 600px) { .console-page { padding: 16px; }.viewer-tabs { overflow-x: auto; }.viewer-stat { min-width: 115px; }.speed-dial-fab { right: 16px; bottom: 72px; } }
 </style>

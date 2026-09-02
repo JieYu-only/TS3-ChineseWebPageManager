@@ -201,6 +201,10 @@ export default {
       try {
         vm.queryUser = await vm.getQueryUserInfo();
 
+        // Viewing a channel's message history must not move the Query client:
+        // the displayed channel is driven purely by the route's `cid`. Moving
+        // the client here is both unnecessary and fails on real servers for the
+        // Query client, so no `clientmove` is issued on entry.
         if (!to.params.cid) {
           vm.$router.replace({
             name: "chat",
@@ -210,8 +214,6 @@ export default {
             // Send "openTextPrivate" from ServerViewer.vue
             query: vm.$route.query,
           });
-        } else {
-          await vm.moveClient(vm.queryUser.clientId, to.params.cid);
         }
       } catch (err) {
         notify.error(err.message);
@@ -383,22 +385,20 @@ export default {
     getQueryUserInfo() {
       return messageService.getCurrentClient();
     },
-    moveClient(clid, cid) {
-      return messageService.moveCurrentClient({ clientId: clid, channelId: cid });
+    async selectChannel(channel) {
+      // The highlight is driven by `activeChannelIndex`, which is kept in sync
+      // with the route's `cid` via the `selectedChannelItem` watcher (i.e. only
+      // after navigation succeeds). We do NOT set it here so a failed
+      // `switchTextChannel` never shows a stale "active" channel.
+      await this.switchTextChannel(channel.cid);
     },
-      async selectChannel(channel) {
-        // The highlight is driven by `activeChannelIndex`, which is kept in sync
-        // with the actually-joined channel via the `selectedChannelItem` watcher
-        // (i.e. only after navigation succeeds). We do NOT set it here so a failed
-        // `switchTextChannel` never shows a stale "active" channel.
-        await this.switchTextChannel(channel.cid);
-      },
     async switchTextChannel(cid) {
       try {
         this.openChatOnMobile();
 
-        await this.moveClient(this.queryUser.clientId, cid);
-
+        // Select the channel for viewing/sending only; the Query client is NOT
+        // moved (a `clientmove` of the Query client is unnecessary to read a
+        // channel and fails on real servers, surfacing a bogus "操作失败" toast).
         this.$router.replace({
           name: "chat",
           params: {

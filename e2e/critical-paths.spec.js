@@ -6,6 +6,36 @@ async function fillLogin(page, host = 'ts3.example.test') {
   await page.getByLabel('密码', { exact: true }).fill('test-password')
 }
 
+const validSessionCookie = [
+  { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+]
+
+// Reset the mock's mutable counters/deleted-state so a test observes a clean
+// server (the mock server is one shared process across the suite).
+async function resetMock(page) {
+  await page.evaluate(async () => {
+    await fetch('/api/test/reset', { method: 'POST' })
+  })
+}
+
+async function getStats(page) {
+  return page.evaluate(async () => (await fetch('/api/stats')).json())
+}
+
+// Tree helpers: expand a group node (its first button is the expand toggle) and
+// check a node's selection checkbox (Vuetify 3 `v-checkbox-btn` native input).
+async function expandFileNode(page, label) {
+  const node = page.locator('.v-treeview .v-list-item', { hasText: label }).first()
+  await node.locator('button').first().click()
+  await page.waitForTimeout(600)
+}
+
+async function checkFileNode(page, label) {
+  const node = page.locator('.v-treeview .v-list-item', { hasText: label }).first()
+  if ((await node.count()) === 0) throw new Error(`file tree node not found: ${label}`)
+  await node.locator('.v-checkbox-btn input[type="checkbox"]').click({ force: true })
+}
+
 test('未登录访问受保护页面时跳转到登录页', async ({ page }) => {
   await page.goto('/servers')
 
@@ -584,6 +614,355 @@ test('高风险交互：服务器组成员支持多选添加与移除', async ({
   await expect(addButton).toBeEnabled()
   await addButton.click()
   await expect(page.getByText('E2E member (2)')).toBeVisible()
+})
+
+test('服务器列表 8 列内容对齐：开关/文字同基线、状态文字不换行、单选垂直居中', async ({ context, page }) => {
+  await context.addCookies([
+    {
+      name: 'ts3_e2e_session',
+      value: 'valid',
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Strict'
+    }
+  ])
+
+  await page.goto('/servers')
+  await expect(page.getByRole('heading', { name: '服务器列表' })).toBeVisible()
+  await expect(page.locator('.v-data-table thead th')).toHaveCount(8)
+
+  // Structural sanity: the table renders 8 header cells and a full data row.
+  await expect(page.locator('.v-data-table tbody tr td')).toHaveCount(8)
+
+  // Content-level alignment: capture the positions of the first server row's
+  // selection radio, status switch and status label so we can assert they are
+  // vertically centred/on the same baseline (the reported misalignment came from
+  // Vuetify 3's default radio/switch margins and the status text wrapping).
+  const layout = await page.evaluate(() => {
+    const row = document.querySelector('.v-data-table tbody tr')
+    const rowRect = row.getBoundingClientRect()
+    const rowCenter = rowRect.top + rowRect.height / 2
+
+    const radio = row.querySelector('.v-radio')
+    const radioRect = radio ? radio.getBoundingClientRect() : null
+
+    const statusCell = row.querySelector('.status-cell')
+    const sw = statusCell ? statusCell.querySelector('.v-switch') : null
+    const swRect = sw ? sw.getBoundingClientRect() : null
+    const label = statusCell ? statusCell.querySelector('.status-text') : null
+    const labelRect = label ? label.getBoundingClientRect() : null
+
+    // The status cell must not overflow its column (no clipped/wrapped control).
+    const statusCellRect = statusCell ? statusCell.getBoundingClientRect() : null
+
+    return {
+      radioCenter: radioRect ? radioRect.top + radioRect.height / 2 : null,
+      rowCenter,
+      switchCenter: swRect ? swRect.top + swRect.height / 2 : null,
+      labelCenter: labelRect ? labelRect.top + labelRect.height / 2 : null,
+      labelHeight: labelRect ? labelRect.height : null,
+      statusCellWidth: statusCellRect ? statusCellRect.width : null,
+      statusScrollWidth: statusCell ? statusCell.scrollWidth : null
+    }
+  })
+
+  // Selection radio is vertically centred in its row.
+  expect(layout.radioCenter).not.toBeNull()
+  expect(Math.abs(layout.radioCenter - layout.rowCenter)).toBeLessThan(15)
+
+  // Status switch and its label share a vertical baseline (same centre line).
+  expect(layout.switchCenter).not.toBeNull()
+  expect(layout.labelCenter).not.toBeNull()
+  expect(Math.abs(layout.switchCenter - layout.labelCenter)).toBeLessThan(8)
+
+  // Status label renders on a single line (not squeezed/wrapped).
+  expect(layout.labelHeight).toBeLessThan(30)
+
+  // Status cell content does not overflow the column.
+  expect(layout.statusScrollWidth).toBeLessThanOrEqual(layout.statusCellWidth + 2)
+
+  // Footer is inside the card and status control is present in the row.
+  const footerInCard = await page.evaluate(() => {
+    const footer = document.querySelector('.v-data-table-footer')
+    const card = document.querySelector('.v-data-table').closest('.v-card')
+    return footer ? card.contains(footer) : false
+  })
+  expect(footerInCard).toBe(true)
+  await expect(page.getByText('运行中')).toBeVisible()
+  await expect(page.locator('tbody tr .v-switch').first()).toBeVisible()
+})
+
+test('窄屏服务器表格有实际横向滚动范围且页面不横向溢出', async ({ context, page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await context.addCookies([
+    { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+  ])
+
+  await page.goto('/servers')
+  await expect(page.getByRole('heading', { name: '服务器列表' })).toBeVisible()
+  await expect(page.locator('.v-data-table thead th')).toHaveCount(8)
+
+  // The table wrapper must offer a real horizontal scroll range (content wider
+  // than the visible container) so narrow screens can reach every column/action.
+  // Vuetify 3's scroll container is `.v-table__wrapper` (the `.v-data-table`
+  // element itself holds the 940px min-width content and is not the scroller).
+  const wrapper = page.locator('.v-table__wrapper, .v-data-table__wrapper').first()
+  const scrollable = await wrapper.evaluate((el) => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+    overflowX: getComputedStyle(el).overflowX
+  }))
+  expect(scrollable.scrollWidth).toBeGreaterThan(scrollable.clientWidth)
+  expect(scrollable.overflowX).toBe('auto')
+
+  // Key actions (manage button) remain reachable after scrolling.
+  const manage = page.getByRole('button', { name: '管理' }).first()
+  await expect(manage).toBeVisible()
+
+  // Body must not overflow horizontally even though the table scrolls inside.
+  const layout = await page.evaluate(() => ({
+    contentWidth: document.documentElement.scrollWidth,
+    viewportWidth: document.documentElement.clientWidth
+  }))
+  expect(layout.contentWidth).toBeLessThanOrEqual(layout.viewportWidth)
+})
+
+test('实时在线新增入口可展开收起并分别进入创建页面', async ({ context, page }) => {
+  await context.addCookies([
+    { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+  ])
+
+  await page.goto('/serverviewer')
+  await expect(page.getByRole('heading', { name: '实时在线' })).toBeVisible()
+
+  const plus = page.locator('button[aria-label="添加频道或分隔符"]').first()
+  await expect(plus).toBeVisible()
+
+  // Expand: both create entries appear.
+  await plus.click()
+  const createChannel = page.locator('[aria-label="创建频道"]').first()
+  const createSpacer = page.locator('[aria-label="创建频道分隔符"]').first()
+  await expect(createChannel).toBeVisible()
+  await expect(createSpacer).toBeVisible()
+
+  // Collapse: entries are removed again.
+  await page.locator('button[aria-label="收起创建菜单"]').first().click()
+  await expect(page.locator('[aria-label="创建频道"]')).toHaveCount(0)
+  await expect(page.locator('[aria-label="创建频道分隔符"]')).toHaveCount(0)
+
+  // Re-open and navigate to the channel form.
+  await plus.click()
+  await createChannel.click()
+  await expect(page).toHaveURL(/\/channel\/add$/)
+
+  // Back, re-open and navigate to the spacer form.
+  await page.goBack()
+  await page.waitForTimeout(400)
+  await page.locator('button[aria-label="添加频道或分隔符"]').first().click()
+  await page.locator('[aria-label="创建频道分隔符"]').first().click()
+  await expect(page).toHaveURL(/\/spacer\/add$/)
+})
+
+test('实时在线新增入口可通过键盘触发', async ({ context, page }) => {
+  await context.addCookies([
+    { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+  ])
+
+  await page.goto('/serverviewer')
+  await expect(page.getByRole('heading', { name: '实时在线' })).toBeVisible()
+
+  const plus = page.locator('button[aria-label="添加频道或分隔符"]').first()
+  await plus.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[aria-label="创建频道"]').first()).toBeVisible()
+})
+
+test('消息中心点击频道不移动 Query 客户端且正确切换', async ({ context, page }) => {
+  await context.addCookies([
+    { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+  ])
+
+  await page.goto('/chat')
+  await expect(page.getByRole('heading', { name: '消息中心' })).toBeVisible()
+
+  const targetItem = page.locator('.v-list.my-2 .v-list-item', { hasText: '测试频道' }).first()
+  await expect(targetItem).toBeVisible()
+  await targetItem.click()
+  await page.waitForTimeout(1200)
+
+  // Navigation landed on the clicked channel's route and THAT item is active.
+  await expect(page).toHaveURL(/\/chat\/2$/)
+  await expect(targetItem).toHaveClass(/v-list-item--active/)
+
+  // No bogus generic failure toast (the Query client was not asked to move).
+  await expect(page.getByText('操作失败，请检查输入和服务器状态')).toHaveCount(0)
+
+  // The mock rejects `clientmove`; assert the UI did not issue it at all.
+  const stats = await page.evaluate(async () => (await fetch('/api/stats')).json())
+  expect(stats.commandCounts.clientmove || 0).toBe(0)
+})
+
+test('重复点击同一频道不发出额外移动请求', async ({ context, page }) => {
+  await context.addCookies([
+    { name: 'ts3_e2e_session', value: 'valid', domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Strict' }
+  ])
+
+  await page.goto('/chat')
+  await expect(page.getByRole('heading', { name: '消息中心' })).toBeVisible()
+
+  const targetItem = page.locator('.v-list.my-2 .v-list-item', { hasText: '测试频道' }).first()
+  await targetItem.click()
+  await page.waitForTimeout(800)
+  await targetItem.click()
+  await page.waitForTimeout(800)
+
+  const stats = await page.evaluate(async () => (await fetch('/api/stats')).json())
+  expect(stats.commandCounts.clientmove || 0).toBe(0)
+  await expect(page).toHaveURL(/\/chat\/2$/)
+  await expect(page.getByText('操作失败，请检查输入和服务器状态')).toHaveCount(0)
+})
+
+test('文件管理树显示可选择复选框，勾选后批量删除按钮启用', async ({ context, page }) => {
+  await context.addCookies(validSessionCookie)
+  await page.goto('/files')
+  await expect(page.getByRole('heading', { name: '文件管理' })).toBeVisible()
+
+  // Wait for the channel tree to finish loading before interacting.
+  await expect(page.getByText('欢迎大厅')).toBeVisible()
+  await page.waitForTimeout(400)
+  await resetMock(page)
+
+  // Selection checkboxes render on tree nodes.
+  await expect(page.locator('.v-treeview .v-checkbox-btn input[type="checkbox"]').first()).toHaveCount(1)
+
+  const deleteButton = page.getByRole('button', { name: '删除所选' })
+  await expect(deleteButton).toBeDisabled()
+
+  await checkFileNode(page, '欢迎大厅')
+  await expect(deleteButton).toBeEnabled()
+})
+
+test('文件管理父子节点同时选择批量删除仅删父节点且刷新列表并清空选择', async ({ context, page }) => {
+  await context.addCookies(validSessionCookie)
+  await page.goto('/files')
+  await expect(page.getByRole('heading', { name: '文件管理' })).toBeVisible()
+  await expect(page.getByText('欢迎大厅')).toBeVisible()
+  await page.waitForTimeout(400)
+  await resetMock(page)
+
+  // Build the tree: channel -> folder -> nested file.
+  await expandFileNode(page, '欢迎大厅')
+  await expandFileNode(page, 'docs')
+
+  // Select the parent folder and its child file simultaneously.
+  await checkFileNode(page, 'docs')
+  await checkFileNode(page, 'guide.txt')
+
+  const deleteButton = page.getByRole('button', { name: '删除所选' })
+  await expect(deleteButton).toBeEnabled()
+  await deleteButton.click()
+  await expect(page.getByText('确定要删除所有选中的文件和文件夹吗？此操作无法撤销。')).toBeVisible()
+  await page.locator('.v-card', { hasText: '删除所选文件和文件夹' }).getByRole('button', { name: '确定', exact: true }).click()
+  await page.waitForTimeout(900)
+
+  // Only the parent folder is deleted (the child was deduped), with a single
+  // `ftdeletefile` targeting `/docs`.
+  const stats = await getStats(page)
+  const fileDeletes = stats.deleteCalls.filter((c) => c.command === 'ftdeletefile')
+  expect(fileDeletes.length).toBe(1)
+  expect(fileDeletes[0].params.name).toBe('/docs')
+
+  // The deleted folder is gone from the refreshed list (mock removed it).
+  await expect(page.locator('.v-treeview .v-list-item', { hasText: 'docs' })).toHaveCount(0)
+
+  // Selection was cleared after the batch delete.
+  await expect(deleteButton).toBeDisabled()
+})
+
+test('文件管理取消删除不发出删除调用且保留选择', async ({ context, page }) => {
+  await context.addCookies(validSessionCookie)
+  await page.goto('/files')
+  await expect(page.getByRole('heading', { name: '文件管理' })).toBeVisible()
+  await expect(page.getByText('欢迎大厅')).toBeVisible()
+  await page.waitForTimeout(400)
+  await resetMock(page)
+
+  await checkFileNode(page, '欢迎大厅')
+  const deleteButton = page.getByRole('button', { name: '删除所选' })
+  await expect(deleteButton).toBeEnabled()
+
+  await deleteButton.click()
+  await expect(page.getByText('确定要删除所有选中的文件和文件夹吗？此操作无法撤销。')).toBeVisible()
+  await page.getByRole('button', { name: '取消', exact: true }).click()
+  await expect(page.getByText('确定要删除所有选中的文件和文件夹吗？此操作无法撤销。')).toHaveCount(0)
+
+  // Cancel issues no destructive command and keeps the selection.
+  const stats = await getStats(page)
+  expect(stats.deleteCalls.length).toBe(0)
+  await expect(deleteButton).toBeEnabled()
+})
+
+test('文件管理多选两个同级文件确认删除后刷新列表并清空选择', async ({ context, page }) => {
+  await context.addCookies(validSessionCookie)
+  await page.goto('/files')
+  await expect(page.getByRole('heading', { name: '文件管理' })).toBeVisible()
+  await expect(page.getByText('欢迎大厅')).toBeVisible()
+  await page.waitForTimeout(400)
+  await resetMock(page)
+
+  await expandFileNode(page, '欢迎大厅')
+
+  await checkFileNode(page, 'docs')
+  await checkFileNode(page, 'readme.txt')
+  const deleteButton = page.getByRole('button', { name: '删除所选' })
+  await expect(deleteButton).toBeEnabled()
+
+  await deleteButton.click()
+  await expect(page.getByText('确定要删除所有选中的文件和文件夹吗？此操作无法撤销。')).toBeVisible()
+  await page.locator('.v-card', { hasText: '删除所选文件和文件夹' }).getByRole('button', { name: '确定', exact: true }).click()
+  await page.waitForTimeout(900)
+
+  // Two siblings selected -> two `ftdeletefile` calls with the right targets.
+  const stats = await getStats(page)
+  const names = stats.deleteCalls.filter((c) => c.command === 'ftdeletefile').map((c) => c.params.name).sort()
+  expect(names).toEqual(['/docs', '/readme.txt'])
+
+  // Both nodes disappear after the refresh.
+  await expect(page.locator('.v-treeview .v-list-item', { hasText: 'docs' })).toHaveCount(0)
+  await expect(page.locator('.v-treeview .v-list-item', { hasText: 'readme.txt' })).toHaveCount(0)
+  await expect(deleteButton).toBeDisabled()
+})
+
+test('文件管理频道根节点批量删除仅删除子内容且绝不误删频道', async ({ context, page }) => {
+  await context.addCookies(validSessionCookie)
+  await page.goto('/files')
+  await expect(page.getByRole('heading', { name: '文件管理' })).toBeVisible()
+  await expect(page.getByText('欢迎大厅')).toBeVisible()
+  await page.waitForTimeout(400)
+  await resetMock(page)
+
+  // Load the channel's children, then select the channel root itself.
+  await expandFileNode(page, '欢迎大厅')
+  await checkFileNode(page, '欢迎大厅')
+  const deleteButton = page.getByRole('button', { name: '删除所选' })
+  await expect(deleteButton).toBeEnabled()
+
+  await deleteButton.click()
+  await expect(page.getByText('确定要删除所有选中的文件和文件夹吗？此操作无法撤销。')).toBeVisible()
+  await page.locator('.v-card', { hasText: '删除所选文件和文件夹' }).getByRole('button', { name: '确定', exact: true }).click()
+  await page.waitForTimeout(900)
+
+  // Deleting a channel root only removes its children (docs + readme.txt); it
+  // never issues a channeldelete so the channel itself is not removed.
+  const stats = await getStats(page)
+  const fileDeletes = stats.deleteCalls.filter((c) => c.command === 'ftdeletefile')
+  const names = fileDeletes.map((c) => c.params.name).sort()
+  expect(names).toEqual(['/docs', '/readme.txt'])
+  expect(stats.deleteCalls.filter((c) => c.command === 'channeldelete').length).toBe(0)
+
+  // The channel node remains in the tree.
+  await expect(page.locator('.v-treeview .v-list-item', { hasText: '欢迎大厅' }).first()).toBeVisible()
 })
 
 test('高风险交互：黑名单表格支持排序、分页、批量选择和确认对话框', async ({ context, page }) => {

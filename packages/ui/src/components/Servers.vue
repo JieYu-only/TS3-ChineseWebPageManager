@@ -167,48 +167,66 @@ export default {
   },
   data() {
     return {
+      // Explicit alignment + widths so the header, data cells and controls stay
+      // stable across servers/rows instead of re-shrinking to the widest cell.
+      // `min-width` keeps controls (radio/switch/buttons) from squeezing; the
+      // numeric/time columns get a fixed width so text never wraps.
       headers: [
         {
-          title: "",
+          title: "操作",
           align: "start",
           key: "actions",
           sortable: false,
+          width: 88,
         },
         {
           title: "选择",
-          align: "start",
+          align: "center",
           key: "selectedSid",
           sortable: false,
+          width: 88,
         },
         {
           title: "名称",
+          align: "start",
           key: "virtualserverName",
           sortable: false,
+          width: 200,
         },
         {
           title: "端口",
+          align: "start",
           key: "virtualserverPort",
           sortable: false,
+          width: 96,
         },
         {
           title: "在线/最大人数",
+          align: "start",
           key: "virtualserverClientsonlineMaxclients",
           sortable: false,
+          width: 128,
         },
         {
           title: "运行时间（天:时:分:秒）",
+          align: "start",
           key: "virtualserverUptime",
           sortable: false,
+          width: 190,
         },
         {
           title: "管理",
+          align: "start",
           key: "manage",
           sortable: false,
+          width: 112,
         },
         {
           title: "运行状态",
+          align: "start",
           key: "virtualserverStatus",
           sortable: false,
+          minWidth: 160,
         },
       ],
       servers: [],
@@ -379,6 +397,21 @@ export default {
 .content-card { overflow: hidden; border-radius: 14px !important; }.mobile-create { display: none; }
 .status-cell { display: flex; align-items: center; gap: 9px; min-width: 105px; }
 .status-cell .v-input { margin: 0; padding: 0; }
+/* Vuetify 3 adds default vertical margins to radio-groups and switches; drop
+   them so the row stays compact and the status text never gets squeezed or
+   shifted relative to the switch. */
+::v-deep .v-data-table td .v-radio-group,
+::v-deep .v-data-table td .v-radio,
+::v-deep .v-data-table td .v-radio-group .v-input__control,
+::v-deep .v-data-table td .v-input--switch { margin: 0; padding: 0; }
+::v-deep .v-data-table td { vertical-align: middle; }
+/* On narrow screens, keep the table at a readable minimum width so the columns
+   (with their controls) are not squeezed/truncated. The wrapper stays at the
+   card width and scrolls horizontally; only the inner <table> keeps the min
+   width so the columns never collapse. */
+::v-deep .v-table { width: 100%; }
+::v-deep .v-table__wrapper { overflow-x: auto; }
+::v-deep .v-table__wrapper > table { min-width: 940px; }
 .status-text { font-size: 12px; font-weight: 600; white-space: nowrap; }
 .status-text.online { color: #23a26d; }.status-text.offline { color: #9aa4b2; }
 ::v-deep .selected-server-row { background: #f7f8ff !important; }

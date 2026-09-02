@@ -8,6 +8,7 @@
             <file-delete-button
               :selectedFiles="selectedFiles"
               @filedelete="updateParentItem"
+              @filedelete-complete="clearFileSelection"
             >
             </file-delete-button>
             <file-refresh-button
@@ -26,7 +27,7 @@
               selectable
               v-model="selectedFiles"
               v-model:opened="openFolders"
-              selection-type="independent"
+              select-strategy="independent"
               item-title="name"
               :key="key"
             >
@@ -164,6 +165,15 @@ export default {
             return item;
           });
         });
+    },
+
+    /**
+     * Clear the batch-delete selection once a delete completed. The selected
+     * node objects no longer exist in the tree, so keeping them selected would
+     * leave the "删除所选" button enabled over stale targets.
+     */
+    clearFileSelection() {
+      this.selectedFiles = [];
     },
 
     /**

@@ -29,6 +29,7 @@
 import notify from "@/notify";
 import Path from "path-browserify";
 import fileService from "@/services/fileService";
+import { getRemoveList } from "@/components/fileSelection";
 
 export default {
   props: {
@@ -51,20 +52,7 @@ export default {
      * @return {Array.<TreeItem>} - selected parent items
      */
     getRemoveList() {
-      let removeList = [...this.selectedFiles];
-
-      this.selectedFiles.forEach((file, index, array) => {
-        let parentFile = array.find(
-          (selectedFile) => file.pid === selectedFile.id
-        );
-
-        if (parentFile) {
-          delete removeList[index];
-        }
-      });
-
-      // reindex array
-      return removeList.filter((file) => file);
+      return getRemoveList(this.selectedFiles);
     },
 
     /**
@@ -95,6 +83,11 @@ export default {
 
           this.$emit("filedelete", file);
         }
+
+        // Signal that the whole batch finished so the caller can clear the
+        // (now stale) selection. Only emitted on success so a failed delete
+        // leaves the selection intact for the user to retry.
+        this.$emit("filedelete-complete");
       } catch (err) {
         notify.error(err.message);
       }
